@@ -1,0 +1,24 @@
+{
+  "name": "misualizer",
+  "version": "0.0.1",
+  "description": "The Michelson visualizer",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsc -w",
+    "build": "rm -r dist && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catsigma/Misualizer.git"
+  },
+  "author": "catsigma",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/catsigma/Misualizer/issues"
+  },
+  "homepage": "https://github.com/catsigma/Misualizer#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^3.5.3"
+  }
+}
