@@ -4,8 +4,9 @@
   "description": "The Michelson visualizer",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsc -w",
-    "build": "rm -r dist && tsc"
+    "flow": "flow",
+    "test": "flow && BROWSER_OPT=true parcel test/index.html --target browser --https",
+    "build": "parcel src/index.js"
   },
   "repository": {
     "type": "git",
@@ -17,8 +18,19 @@
     "url": "https://github.com/catsigma/Misualizer/issues"
   },
   "homepage": "https://github.com/catsigma/Misualizer#readme",
-  "dependencies": {},
+  "dependencies": {
+    "tezbridge-network": "^1.0.39"
+  },
   "devDependencies": {
-    "typescript": "^3.5.3"
+    "@babel/core": "^7.6.0",
+    "@babel/plugin-transform-flow-strip-types": "^7.4.4",
+    "@babel/plugin-transform-runtime": "^7.6.0",
+    "flow-bin": "^0.107.0"
+  },
+  "babel": {
+    "plugins": [
+      "@babel/plugin-transform-runtime",
+      "@babel/plugin-transform-flow-strip-types"
+    ]
   }
 }
