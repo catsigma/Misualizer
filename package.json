@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/catsigma/Misualizer#readme",
   "dependencies": {
+    "chevrotain": "^6.5.0",
     "tezbridge-network": "^1.0.39"
   },
   "devDependencies": {
