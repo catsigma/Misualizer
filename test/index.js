@@ -1,5 +1,10 @@
+// @flow
+
 import TBN from 'tezbridge-network/PsBABY5H'
 
+import { GLParser } from '../src/graph/graph_lang.js'
+
+// Init setup
 const client = new TBN({
   host: 'https://alphanet-node.tzscan.io'
 })
@@ -11,4 +16,24 @@ async function main() {
   console.log(code)
 }
 
-main()
+
+function parser() {
+  const script = `
+    contract abc123 {
+      a -> b -> c
+      b -> c [attr1=v1 attr2=v2]
+      sd -> contract qqq {
+        e -> w -> z
+        vwef -> fe [x=y]
+      } -> contract vooo {
+        e -> wq -> x
+      }
+    }
+  `
+
+  const gl_parser = new GLParser()
+  console.log(gl_parser.parse(script))
+}
+
+// main()
+parser()

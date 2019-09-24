@@ -1,5 +1,7 @@
-[ignore]
+[untyped]
 .*/node_modules/**/.*
+
+[ignore]
 
 [include]
 
