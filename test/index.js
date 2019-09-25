@@ -2,7 +2,7 @@
 
 import TBN from 'tezbridge-network/PsBABY5H'
 
-import { GLParser } from '../src/graph/graph_lang.js'
+import { Parser } from '../src/graph_lang'
 
 // Init setup
 const client = new TBN({
@@ -31,7 +31,7 @@ function parser() {
     }
   `
 
-  const gl_parser = new GLParser()
+  const gl_parser = new Parser()
   console.log(gl_parser.parse(script))
 }
 
