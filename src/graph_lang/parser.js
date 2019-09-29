@@ -3,7 +3,7 @@
 import { Lexer, EmbeddedActionsParser } from 'chevrotain'
 import { tokens } from './lexer'
 
-export class GLParser extends EmbeddedActionsParser {
+export class Parser extends EmbeddedActionsParser {
   constructor() {
     super(Object.values(tokens))
 

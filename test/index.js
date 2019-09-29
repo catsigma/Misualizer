@@ -2,7 +2,9 @@
 
 import TBN from 'tezbridge-network/PsBABY5H'
 
-import { Parser } from '../src/graph_lang'
+import { GLParser } from '../src/graph_lang'
+
+import { SVGRenderer } from '../src/renderer/svg'
 
 // Init setup
 const client = new TBN({
@@ -31,9 +33,20 @@ function parser() {
     }
   `
 
-  const gl_parser = new Parser()
+  const gl_parser = new GLParser()
   console.log(gl_parser.parse(script))
 }
 
+function renderer() {
+  const renderer = new SVGRenderer()
+  const svg = renderer.render()
+  const content = document.getElementById('content')
+
+  if (content) {
+    content.appendChild(svg)
+  }
+}
+
 // main()
-parser()
+// parser()
+renderer()

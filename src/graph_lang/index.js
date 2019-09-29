@@ -1,5 +1,5 @@
 // @flow
 
-import { GLParser } from './parser'
+import { Parser } from './parser'
 
-export const Parser = GLParser
+export const GLParser = Parser
