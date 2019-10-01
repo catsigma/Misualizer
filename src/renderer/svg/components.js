@@ -82,9 +82,15 @@ class Component {
   key_points : Array<point>
   el : Element
 
-  constructor(kind : string) {
-    this.el = document.createElementNS('http://www.w3.org/2000/svg', kind)
-    this.kind = kind
+  constructor(init_info : string | Array<Component>) {
+    if (init_info instanceof Array) {
+      this.kind = 'g'
+      this.el = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+      init_info.forEach(x => this.el.appendChild(x.el))
+    } else {
+      this.kind = init_info
+      this.el = document.createElementNS('http://www.w3.org/2000/svg', init_info)
+    }
   }
 
   setAttrs(attr_mapping : Object) {
@@ -94,7 +100,7 @@ class Component {
   }
 }
 
-export const rect = (start : point, width: number, height: number) => {
+export const Rect = (start : point, width: number, height: number) => {
   const rect = new Component('rect')
   const start_point = normalizePoint(start)
   rect.setAttrs({
@@ -114,7 +120,45 @@ export const rect = (start : point, width: number, height: number) => {
   return rect
 }
 
-export const curve = (start : point, 
+export const Arrow = (start : point, direction : direction, factor : number = 10, narrow_factor : number = 0.6) => {
+  start = normalizePoint(start)
+
+  const arrow = new Component('path')
+
+  const narrowed_factor = factor * narrow_factor
+
+  const bottom_points = {
+    up: () => [[start[0] - narrowed_factor, start[1] - factor], 
+         [start[0] + narrowed_factor, start[1] - factor]],
+    down: () => [[start[0] - narrowed_factor, start[1] - factor], 
+           [start[0] + narrowed_factor, start[1] - factor]],
+    left: () => [[start[0] - factor, start[1] + narrowed_factor], 
+           [start[0] - factor, start[1] - narrowed_factor]],
+    right: () => [[start[0] + factor, start[1] - narrowed_factor], 
+            [start[0] + factor, start[1] + narrowed_factor]]
+  }[direction]()
+
+  const mid_shift_points = {
+    up: () => [start[0], start[1] - narrowed_factor],
+    down: () => [start[0], start[1] + narrowed_factor],
+    left: () => [start[0] - narrowed_factor, start[1]],
+    right: () => [start[0] + narrowed_factor, start[1]]
+  }[direction]()
+
+  arrow.setAttrs({
+    d: `
+      M ${pp(start)}
+      L ${pp(bottom_points[0])}
+      L ${pp(mid_shift_points)}
+      L ${pp(bottom_points[1])}
+      Z
+    `
+  })
+
+  return arrow
+}
+
+export const Curve = (start : point, 
                       end : point, 
                       start_direction : direction, 
                       end_direction : direction,
@@ -135,13 +179,20 @@ export const curve = (start : point,
   return curve
 }
 
-export const auto_curve = (component1 : Component, component2 : Component) => {
+export const AutoCurve = (component1 : Component, component2 : Component, with_arrow : boolean = false) => {
   const shortest = shortest_distance(component1.key_points, component2.key_points)
   const direction = ['up', 'right', 'down', 'left']
-  return curve(
-    component1.key_points[shortest.index1], 
-    component2.key_points[shortest.index2], 
-    direction[shortest.index1],
-    direction[shortest.index2],
-    20)
+  
+  const start_point = component1.key_points[shortest.index1]
+  const end_point = component2.key_points[shortest.index2]
+  const start_direction = direction[shortest.index1]
+  const end_direction = direction[shortest.index2]
+
+  const curve = Curve(start_point, end_point, start_direction, end_direction, 100)
+  if (!with_arrow)
+    return curve
+  else {
+    const arrow = Arrow(end_point, end_direction)
+    return new Component([curve, arrow])
+  }
 }
