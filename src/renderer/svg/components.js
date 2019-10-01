@@ -1,17 +1,26 @@
 // @flow
 
-export type point = string | [number, number]
+type SVGElement = Object
+
+export type point = [number, number]
 export type direction = 'up' | 'down' | 'left' | 'right'
 
-function normalizePoint(point : point) : [number, number] {
-  if (point instanceof Array) {
-    if (point.length !== 2)
-      throw `invalid svg point: ${point.toString()}`
+const getBox = (() => {
+  const shadow_svg : Object = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  shadow_svg.style.width = '0'
+  shadow_svg.style.height = '0'
 
-    return point
+  if (document.body)
+    document.body.appendChild(shadow_svg)
+
+  return (svg_el : Object) => {
+    shadow_svg.appendChild(svg_el)
+    return svg_el.getBBox()
   }
+})()
 
-  const point_lst = point.split(/\s+/)
+function normalizePoint(point : string) : point {
+  const point_lst = point.split(/[\s,]+/)
   if (point_lst.length !== 2)
     throw `invalid svg point: ${point}`
 
@@ -26,20 +35,16 @@ function normalizePoint(point : point) : [number, number] {
   return [result[0], result[1]]
 }
 
-function getMidPoint(point1 : point, point2 : point) {
-  const p1 = normalizePoint(point1)
-  const p2 = normalizePoint(point2)
-
+function getMidPoint(p1 : point, p2 : point) {
   return [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
 }
 
 function pp(point : point) {
   // print point
-  return point instanceof Array ? `${point[0]} ${point[1]}` : point
+  return `${point[0]} ${point[1]}`
 }
 
 function shift(point : point, direction : direction, factor : number = 50) : point {
-  point = normalizePoint(point)
   const shift_mapping = {
     up: [0, -factor],
     down: [0, factor],
@@ -80,7 +85,7 @@ function shortest_distance(point_lst1 : Array<point>, point_lst2 : Array<point>)
 class Component {
   kind : string
   key_points : Array<point>
-  el : Element
+  el : SVGElement
 
   constructor(init_info : string | Array<Component>) {
     if (init_info instanceof Array) {
@@ -98,31 +103,35 @@ class Component {
       this.el.setAttribute(key, attr_mapping[key])
     }
   }
+
+  append(el : SVGElement) {
+    this.el.appendChild(el)
+  }
 }
 
 export const Rect = (start : point, width: number, height: number) => {
   const rect = new Component('rect')
-  const start_point = normalizePoint(start)
   rect.setAttrs({
-    x: start_point[0],
-    y: start_point[1],
+    x: start[0],
+    y: start[1],
     width,
-    height
+    height,
+    stroke: 'black',
+    fill: 'transparent',
+    rx: '5'
   })
-  const horiz_mid = start_point[0] + width / 2
-  const vert_mid = start_point[1] + height / 2
+  const horiz_mid = start[0] + width / 2
+  const vert_mid = start[1] + height / 2
   rect.key_points = [
-    [horiz_mid, start_point[1]],
-    [start_point[0] + width, vert_mid],
-    [horiz_mid, start_point[1] + height],
-    [start_point[0], vert_mid]
+    [horiz_mid, start[1]],
+    [start[0] + width, vert_mid],
+    [horiz_mid, start[1] + height],
+    [start[0], vert_mid]
   ]
   return rect
 }
 
 export const Arrow = (start : point, direction : direction, factor : number = 10, narrow_factor : number = 0.6) => {
-  start = normalizePoint(start)
-
   const arrow = new Component('path')
 
   const narrowed_factor = factor * narrow_factor
@@ -195,4 +204,26 @@ export const AutoCurve = (component1 : Component, component2 : Component, with_a
     const arrow = Arrow(end_point, end_direction)
     return new Component([curve, arrow])
   }
+}
+
+export const Text = (point : point, content : string) => {
+  const text = new Component('text')
+  text.setAttrs({
+    x: point[0],
+    y: point[1]
+  })
+  text.append(document.createTextNode(content))
+  const box = getBox(text.el)
+
+  const horiz_mid = box.x + box.width / 2
+  const vert_mid = box.y + box.height / 2
+
+  text.key_points = [
+    [horiz_mid, box.y],
+    [box.x + box.width, vert_mid],
+    [horiz_mid, box.y + box.height],
+    [box.x, vert_mid]
+  ]
+
+  return text
 }

@@ -48,5 +48,5 @@ function renderer() {
 }
 
 // main()
-// parser()
+parser()
 renderer()
