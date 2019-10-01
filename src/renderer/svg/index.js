@@ -1,6 +1,6 @@
 // @flow
 
-import { curve } from './components'
+import { rect, curve, auto_curve } from './components'
 
 export class SVGRenderer {
   constructor() {
@@ -10,11 +10,12 @@ export class SVGRenderer {
   render() {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.setAttribute('viewBox', '0 0 1000 1000')
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    path.setAttribute('stroke', 'black')
-    path.setAttribute('fill', 'transparent')
-    path.setAttribute('d', curve('20 100', '200 200', 'right'))
-    svg.appendChild(path)
+    const rect1 = rect('20 20', 90, 90)
+    const rect2 = rect('200 200', 90, 90)
+    const curve1 = auto_curve(rect1, rect2)
+    svg.appendChild(rect1.el)
+    svg.appendChild(rect2.el)
+    svg.appendChild(curve1.el)
     return svg
   }
 }
