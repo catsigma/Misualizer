@@ -82,7 +82,7 @@ function shortest_distance(point_lst1 : Array<point>, point_lst2 : Array<point>)
 }
 
 // =============== BASIC GRAPHS COMPONENTS ===============
-class Component {
+export class Component {
   kind : string
   key_points : Array<point>
   el : SVGElement
@@ -139,8 +139,8 @@ export const Arrow = (start : point, direction : direction, factor : number = 10
   const bottom_points = {
     up: () => [[start[0] - narrowed_factor, start[1] - factor], 
          [start[0] + narrowed_factor, start[1] - factor]],
-    down: () => [[start[0] - narrowed_factor, start[1] - factor], 
-           [start[0] + narrowed_factor, start[1] - factor]],
+    down: () => [[start[0] - narrowed_factor, start[1] + factor], 
+           [start[0] + narrowed_factor, start[1] + factor]],
     left: () => [[start[0] - factor, start[1] + narrowed_factor], 
            [start[0] - factor, start[1] - narrowed_factor]],
     right: () => [[start[0] + factor, start[1] - narrowed_factor], 

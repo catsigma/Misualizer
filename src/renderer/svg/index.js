@@ -1,27 +1,43 @@
 // @flow
 
-import { Rect, Arrow, Curve, AutoCurve, Text } from './components'
+import { Component, Rect, Arrow, Curve, AutoCurve, Text } from './components'
 
 export class SVGRenderer {
   constructor() {
 
   }
 
-  render() {
+  drawNodes(start_node : string | Object, nodes : Array<{arrow: string, node: string | Object}>) {
+    const drawNode = (node : string | Object) => {
+      if (typeof node === 'string')
+        return Text([800 * Math.random(), 400 * Math.random()], node)
+      else
+        return Rect([800 * Math.random(), 400 * Math.random()], 20, 20)
+    }
+
+    const graphs = []
+    graphs.push(drawNode(start_node))
+
+    nodes.forEach((item, index) => {
+      graphs.push(drawNode(item.node))
+      if (index) {
+        graphs.push(AutoCurve(graphs[graphs.length - 3], graphs[graphs.length - 1], true))
+      } else {
+        graphs.push(AutoCurve(graphs[0], graphs[1], true))
+      }
+    })
+
+    return graphs
+  }
+
+  render(graph : Object) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.setAttribute('viewBox', '0 0 1000 1000')
-    const rect1 = Rect([10, 10], 90, 90)
-    const rect2 = Rect([250, 100], 30, 90)
-    const curve1 = AutoCurve(rect1, rect2, true)
-    const text1 = Text([150, 150], 'cxvads')
-    const text2 = Text([1, 250], 'dsafdbvsca')
-    const curve2 = AutoCurve(text1, text2, true)
-    svg.appendChild(rect1.el)
-    svg.appendChild(rect2.el)
-    svg.appendChild(curve1.el)
-    svg.appendChild(text1.el)
-    svg.appendChild(text2.el)
-    svg.appendChild(curve2.el)
+    console.log(graph)
+    const nodes = graph.paths.map(x => this.drawNodes(x.start_node, x.nodes))
+    nodes.forEach(x => {
+      x.forEach(x => svg.appendChild(x.el))
+    })
     return svg
   }
 }

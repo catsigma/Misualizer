@@ -12,64 +12,76 @@ export class Parser extends EmbeddedActionsParser {
   }
 
   setRules() {
-    this.RULE('attr_item_expr', () => {
-      const name = this.CONSUME(tokens.IDENTIFIER).image
-      this.CONSUME(tokens.EQUAL)
-      const value = this.CONSUME1(tokens.IDENTIFIER).image
-      return {name, value}
-    })
 
-    this.RULE('attr_expr', () => {
-      this.CONSUME(tokens.LEFT_BRACKET)
-      const attrs = []
-      this.AT_LEAST_ONE(() => {
-        attrs.push(this.SUBRULE(this.attr_item_expr))
-      })
-      this.CONSUME(tokens.RIGHT_BRACKET)
-      return attrs
-    })
-
-    this.RULE('path_to_expr', () => {
-      this.CONSUME(tokens.ARROW_RIGHT)
-      return this.OR([
-        {ALT: () => this.CONSUME(tokens.IDENTIFIER).image},
+    this.RULE('arrow_expr', () => {
+      const arrow = this.CONSUME(tokens.ARROW_RIGHT).image.replace(/-|>/g, '')
+      const node = this.OR([
+        {ALT: () => this.SUBRULE(this.node_expr)},
         {ALT: () => this.SUBRULE(this.contract_expr)}
       ])
+
+      return {arrow, node}
     })
 
-    this.RULE('path_expr', () => {
-      const group = []
-      const nodes = [this.CONSUME(tokens.IDENTIFIER).image]
-      let attrs
-
+    this.RULE('branch_path_expr', () => {
+      this.CONSUME(tokens.LEFT_BRACKET)
+      const paths = []
       this.AT_LEAST_ONE(() => {
-        nodes.push(this.SUBRULE(this.path_to_expr))
+        paths.push(this.OR([
+          {ALT: () => this.SUBRULE(this.arrow_expr)},
+          {ALT: () => this.SUBRULE(this.branch_path_expr)}
+        ]))
       })
+      this.CONSUME(tokens.RIGHT_BRACKET)
+      return paths
+    })
 
+    this.RULE('node_expr', () => {
+      const name = this.CONSUME(tokens.IDENTIFIER).image
+      let inside
       this.OPTION(() => {
-        attrs = this.SUBRULE(this.attr_expr)
+        inside = this.SUBRULE(this.path_block_expr)
       })
-
-      nodes.forEach((node, i) => {
-        if (i)
-          group.push([nodes[i - 1], node])
-      })
-
       return {
-        group,
-        attrs
+        name,
+        inside
       }
     })
 
-    this.RULE('contract_expr', () => {
+    this.RULE('path_expr', () => {
+      const start_node = this.OR([
+        {ALT: () => this.SUBRULE(this.node_expr)},
+        {ALT: () => this.SUBRULE(this.contract_expr)}
+      ])
+      const nodes = []
+      this.AT_LEAST_ONE(() => {
+        nodes.push(this.OR1([
+          {ALT: () => this.SUBRULE(this.arrow_expr)},
+          {ALT: () => this.SUBRULE(this.branch_path_expr)}
+        ]))
+      })
+
+      return {
+        start_node,
+        nodes
+      }
+    })
+
+    this.RULE('path_block_expr', () => {
       const paths = []
-      this.CONSUME(tokens.CONTRACT)
-      const name = this.CONSUME(tokens.IDENTIFIER).image
       this.CONSUME(tokens.LEFT_CURLY_BRACKET)
       this.MANY(() => {
         paths.push(this.SUBRULE(this.path_expr))
       })
       this.CONSUME(tokens.RIGHT_CURLY_BRACKET)
+      return paths
+    })
+
+    this.RULE('contract_expr', () => {
+      this.CONSUME(tokens.CONTRACT)
+      const name = this.CONSUME(tokens.IDENTIFIER).image
+      const paths = this.SUBRULE(this.path_block_expr)
+
       return {
         contract: name,
         paths

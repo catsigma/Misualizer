@@ -22,24 +22,31 @@ async function main() {
 function parser() {
   const script = `
     contract abc123 {
-      a -> b -> c
-      b -> c [attr1=v1 attr2=v2]
-      sd -> contract qqq {
-        e -> w -> z
-        vwef -> fe [x=y]
-      } -> contract vooo {
-        e -> wq -> x
-      }
+      "if x > 2" {
+        aaa -> bbb
+      } [
+        -yes-> "the yes result" -> ppp [-ppp1-> dvas] [-ppp2-> qcvzxv]
+      ] [
+        -no-> "the no result"
+        -> contract qqq {
+          eeeee -> wwwww -> zzzzz
+          vwef -> fe
+        } -> "AA BB"
+      ] [
+        -don't know-> "don't know"
+      ]
     }
   `
 
   const gl_parser = new GLParser()
-  console.log(gl_parser.parse(script))
+  return gl_parser.parse(script)
 }
 
 function renderer() {
+  const graph_tree = parser()
+  console.log(graph_tree)
   const renderer = new SVGRenderer()
-  const svg = renderer.render()
+  const svg = renderer.render(graph_tree)
   const content = document.getElementById('content')
 
   if (content) {
@@ -48,5 +55,5 @@ function renderer() {
 }
 
 // main()
-parser()
+// parser()
 renderer()
