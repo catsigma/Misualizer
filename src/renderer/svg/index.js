@@ -7,37 +7,37 @@ export class SVGRenderer {
 
   }
 
-  drawNodes(start_node : string | Object, nodes : Array<{arrow: string, node: string | Object}>) {
-    const drawNode = (node : string | Object) => {
-      if (typeof node === 'string')
-        return Text([800 * Math.random(), 400 * Math.random()], node)
-      else
-        return Rect([800 * Math.random(), 400 * Math.random()], 20, 20)
-    }
-
+  drawPath(path : Array<Object>, prev_graph? : Component) {
     const graphs = []
-    graphs.push(drawNode(start_node))
 
-    nodes.forEach((item, index) => {
-      graphs.push(drawNode(item.node))
-      if (index) {
-        graphs.push(AutoCurve(graphs[graphs.length - 3], graphs[graphs.length - 1], true))
-      } else {
-        graphs.push(AutoCurve(graphs[0], graphs[1], true))
+    path.forEach((node, index) => {
+      if (!index) {
+        graphs.push(Text([800 * Math.random(), 400 * Math.random()], node.name))
+        if (prev_graph) {
+          graphs.push(AutoCurve(prev_graph, graphs[0], true))
+        }
+        prev_graph = graphs[0]
+      } else if (node.kind === 'arrow-node') {
+        graphs.push(Text([800 * Math.random(), 400 * Math.random()], node.name))
+        graphs.push(AutoCurve(prev_graph, graphs[graphs.length - 1], true))
+        prev_graph = graphs[graphs.length - 2]
+      } else if (node.kind === 'branch') {
+        graphs.push(this.drawPath(node.path, prev_graph))
       }
+
+      if (node.paths)
+        graphs.push(new Component(node.paths.map(path => this.drawPath(path))))
     })
 
-    return graphs
+    return new Component(graphs)
   }
 
   render(graph : Object) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.setAttribute('viewBox', '0 0 1000 1000')
     console.log(graph)
-    const nodes = graph.paths.map(x => this.drawNodes(x.start_node, x.nodes))
-    nodes.forEach(x => {
-      x.forEach(x => svg.appendChild(x.el))
-    })
+    const component = this.drawPath(graph.paths[0])
+    svg.appendChild(component.el)
     return svg
   }
 }

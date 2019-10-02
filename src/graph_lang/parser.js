@@ -20,40 +20,43 @@ export class Parser extends EmbeddedActionsParser {
         {ALT: () => this.SUBRULE(this.contract_expr)}
       ])
 
-      return {arrow, node}
+      return Object.assign({}, node, {kind: 'arrow-node', arrow})
     })
 
     this.RULE('branch_path_expr', () => {
       this.CONSUME(tokens.LEFT_BRACKET)
-      const paths = []
+      const path = []
       this.AT_LEAST_ONE(() => {
-        paths.push(this.OR([
+        path.push(this.OR([
           {ALT: () => this.SUBRULE(this.arrow_expr)},
           {ALT: () => this.SUBRULE(this.branch_path_expr)}
         ]))
       })
       this.CONSUME(tokens.RIGHT_BRACKET)
-      return paths
+      return {kind: 'branch', path}
     })
 
     this.RULE('node_expr', () => {
       const name = this.CONSUME(tokens.IDENTIFIER).image
-      let inside
+      let paths
       this.OPTION(() => {
-        inside = this.SUBRULE(this.path_block_expr)
+        paths = this.SUBRULE(this.path_block_expr)
       })
       return {
+        kind: 'node',
         name,
-        inside
+        paths
       }
     })
 
     this.RULE('path_expr', () => {
-      const start_node = this.OR([
+      const nodes = []
+
+      nodes.push(this.OR([
         {ALT: () => this.SUBRULE(this.node_expr)},
         {ALT: () => this.SUBRULE(this.contract_expr)}
-      ])
-      const nodes = []
+      ]))
+
       this.AT_LEAST_ONE(() => {
         nodes.push(this.OR1([
           {ALT: () => this.SUBRULE(this.arrow_expr)},
@@ -61,10 +64,7 @@ export class Parser extends EmbeddedActionsParser {
         ]))
       })
 
-      return {
-        start_node,
-        nodes
-      }
+      return nodes
     })
 
     this.RULE('path_block_expr', () => {
@@ -83,7 +83,8 @@ export class Parser extends EmbeddedActionsParser {
       const paths = this.SUBRULE(this.path_block_expr)
 
       return {
-        contract: name,
+        kind: 'contract',
+        name,
         paths
       }
     })
