@@ -109,6 +109,9 @@ export class Component {
   }
 
   on(event : string, fn : Function) {
+    if (!this.el.getAttribute('class'))
+      this.el.setAttribute('class', 'with-event')
+
     this.el.addEventListener(event, fn)
   }
 
@@ -195,19 +198,20 @@ export const Curve = (start : point,
                       end : point, 
                       start_direction : direction, 
                       end_direction : direction,
-                      factor : number) => {
+                      factor : number,
+                      attrs : Object = {}) => {
   const curve = new Component('path')
   const [start_str, end_str] = [pp(start), pp(end)]
   const [c_start_str, c_end_str] = [pp(shift(start, start_direction, factor)), pp(shift(end, end_direction, factor))]
 
-  curve.setAttrs({
+  curve.setAttrs(Object.assign({
     d: `
       M ${start_str}
       C ${c_start_str}, ${c_end_str}, ${end_str}
     `,
     stroke: 'red',
     fill: 'transparent'
-  })
+  }, attrs))
 
   return curve
 }
@@ -215,7 +219,8 @@ export const Curve = (start : point,
 export const AutoCurve = (component1 : Component, 
                           component2 : Component, 
                           with_arrow : boolean = false,
-                          desc? : string) => {
+                          desc? : string,
+                          attrs? : Object) => {
   const shortest = shortest_distance(component1.key_points, component2.key_points)
   const direction = ['up', 'right', 'down', 'left']
   
@@ -224,7 +229,7 @@ export const AutoCurve = (component1 : Component,
   const start_direction = direction[shortest.index1]
   const end_direction = direction[shortest.index2]
 
-  let curve = Curve(start_point, end_point, start_direction, end_direction, 100)
+  let curve = Curve(start_point, end_point, start_direction, end_direction, 100, attrs)
   if (desc) {
     const mid_point = getMidPoint(start_point, end_point)
     const text = Text(mid_point, desc, 0.6)
