@@ -12,7 +12,7 @@ const client = new TBN({
 })
 
 async function main() {
-  const contract_info = await client.fetch.contract('KT18brAGvbtX8UGsKTAVex5k63YbZTYNzhpv')
+  const contract_info = await client.fetch.contract('KT1KBLcPM6BzovBfRjXKd7xVHkXairC1heSh')
 
   const code = contract_info.script.code
   console.log(code)
@@ -60,6 +60,6 @@ function renderer() {
   }
 }
 
-// main()
+main()
 // parser()
-renderer()
+// renderer()
