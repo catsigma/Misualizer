@@ -117,19 +117,19 @@ export class Component {
   }
 
   show() {
-    this.el.setAttribute('visibility', 'visible')
+    this.el.removeAttribute('display')
   }
 
   hide() {
-    this.el.setAttribute('visibility', 'hidden')
+    this.el.setAttribute('display', 'none')
   }
 
   toggle() {
-    const visibility = this.el.getAttribute('visibility')
-    this.el.setAttribute('visibility', {
-      visible: 'hidden',
-      hidden: 'visible'
-    }[visibility])
+    const is_hidden = this.el.getAttribute('display')
+    if (is_hidden)
+      this.show()
+    else
+      this.hide()
   }
 }
 
