@@ -28,8 +28,14 @@ export class SVGRenderer {
         graphs.push(this.drawPath(node.path, prev_graph))
       }
 
-      if (node.paths)
-        graphs.push(new Component(node.paths.map(path => this.drawPath(path, prev_graph))))
+      if (node.paths) {
+        const inside_nodes = new Component(node.paths.map(path => this.drawPath(path, prev_graph)))
+        inside_nodes.hide()
+        if (prev_graph)
+          prev_graph.on('click', () => {inside_nodes.toggle()})
+
+        graphs.push(inside_nodes)
+      }
     })
 
     return new Component(graphs)
@@ -38,8 +44,7 @@ export class SVGRenderer {
   render(graph : Object) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.setAttribute('viewBox', '0 0 1000 1000')
-    console.log(graph)
-    const component = this.drawPath(graph.paths[0])
+    const component = this.drawPath([graph])
     svg.appendChild(component.el)
     return svg
   }

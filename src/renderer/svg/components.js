@@ -107,6 +107,30 @@ export class Component {
   append(el : SVGElement) {
     this.el.appendChild(el)
   }
+
+  on(event : string, fn : Function) {
+    this.el.addEventListener(event, fn)
+  }
+
+  off(event : string, fn : Function) {
+    this.el.removeEventListener(event, fn)
+  }
+
+  show() {
+    this.el.setAttribute('visibility', 'visible')
+  }
+
+  hide() {
+    this.el.setAttribute('visibility', 'hidden')
+  }
+
+  toggle() {
+    const visibility = this.el.getAttribute('visibility')
+    this.el.setAttribute('visibility', {
+      visible: 'hidden',
+      hidden: 'visible'
+    }[visibility])
+  }
 }
 
 export const Rect = (start : point, width: number, height: number) => {
