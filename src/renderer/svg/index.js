@@ -14,13 +14,14 @@ export class SVGRenderer {
       if (!index) {
         graphs.push(Text([800 * Math.random(), 400 * Math.random()], node.name))
         if (prev_graph) {
-          graphs.push(AutoCurve(prev_graph, graphs[0], true))
+          graphs.push(AutoCurve(prev_graph, graphs[0], true, node.arrow))
         }
         prev_graph = graphs[0]
       } else if (node.kind === 'arrow-node') {
         graphs.push(Text([800 * Math.random(), 400 * Math.random()], node.name))
+
         if (prev_graph)
-          graphs.push(AutoCurve(prev_graph, graphs[graphs.length - 1], true))
+          graphs.push(AutoCurve(prev_graph, graphs[graphs.length - 1], true, node.arrow))
 
         prev_graph = graphs[graphs.length - 2]
       } else if (node.kind === 'branch') {

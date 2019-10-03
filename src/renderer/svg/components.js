@@ -188,7 +188,10 @@ export const Curve = (start : point,
   return curve
 }
 
-export const AutoCurve = (component1 : Component, component2 : Component, with_arrow : boolean = false) => {
+export const AutoCurve = (component1 : Component, 
+                          component2 : Component, 
+                          with_arrow : boolean = false,
+                          desc? : string) => {
   const shortest = shortest_distance(component1.key_points, component2.key_points)
   const direction = ['up', 'right', 'down', 'left']
   
@@ -197,7 +200,13 @@ export const AutoCurve = (component1 : Component, component2 : Component, with_a
   const start_direction = direction[shortest.index1]
   const end_direction = direction[shortest.index2]
 
-  const curve = Curve(start_point, end_point, start_direction, end_direction, 100)
+  let curve = Curve(start_point, end_point, start_direction, end_direction, 100)
+  if (desc) {
+    const mid_point = getMidPoint(start_point, end_point)
+    const text = Text(mid_point, desc, 0.6)
+    curve = new Component([curve, text])
+  }
+
   if (!with_arrow)
     return curve
   else {
@@ -206,11 +215,12 @@ export const AutoCurve = (component1 : Component, component2 : Component, with_a
   }
 }
 
-export const Text = (point : point, content : string) => {
+export const Text = (point : point, content : string, size : number = 1) => {
   const text = new Component('text')
   text.setAttrs({
     x: point[0],
-    y: point[1]
+    y: point[1],
+    'font-size': `${size}rem`
   })
   text.append(document.createTextNode(content))
   const box = getBox(text.el)
