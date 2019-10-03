@@ -41,13 +41,33 @@ function parser() {
 //       contract TT {} -> RESULT
 //     }
 //   `
+  
   const script = `
     contract test123 {
       N1 -> "N 2" {
         inside1 -> inside2 [
           -i2*1-> i2result_1  
         ] [
-          -i2*2-> i2result_2
+          -i2*2-> contract CONTRACT_i2result_2 {
+            N1' -> "N 2" {
+              inside1 -> inside2 [
+                -i2*1-> i2result_1  
+              ] [
+                -i2*2-> i2result_2
+              ]
+              inside3 -> inside4
+            } [
+              -branch1-> BN1 [
+                -bnb1-> BN1Result1
+              ] [
+                -bnb2-> BN1Result2
+              ] [
+                -bnb3-> BN1Result3
+              ]
+            ] [
+              -branch2-> BN2
+            ]
+          }
         ]
         inside3 -> inside4
       } [
