@@ -62,9 +62,9 @@ export class SVGRenderer {
     return new Component(graphs)
   }
 
-  render(graph : Object) {
+  render(graph : Object, width : number = 1000, height : number = 1000) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.setAttribute('viewBox', '0 0 1000 1000')
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
     const component = this.drawPath([graph])
     svg.appendChild(component.el)
     return svg

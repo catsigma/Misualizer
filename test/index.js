@@ -2,7 +2,7 @@
 
 import TBN from 'tezbridge-network/PsBABY5H'
 
-import { GLParser } from '../src/graph_lang'
+import { GLParser, JSON2GLConvert } from '../src/graph_lang'
 
 import { SVGRenderer } from '../src/renderer/svg'
 
@@ -11,18 +11,12 @@ const client = new TBN({
   host: 'https://alphanet-node.tzscan.io'
 })
 
-async function main() {
-  const contract_info = await client.fetch.contract('KT1KBLcPM6BzovBfRjXKd7xVHkXairC1heSh')
-
-  const code = contract_info.script.code
-  console.log(code)
-}
 
 
 function parser() {
   const script = `
     contract test123 {
-      N1 -> "N 2" {
+      N1 { x } -> "N 2" {
         inside1 -> inside2 [
           -i2*1-> i2result_1  
         ] [
@@ -48,16 +42,32 @@ function parser() {
   return gl_parser.parse(script)
 }
 
-function renderer() {
+function renderer(graph? : Object) {
   const graph_tree = parser()
 
   const renderer = new SVGRenderer()
-  const svg = renderer.render(graph_tree)
+  const svg = renderer.render(graph || graph_tree, 1000, 100000)
   const content = document.getElementById('content')
 
   if (content) {
     content.appendChild(svg)
   }
+}
+
+async function main() {
+  const contract = 'KT1KBLcPM6BzovBfRjXKd7xVHkXairC1heSh'
+  const contract_info = await client.fetch.contract(contract)
+
+  const code = contract_info.script.code
+  console.log(code)
+  const graph_arr = JSON2GLConvert(contract, code[2])
+  const graph_str = graph_arr.join(' ')
+
+  console.log(graph_str)
+
+  const gl_parser = new GLParser()
+  const graph = gl_parser.parse(graph_str)
+  renderer(graph)
 }
 
 main()

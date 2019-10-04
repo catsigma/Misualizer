@@ -229,7 +229,7 @@ export const AutoCurve = (component1 : Component,
   const start_direction = direction[shortest.index1]
   const end_direction = direction[shortest.index2]
 
-  let curve = Curve(start_point, end_point, start_direction, end_direction, 100, attrs)
+  let curve = Curve(start_point, end_point, start_direction, end_direction, 50, attrs)
   if (desc) {
     const mid_point = getMidPoint(start_point, end_point)
     const text = Text(mid_point, desc, 0.6)

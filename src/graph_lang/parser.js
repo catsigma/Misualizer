@@ -57,7 +57,7 @@ export class Parser extends EmbeddedActionsParser {
         {ALT: () => this.SUBRULE(this.contract_expr)}
       ]))
 
-      this.AT_LEAST_ONE(() => {
+      this.MANY(() => {
         nodes.push(this.OR1([
           {ALT: () => this.SUBRULE(this.arrow_expr)},
           {ALT: () => this.SUBRULE(this.branch_path_expr)}
@@ -94,8 +94,12 @@ export class Parser extends EmbeddedActionsParser {
     const lexer = new Lexer(Object.values(tokens))
     this.input = lexer.tokenize(content).tokens
     const output = this.contract_expr()
-    if (this.errors.length)
+    if (this.errors.length) {
+      this.errors.forEach(error => {
+        console.log(`ERROR:\n  ${content.slice(error.previousToken.startOffset - 20, error.token.endOffset + 20)}`)
+      })
       throw this.errors
+    }
     else
       return output
   }
