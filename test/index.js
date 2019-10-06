@@ -1,6 +1,6 @@
 // @flow
 
-import TBN from 'tezbridge-network/PsBABY5H'
+import TBN from 'tezbridge-network/PsBabyM1'
 
 import { GLParser, JSON2GLConvert } from '../src/graph_lang'
 
@@ -8,9 +8,8 @@ import { SVGRenderer } from '../src/renderer/svg'
 
 // Init setup
 const client = new TBN({
-  host: 'https://alphanet-node.tzscan.io'
+  host: 'https://babylonnet-node.tzscan.io'
 })
-
 
 
 function parser() {
