@@ -69,4 +69,61 @@ export class SVGRenderer {
     svg.appendChild(component.el)
     return svg
   }
+
+  drawMock(graph : Object) {
+    const top_text = Text([0,0], graph.name, .5)
+    const levels = {
+      0: [top_text]
+    }
+    const links = []
+
+    const walk = (paths : Array<Object>, parent_graph : Component, level : number) => {
+      if (!levels[level])
+        levels[level] = []
+
+      paths.forEach(path => {
+        if (path.name) {
+          const text = Text([0,0], path.name, .5)
+          links.push([parent_graph, text])
+          levels[level].push(text)
+          parent_graph = text
+        } else if (path.kind === 'branch') {
+          walk(path.path, parent_graph, level + 1)
+        }
+      })
+
+    }
+
+    walk(graph.paths[0], top_text, 1)
+
+    const result = []
+    for (let level in levels) {
+      levels[level].forEach((item, index) => {
+        if (index) {
+          item.relocate([
+            levels[level][index - 1].key_points[1][0] + 5,
+            (+level + 1) * 50  
+          ])
+        } else {
+          item.relocate([20, (+level + 1) * 50])
+        }
+
+        result.push(item)
+      })
+    }
+
+    links.forEach(link => {
+      result.push(AutoCurve(link[0], link[1], false))
+    })
+
+    return new Component(result)
+  }
+
+  renderMockData(graph : Object, width : number = 1000, height : number = 1000) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
+    const component = this.drawMock(graph)
+    svg.appendChild(component.el)
+    return svg
+  }
 }

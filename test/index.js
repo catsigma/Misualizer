@@ -73,16 +73,20 @@ async function main() {
   // console.log(contract)
   // contract.parseCode()
   const parameter = contract.getMockFromType(contract.parameter_t[0])
-  console.log(parameter)
 
   const graph_arr = Mock2GLConvert(parameter, 'parameter')
   const graph_str = graph_arr.join(' ')
 
-  console.log(graph_str)
-
   const gl_parser = new GLParser()
   const graph = gl_parser.parse(graph_str)
-  renderer(graph)
+  
+  const renderer = new SVGRenderer()
+  const svg = renderer.renderMockData(graph || graph_tree, 1000, 1000)
+  const content = document.getElementById('content')
+
+  if (content) {
+    content.appendChild(svg)
+  }
 }
 
 main()

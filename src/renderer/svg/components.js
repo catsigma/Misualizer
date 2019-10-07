@@ -104,6 +104,21 @@ export class Component {
     }
   }
 
+  relocate(pos : point) {
+    const prev_x = parseInt(this.el.getAttribute('x'))
+    const prev_y = parseInt(this.el.getAttribute('y'))
+
+    this.setAttrs({
+      x: pos[0],
+      y: pos[1]
+    })
+
+    this.key_points.forEach(key_point => {
+      key_point[0] += pos[0] - prev_x
+      key_point[1] += pos[1] - prev_y
+    })
+  }
+
   append(el : SVGElement) {
     this.el.appendChild(el)
   }
@@ -229,7 +244,7 @@ export const AutoCurve = (component1 : Component,
   const start_direction = direction[shortest.index1]
   const end_direction = direction[shortest.index2]
 
-  let curve = Curve(start_point, end_point, start_direction, end_direction, 50, attrs)
+  let curve = Curve(start_point, end_point, start_direction, end_direction, 10, attrs)
   if (desc) {
     const mid_point = getMidPoint(start_point, end_point)
     const text = Text(mid_point, desc, 0.6)
