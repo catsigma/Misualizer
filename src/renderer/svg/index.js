@@ -71,7 +71,7 @@ export class SVGRenderer {
   }
 
   drawMock(graph : Object) {
-    const top_text = Text([0,0], graph.name, .5)
+    const top_text = Text([0,0], graph.name)
     const levels = {
       0: [top_text]
     }
@@ -83,7 +83,13 @@ export class SVGRenderer {
 
       paths.forEach(path => {
         if (path.name) {
-          const text = Text([0,0], path.name, .5)
+          const text = Text([0,0], path.name)
+          if (path.name.indexOf(':') === -1) {
+            text.setAttrs({
+              fill: '#aaa'
+            })
+          }
+
           links.push([parent_graph, text])
           levels[level].push(text)
           parent_graph = text
@@ -96,16 +102,26 @@ export class SVGRenderer {
 
     walk(graph.paths[0], top_text, 1)
 
+    const span = 5
+    let max_length = 0
+    const len_mapping = {}
+    for (let level in levels) {
+      const len = levels[level].reduce((acc, x) => acc + x.key_points[1][0] - x.key_points[3][0] + span, 0)
+      len_mapping[level] = len
+
+      if (len > max_length)
+        max_length = len
+    }
+
     const result = []
     for (let level in levels) {
       levels[level].forEach((item, index) => {
+        const top = (+level + 1) * 80
         if (index) {
-          item.relocate([
-            levels[level][index - 1].key_points[1][0] + 5,
-            (+level + 1) * 50  
-          ])
+          const left = levels[level][index - 1].key_points[1][0]
+          item.relocate([left + span, top])
         } else {
-          item.relocate([20, (+level + 1) * 50])
+          item.relocate([(max_length - len_mapping[level]) / 2, top])
         }
 
         result.push(item)
@@ -113,16 +129,17 @@ export class SVGRenderer {
     }
 
     links.forEach(link => {
-      result.push(AutoCurve(link[0], link[1], false))
+      const curve = AutoCurve(link[0], link[1], false)
+      result.push(curve)
     })
 
-    return new Component(result)
+    return [new Component(result), max_length]
   }
 
   renderMockData(graph : Object, width : number = 1000, height : number = 1000) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
-    const component = this.drawMock(graph)
+    const [component, max_length] = this.drawMock(graph)
+    svg.setAttribute('viewBox', `0 0 ${max_length} ${height}`)
     svg.appendChild(component.el)
     return svg
   }

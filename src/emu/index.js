@@ -34,12 +34,12 @@ export class Contract {
     const getId = (() => {
       const ids = 'abcdefghijklmnopqrstuvwxyz'.toUpperCase().split('')
       const mem = {}
-      return (prefix : string) => {
-        if (!(prefix in mem)) {
-          mem[prefix] = ids.slice()
+      return (t : string) => {
+        if (!(t in mem)) {
+          mem[t] = ids.slice()
         }
 
-        return 'Mock_' + prefix + '_' + mem[prefix].shift()
+        return mem[t].shift() + ':' + t
       }
     })()
 

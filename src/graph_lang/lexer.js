@@ -4,7 +4,7 @@ import { createToken, Lexer } from 'chevrotain'
 
 // Tokens definition
 const WHITE_SPACE = createToken({name: 'WHITE_SPACE', pattern: /\s+/, group: Lexer.SKIPPED})
-const IDENTIFIER = createToken({ name: 'IDENTIFIER', pattern: /[a-zA-Z_][a-zA-Z0-9_']*|".*?"/})
+const IDENTIFIER = createToken({ name: 'IDENTIFIER', pattern: /[a-zA-Z_][a-zA-Z0-9_':]*|".*?"/})
 const CONTRACT = createToken({name: 'CONTRACT', pattern: /contract/})
 const ARROW_RIGHT = createToken({ name: "ARROW_RIGHT", pattern: /->|-.+?->/})
 const LEFT_BRACKET = createToken({ name: "LEFT_BRACKET", pattern: /\[/})

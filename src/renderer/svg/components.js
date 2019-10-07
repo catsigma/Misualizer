@@ -61,11 +61,16 @@ function distance(point1 : point, point2 : point, with_sqrt : boolean = true) {
   return with_sqrt ? Math.sqrt(square_sum) : square_sum
 }
 
-function shortest_distance(point_lst1 : Array<point>, point_lst2 : Array<point>) {
+function shortest_distance(point_lst1 : Array<point>, point_lst2 : Array<point>, only_index? : Set<number>) {
   let last_d = Number.MAX_SAFE_INTEGER
   let result_index = []
   point_lst1.forEach((point1, index1) => {
     point_lst2.forEach((point2, index2) => {
+      if (only_index) {
+        if (!only_index.has(index1) || !only_index.has(index2))
+          return false
+      }
+
       const d = distance(point1, point2, false)
       if (d < last_d) {
         last_d = d
@@ -104,9 +109,13 @@ export class Component {
     }
   }
 
+  getAttr(name : string) {
+    return this.el.getAttribute(name)
+  }
+
   relocate(pos : point) {
-    const prev_x = parseInt(this.el.getAttribute('x'))
-    const prev_y = parseInt(this.el.getAttribute('y'))
+    const prev_x = parseInt(this.getAttr('x'))
+    const prev_y = parseInt(this.getAttr('y'))
 
     this.setAttrs({
       x: pos[0],
@@ -224,7 +233,7 @@ export const Curve = (start : point,
       M ${start_str}
       C ${c_start_str}, ${c_end_str}, ${end_str}
     `,
-    stroke: 'red',
+    stroke: '#aaa',
     fill: 'transparent'
   }, attrs))
 
@@ -236,7 +245,7 @@ export const AutoCurve = (component1 : Component,
                           with_arrow : boolean = false,
                           desc? : string,
                           attrs? : Object) => {
-  const shortest = shortest_distance(component1.key_points, component2.key_points)
+  const shortest = shortest_distance(component1.key_points, component2.key_points, new Set([0, 2]))
   const direction = ['up', 'right', 'down', 'left']
   
   const start_point = component1.key_points[shortest.index1]
