@@ -59,3 +59,28 @@ export function JSON2GL(contract : string, input : Object) {
 
   return result
 }
+
+export function Mock2GL(input : Object, title : string) {
+  const result = ['contract', title, '{']
+
+  const walk = (node : Object, not_first : boolean) => {
+    if (not_first)
+      result.push('->')
+
+    if (node.value instanceof Array) {
+      result.push(node.kind)
+      node.value.forEach(item => {
+        result.push('[')
+        walk(item, true)
+        result.push(']')
+      })
+    } else {
+      result.push(node.value)
+    }
+  }
+
+  walk(input, false)
+
+  result.push('}')
+  return result
+}

@@ -96,7 +96,7 @@ export class Parser extends EmbeddedActionsParser {
     const output = this.contract_expr()
     if (this.errors.length) {
       this.errors.forEach(error => {
-        console.log(`ERROR:\n  ${content.slice(error.previousToken.startOffset - 20, error.token.endOffset + 20)}`)
+        console.log(`ERROR: ${error.token.image}\n\n  ${content.slice(error.previousToken.startOffset - 20, error.token.endOffset + 20)}`)
       })
       throw this.errors
     }

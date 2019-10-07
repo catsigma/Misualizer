@@ -2,9 +2,11 @@
 
 import TBN from 'tezbridge-network/PsBabyM1'
 
-import { GLParser, JSON2GLConvert } from '../src/graph_lang'
+import { GLParser, JSON2GLConvert, Mock2GLConvert } from '../src/graph_lang'
 
 import { SVGRenderer } from '../src/renderer/svg'
+
+import { Contract } from '../src/emu'
 
 // Init setup
 const client = new TBN({
@@ -54,12 +56,26 @@ function renderer(graph? : Object) {
 }
 
 async function main() {
-  const contract = 'KT1KBLcPM6BzovBfRjXKd7xVHkXairC1heSh'
-  const contract_info = await client.fetch.contract(contract)
+  // const address = 'KT1EwTPTEUWbpLBJiNs34VkMqpmpxPjpCQEt'
+  const address = 'KT1KBLcPM6BzovBfRjXKd7xVHkXairC1heSh'
 
-  const code = contract_info.script.code
-  console.log(code)
-  const graph_arr = JSON2GLConvert(contract, code[2])
+  const contract_info = await client.fetch.contract(address)
+
+//   const code = contract_info.script.code
+//   const graph_arr = JSON2GLConvert(contract, code[2])
+//   const graph_str = graph_arr.join(' ')
+// 
+//   const gl_parser = new GLParser()
+//   const graph = gl_parser.parse(graph_str)
+//   renderer(graph)
+
+  const contract = new Contract(contract_info)
+  // console.log(contract)
+  // contract.parseCode()
+  const parameter = contract.getMockFromType(contract.parameter_t[0])
+  console.log(parameter)
+
+  const graph_arr = Mock2GLConvert(parameter, 'parameter')
   const graph_str = graph_arr.join(' ')
 
   console.log(graph_str)
