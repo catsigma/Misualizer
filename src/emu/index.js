@@ -64,19 +64,20 @@ export class Contract {
         pair() {
           return {
             kind: 'pair',
-            value: inside_value
+            children: inside_value
           }
         },
         or() {
           return {
             kind: 'or',
-            value: inside_value
+            children: inside_value
           }
         },
         list() {
           return {
             kind: 'list',
-            value: inside_value
+            value: getId('list'),
+            children: inside_value
           }
         },
         lambda() {

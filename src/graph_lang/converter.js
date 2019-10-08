@@ -67,9 +67,9 @@ export function Mock2GL(input : Object, title : string) {
     if (not_first)
       result.push('->')
 
-    if (node.value instanceof Array) {
-      result.push(node.kind)
-      node.value.forEach(item => {
+    if (node.children instanceof Array) {
+      result.push(node.value || node.kind)
+      node.children.forEach(item => {
         result.push('[')
         walk(item, true)
         result.push(']')

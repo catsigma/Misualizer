@@ -73,7 +73,7 @@ export class SVGRenderer {
   drawMock(graph : Object) {
     const top_text = Text([0,0], graph.name)
     const levels = {
-      0: [top_text]
+      [0]: [top_text]
     }
     const links = []
 
@@ -102,26 +102,31 @@ export class SVGRenderer {
 
     walk(graph.paths[0], top_text, 1)
 
-    const span = 5
-    let max_length = 0
+    let max_width = 0
+    let max_height = 0
     const len_mapping = {}
     for (let level in levels) {
-      const len = levels[level].reduce((acc, x) => acc + x.key_points[1][0] - x.key_points[3][0] + span, 0)
+      const len = levels[level].reduce((acc, x) => acc + x.key_points[1][0] - x.key_points[3][0], 0)
       len_mapping[level] = len
 
-      if (len > max_length)
-        max_length = len
+      if (len > max_width)
+        max_width = len
     }
+
+    max_width += 500
 
     const result = []
     for (let level in levels) {
       levels[level].forEach((item, index) => {
-        const top = (+level + 1) * 80
+        const top = +level ? level * 200 : 20
+        max_height = top
+
+        const span = (max_width - len_mapping[level]) / (levels[level].length + 1)
         if (index) {
           const left = levels[level][index - 1].key_points[1][0]
           item.relocate([left + span, top])
         } else {
-          item.relocate([(max_length - len_mapping[level]) / 2, top])
+          item.relocate([span, top])
         }
 
         result.push(item)
@@ -133,13 +138,13 @@ export class SVGRenderer {
       result.push(curve)
     })
 
-    return [new Component(result), max_length]
+    return [new Component(result), max_width, max_height]
   }
 
-  renderMockData(graph : Object, width : number = 1000, height : number = 1000) {
+  renderMockData(graph : Object) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    const [component, max_length] = this.drawMock(graph)
-    svg.setAttribute('viewBox', `0 0 ${max_length} ${height}`)
+    const [component, max_width, max_height] = this.drawMock(graph)
+    svg.setAttribute('viewBox', `0 0 ${max_width} ${max_height}`)
     svg.appendChild(component.el)
     return svg
   }

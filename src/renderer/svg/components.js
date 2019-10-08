@@ -9,6 +9,8 @@ const getBox = (() => {
   const shadow_svg : Object = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   shadow_svg.style.width = '0'
   shadow_svg.style.height = '0'
+  shadow_svg.style.border = '0'
+  shadow_svg.style.padding = '0'
 
   if (document.body)
     document.body.appendChild(shadow_svg)
@@ -253,7 +255,7 @@ export const AutoCurve = (component1 : Component,
   const start_direction = direction[shortest.index1]
   const end_direction = direction[shortest.index2]
 
-  let curve = Curve(start_point, end_point, start_direction, end_direction, 10, attrs)
+  let curve = Curve(start_point, end_point, start_direction, end_direction, 50, attrs)
   if (desc) {
     const mid_point = getMidPoint(start_point, end_point)
     const text = Text(mid_point, desc, 0.6)
@@ -273,6 +275,7 @@ export const Text = (point : point, content : string, size : number = 1) => {
   text.setAttrs({
     x: point[0],
     y: point[1],
+    'font-family': 'Consolas, Menlo, monospace',
     'font-size': `${size}rem`
   })
   text.append(document.createTextNode(content))
