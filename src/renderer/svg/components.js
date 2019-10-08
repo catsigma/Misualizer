@@ -255,10 +255,18 @@ export const AutoCurve = (component1 : Component,
   const start_direction = direction[shortest.index1]
   const end_direction = direction[shortest.index2]
 
-  let curve = Curve(start_point, end_point, start_direction, end_direction, 50, attrs)
+  let curve = Curve(start_point, end_point, start_direction, end_direction, 25, attrs)
+  const k = Math.atan((end_point[1] - start_point[1]) / (end_point[0] - start_point[0])) * 175 / Math.PI
   if (desc) {
     const mid_point = getMidPoint(start_point, end_point)
-    const text = Text(mid_point, desc, 0.6)
+    const text = Text((end_point[0] < start_point[0] ? 
+      [mid_point[0] - 3, mid_point[1]] :
+      [mid_point[0] + 3, mid_point[1]]), desc, 0.6)
+    text.setAttrs({
+        'text-anchor': 'middle',
+        transform: `rotate(${k}, ${text.getAttr('x')}, ${text.getAttr('y')})`
+      })
+
     curve = new Component([curve, text])
   }
 
