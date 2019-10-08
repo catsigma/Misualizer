@@ -64,8 +64,9 @@ export function Mock2GL(input : Object, title : string) {
   const result = ['contract', title, '{']
 
   const walk = (node : Object, not_first : boolean) => {
-    if (not_first)
-      result.push('->')
+    if (not_first) {
+      result.push(node.annots ? `-${node.annots[0]}->` : '->')
+    }
 
     if (node.children instanceof Array) {
       result.push(node.value || node.kind)

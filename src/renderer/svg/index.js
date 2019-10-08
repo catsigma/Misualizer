@@ -90,7 +90,11 @@ export class SVGRenderer {
             })
           }
 
-          links.push([parent_graph, text])
+          links.push({
+            from: parent_graph,
+            to: text,
+            arrow: path.arrow
+          })
           levels[level].push(text)
           parent_graph = text
         } else if (path.kind === 'branch') {
@@ -118,7 +122,7 @@ export class SVGRenderer {
     const result = []
     for (let level in levels) {
       levels[level].forEach((item, index) => {
-        const top = +level ? level * 200 : 20
+        const top = +level ? +level * 200 : 20
         max_height = top
 
         const span = (max_width - len_mapping[level]) / (levels[level].length + 1)
@@ -134,18 +138,74 @@ export class SVGRenderer {
     }
 
     links.forEach(link => {
-      const curve = AutoCurve(link[0], link[1], false)
+      const curve = AutoCurve(link.from, link.to, false, link.arrow)
       result.push(curve)
     })
 
-    return [new Component(result), max_width, max_height]
+    return {
+      component: new Component(result),
+      width: max_width,
+      height: max_height
+    }
+  }
+
+  bindMouseControl(svg : Object, init_width : number, init_height : number) {
+    let [x, y, width, height] = [0, 0, init_width, init_height]
+    svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`)
+
+    let start_moving = false
+    let cursor = [0, 0]
+    svg.addEventListener('mousedown', (e) => {
+      cursor = [e.clientX, e.clientY]
+      start_moving = true
+    })
+    svg.addEventListener('mousemove', (e) => {
+      if (!start_moving) return false
+
+      svg.setAttribute('viewBox', `${x + cursor[0] - e.clientX} ${y + cursor[1] - e.clientY} ${width} ${height}`)
+    })
+
+    const leaveFn = (e) => {
+      if (start_moving) {
+        x += cursor[0] - e.clientX
+        y += cursor[1] - e.clientY
+      }
+      start_moving = false
+    }
+    svg.addEventListener('mouseup', leaveFn)
+    svg.addEventListener('mouseleave', leaveFn)
+    svg.addEventListener('wheel', (e) => {
+      e.preventDefault()
+
+      let offset = 0
+      if (e.deltaY > 1) {
+        offset += 50
+      } else if (e.deltaY < -1) {
+        offset -= 50
+      }
+
+      if (width + offset > 10) {
+        width += offset
+        x -= offset / 2
+      }
+
+      if (height + offset > 10) {
+        height += offset
+        y -= offset / 2
+      }
+
+
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`)
+      return false
+    })
   }
 
   renderMockData(graph : Object) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    const [component, max_width, max_height] = this.drawMock(graph)
-    svg.setAttribute('viewBox', `0 0 ${max_width} ${max_height}`)
+    const {component, width, height} = this.drawMock(graph)
     svg.appendChild(component.el)
+
+    this.bindMouseControl(svg, width, height)
     return svg
   }
 }

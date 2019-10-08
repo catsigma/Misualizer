@@ -81,7 +81,7 @@ async function main() {
   const graph = gl_parser.parse(graph_str)
   
   const renderer = new SVGRenderer()
-  const svg = renderer.renderMockData(graph, 1000, 1000)
+  const svg = renderer.renderMockData(graph)
   const content = document.getElementById('content')
 
   if (content) {

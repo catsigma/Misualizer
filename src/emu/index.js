@@ -124,8 +124,9 @@ export class Contract {
         }
       }
 
+      const output = prim_mapping[input.prim]()
       if (input.prim in prim_mapping) {
-        return prim_mapping[input.prim]()
+        return Object.assign(output, {annots: input.annots})
       } else {
         throw input
       }
