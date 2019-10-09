@@ -1,5 +1,7 @@
 // @flow
 
+import { throttle } from '../../utils'
+
 import { Component, Rect, Arrow, Curve, AutoCurve, Text } from './components'
 
 export class SVGRenderer {
@@ -159,11 +161,11 @@ export class SVGRenderer {
       cursor = [e.clientX, e.clientY]
       start_moving = true
     })
-    svg.addEventListener('mousemove', (e) => {
+    svg.addEventListener('mousemove', throttle((e) => {
       if (!start_moving) return false
 
       svg.setAttribute('viewBox', `${x + cursor[0] - e.clientX} ${y + cursor[1] - e.clientY} ${width} ${height}`)
-    })
+    }))
 
     const leaveFn = (e) => {
       if (start_moving) {

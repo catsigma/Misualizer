@@ -262,10 +262,11 @@ export const AutoCurve = (component1 : Component,
     const text = Text((end_point[0] < start_point[0] ? 
       [mid_point[0] - 3, mid_point[1]] :
       [mid_point[0] + 3, mid_point[1]]), desc, 0.6)
+
     text.setAttrs({
-        'text-anchor': 'middle',
-        transform: `rotate(${k}, ${text.getAttr('x')}, ${text.getAttr('y')})`
-      })
+      'text-anchor': 'middle',
+      transform: `rotate(${k}, ${text.getAttr('x')}, ${text.getAttr('y')})`
+    })
 
     curve = new Component([curve, text])
   }
