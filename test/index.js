@@ -56,8 +56,8 @@ function renderer(graph? : Object) {
 }
 
 async function main() {
-  // const address = 'KT1EwTPTEUWbpLBJiNs34VkMqpmpxPjpCQEt'
-  const address = 'KT1KBLcPM6BzovBfRjXKd7xVHkXairC1heSh'
+  const address = 'KT1EwTPTEUWbpLBJiNs34VkMqpmpxPjpCQEt'
+  // const address = 'KT1KBLcPM6BzovBfRjXKd7xVHkXairC1heSh'
 
   const contract_info = await client.fetch.contract(address)
 
@@ -70,8 +70,9 @@ async function main() {
 //   renderer(graph)
 
   const contract = new Contract(contract_info)
-  // console.log(contract)
-  // contract.parseCode()
+  console.log(contract_info)
+  contract.parseCode()
+  
   const parameter = contract.getMockFromType(contract.parameter_t[0])
 
   const graph_arr = Mock2GLConvert(parameter, 'parameter')

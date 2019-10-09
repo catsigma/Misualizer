@@ -25,7 +25,17 @@ export class Contract {
     this.storage_t = contract_info.script.code[1].args
     this.code = contract_info.script.code[2].args
 
-    this.stack = [['PARAMETER', 'STORAGE']]
+    this.stack = [{
+      kind: 'pair',
+      children: [
+        this.getMockFromType(this.parameter_t[0]),
+        {
+          kind: 'storage',
+          value: 'storage'
+        }
+      ]
+    }]
+
     this.op_tree = []
   }
 
@@ -137,15 +147,19 @@ export class Contract {
   }
 
   parseCode() {
-    this.code.forEach(x => {
+    console.log(this.code[0][0][0])
+
+    this.code[0][0][0].forEach(x => {
       const len = this.stack.length
       if (x.prim === 'DUP') {
         this.op_tree.push(`S${len} = S${len - 1}`)
         this.stack.unshift(clone(this.stack[0]))
       } else if (x.prim === 'CAR') {
-        this.op_tree.push(`S${len - 1} = S${len - 1}`)
-        this.stack[0] = this.stack[0][0]
+        this.stack[0] = this.stack[0].children[0]
+        this.op_tree.push(`S${len - 1} = ${JSON.stringify(this.stack[0])}`)
       }
     })
+
+    console.log(this.op_tree)
   }
 }
