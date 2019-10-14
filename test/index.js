@@ -70,8 +70,9 @@ async function main() {
 //   renderer(graph)
 
   const contract = new Contract(contract_info)
-  console.log(contract_info)
-  contract.parseCode()
+  console.log('code', contract.code[0])
+  const stacks = contract.parseCode()
+  console.log(stacks)
   
   const parameter = contract.getMockFromType(contract.parameter_t[0])
 
