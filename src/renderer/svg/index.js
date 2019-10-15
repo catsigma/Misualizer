@@ -72,7 +72,7 @@ export class SVGRenderer {
     return svg
   }
 
-  drawMock(graph : Object) {
+  drawMock(graph : Object, with_arrow : boolean) {
     const top_text = Text([0,0], graph.name)
     const levels = {
       [0]: [top_text]
@@ -140,7 +140,7 @@ export class SVGRenderer {
     }
 
     links.forEach(link => {
-      const curve = AutoCurve(link.from, link.to, false, link.arrow)
+      const curve = AutoCurve(link.from, link.to, with_arrow, link.arrow)
       result.push(curve)
     })
 
@@ -202,12 +202,102 @@ export class SVGRenderer {
     })
   }
 
-  renderMockData(graph : Object) {
+  renderMockData(graph : Object, with_arrow : boolean = false) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    const {component, width, height} = this.drawMock(graph)
+    const {component, width, height} = this.drawMock(graph, with_arrow)
     svg.appendChild(component.el)
 
     this.bindMouseControl(svg, width, height)
     return svg
   }
+
+  
+  drawCode(graph : Object, with_arrow : boolean) {
+    const top_text = Text([0,0], graph.name)
+    const levels = {
+      [0]: [top_text]
+    }
+    const links = []
+
+    const walk = (paths : Array<Object>, parent_graph : Component, level : number) => {
+      if (!levels[level])
+        levels[level] = []
+
+      paths.forEach(path => {
+        if (path.name) {
+          const text = Text([0,0], path.name)
+          if (path.name.indexOf(':') === -1) {
+            text.setAttrs({
+              fill: '#aaa'
+            })
+          }
+
+          links.push({
+            from: parent_graph,
+            to: text,
+            arrow: path.arrow
+          })
+          levels[level].push(text)
+          parent_graph = text
+        } else if (path.kind === 'branch') {
+          walk(path.path, parent_graph, level + 1)
+        }
+      })
+
+    }
+
+    walk(graph.paths[0], top_text, 1)
+
+    let max_width = 0
+    let max_height = 0
+    const len_mapping = {}
+    for (let level in levels) {
+      const len = levels[level].reduce((acc, x) => acc + x.key_points[1][0] - x.key_points[3][0], 0)
+      len_mapping[level] = len
+
+      if (len > max_width)
+        max_width = len
+    }
+
+    max_width += 500
+
+    const result = []
+    for (let level in levels) {
+      levels[level].forEach((item, index) => {
+        const top = +level ? +level * 200 : 20
+        max_height = top
+
+        const span = (max_width - len_mapping[level]) / (levels[level].length + 1)
+        if (index) {
+          const left = levels[level][index - 1].key_points[1][0]
+          item.relocate([left + span, top])
+        } else {
+          item.relocate([span, top])
+        }
+
+        result.push(item)
+      })
+    }
+
+    links.forEach(link => {
+      const curve = AutoCurve(link.from, link.to, with_arrow, link.arrow)
+      result.push(curve)
+    })
+
+    return {
+      component: new Component(result),
+      width: max_width,
+      height: max_height
+    }
+  }
+
+  renderCode(graph : Object, with_arrow : boolean = false) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    const {component, width, height} = this.drawCode(graph, with_arrow)
+    svg.appendChild(component.el)
+
+    this.bindMouseControl(svg, width, height)
+    return svg
+  }
+
 }

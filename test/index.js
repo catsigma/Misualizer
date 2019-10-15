@@ -2,7 +2,7 @@
 
 import TBN from 'tezbridge-network/PsBabyM1'
 
-import { GLParser, JSON2GLConvert, Mock2GLConvert } from '../src/graph_lang'
+import { GLParser, JSON2GLConvert, Mock2GLConvert, Code2GLConvert } from '../src/graph_lang'
 
 import { SVGRenderer } from '../src/renderer/svg'
 
@@ -71,19 +71,22 @@ async function main() {
 
   const contract = new Contract(contract_info)
   console.log('code', contract.code[0])
-  const stacks = contract.parseCode()
-  console.log(stacks)
-  
-  const parameter = contract.getMockFromType(contract.parameter_t[0])
-
-  const graph_arr = Mock2GLConvert(parameter, 'parameter')
+  const graph_tree = contract.parseCode()
+  console.log('graph-tree', graph_tree)
+  const graph_arr = Code2GLConvert(graph_tree, address)
   const graph_str = graph_arr.join(' ')
+  console.log(graph_str)
+  
+  // const parameter = contract.getMockFromType(contract.parameter_t[0])
+
+  // const graph_arr = Mock2GLConvert(parameter, 'parameter')
+  // const graph_str = graph_arr.join(' ')
 
   const gl_parser = new GLParser()
   const graph = gl_parser.parse(graph_str)
   
   const renderer = new SVGRenderer()
-  const svg = renderer.renderMockData(graph)
+  const svg = renderer.renderCode(graph)
   const content = document.getElementById('content')
 
   if (content) {

@@ -153,29 +153,82 @@ export class Contract {
 
   parseCode() {
     console.log('start', clone(this.stack))
+    
+    const branchs = []
+    const walk = (code_instrs : Array<Object>, stacks : Array<Array<Object>>, dip_top : number, graph_cursor : Object) => {
+      stacks = stacks.filter(stack => stack[0].kind !== 'fail')
 
-    const walk = (code_instrs : Array<Object>, stacks : Array<Array<Object>>, dip_top : number) => {
+      for (let i = 0; i < code_instrs.length; i++) {
+        const instr = code_instrs[i]
 
-      code_instrs.forEach(instr => {
+        if (branchs.length) {
+          const remain_codes = code_instrs.slice(i)
+          const [[stacks1, cursor1], [stacks2, cursor2]] = branchs.splice(0, branchs.length)
+
+          walk(remain_codes, stacks1, dip_top, cursor1)
+          walk(remain_codes, stacks2, dip_top, cursor2)
+          break
+        }
+
         if (instr instanceof Array) {
-          walk(instr, stacks, dip_top)
-          return;
+          walk(instr, stacks, dip_top, graph_cursor)
+          continue
         }
 
         if (instr.prim === 'IF') {
-          console.log('from', clone(stacks))
+          const g = {
+            name: 'from_if',
+            value: clone(stacks),
+            branchs: {
+              true: [],
+              false: []
+            }
+          }
+          graph_cursor.push(g)
+          console.log('from if', clone(stacks))
           stacks.forEach(stack => {
             stack.splice(dip_top, 1)
           })
-          console.log('to', clone(stacks))
+          g.branchs.true.push({
+            name: 'start_true',
+            value: clone(stacks)
+          })
+          g.branchs.false.push({
+            name: 'start_false',
+            value: clone(stacks)
+          })
+          console.log('start true', clone(stacks))
+          console.log('start false', clone(stacks))
 
-          const stack1 = walk(instr.args[0], clone(stacks), dip_top)
-          const stack2 = walk(instr.args[1], clone(stacks), dip_top)
+          const stacks1 = walk(instr.args[0], clone(stacks), dip_top, g.branchs.true)
+          const stacks2 = walk(instr.args[1], clone(stacks), dip_top, g.branchs.false)
+          
+          g.branchs.true.push({
+            name: 'end_true',
+            value: clone(stacks1)
+          })
+          g.branchs.false.push({
+            name: 'end_false',
+            value: clone(stacks2)
+          })
 
-          stacks = stack1.concat(stack2)
+          console.log('end true', clone(stacks1))
+          console.log('end false', clone(stacks2))
+
+          branchs.push([stacks1, g.branchs.true])
+          branchs.push([stacks2, g.branchs.false])
 
         } else if (instr.prim === 'IF_LEFT') {
-          console.log('from', clone(stacks))
+          const g = {
+            name: 'from_if_left',
+            value: clone(stacks),
+            branchs: {
+              left: [],
+              right: []
+            }
+          }
+          graph_cursor.push(g)
+          console.log('from if_left', clone(stacks))
           const [left_stacks, right_stacks] = clone([stacks, stacks])
           left_stacks.forEach(stack => {
             stack[dip_top] = stack[dip_top].children[0]
@@ -183,13 +236,33 @@ export class Contract {
           right_stacks.forEach(stack => {
             stack[dip_top] = stack[dip_top].children[1]
           })
-          console.log('to left', clone(left_stacks))
-          console.log('to right', clone(right_stacks))
+          g.branchs.left.push({
+            name: 'start_left',
+            value: clone(left_stacks)
+          })
+          g.branchs.right.push({
+            name: 'start_right',
+            value: clone(right_stacks)
+          })
+          console.log('start left', clone(left_stacks))
+          console.log('start right', clone(right_stacks))
 
-          const stack1 = walk(instr.args[0], left_stacks, dip_top)
-          const stack2 = walk(instr.args[1], right_stacks, dip_top)
+          const stacks1 = walk(instr.args[0], left_stacks, dip_top, g.branchs.left)
+          const stacks2 = walk(instr.args[1], right_stacks, dip_top, g.branchs.right)
 
-          stacks = stack1.concat(stack2)
+          g.branchs.left.push({
+            name: 'end_left',
+            value: clone(stacks1)
+          })
+          g.branchs.right.push({
+            name: 'end_right',
+            value: clone(stacks2)
+          })
+          console.log('end left', clone(stacks1))
+          console.log('end right', clone(stacks2))
+
+          branchs.push([stacks1, g.branchs.left])
+          branchs.push([stacks2, g.branchs.right])
 
         } else if (instr.prim === 'DUP') {
           stacks.forEach(stack => {
@@ -326,13 +399,18 @@ export class Contract {
           throw `unhandled instruction: ${instr.prim}`
         }
         
-      })
+      }
 
       return stacks
     }
 
-    const stacks = walk(this.code[0], [clone(this.stack)], 0)
-    return stacks
+    const graph = [{
+      name: 'start',
+      value: [clone(this.stack)]
+    }]
+    const stacks = walk(this.code[0], [clone(this.stack)], 0, graph)
+
+    return graph
   }
 
   

@@ -60,6 +60,35 @@ export function JSON2GL(contract : string, input : Object) {
   return result
 }
 
+export function Code2GL(input : Object, title : string) {
+  const result = ['contract', title, '{']
+
+  const walk = (nodes : Object) => {
+
+    if (nodes instanceof Array) {
+      nodes.forEach((node, index) => {
+        if (index)
+          result.push('->')
+
+        result.push(node.name)
+        
+        if (node.branchs) {
+          for (const arrow in node.branchs) {
+            result.push('[')
+            result.push(`-${arrow}->`)
+            walk(node.branchs[arrow])
+            result.push(']')
+          }
+        }
+      })
+    }
+  }
+  
+  walk(input)
+  result.push('}')
+  return result
+}
+
 export function Mock2GL(input : Object, title : string) {
   const result = ['contract', title, '{']
 
