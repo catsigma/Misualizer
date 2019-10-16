@@ -302,3 +302,24 @@ export const Text = (point : point, content : string, size : number = 1) => {
 
   return text
 }
+
+export const TextBlock = (point : point, contents : Array<string>, size : number = 1) => {
+  const text_lst = contents.map((content, index) => {
+    return Text([point[0], point[1] + index * size * 16], content, size)
+  })
+
+  const top = text_lst[0].key_points[0][1]
+  const left = point[0]
+  const width = Math.max.apply(null, text_lst.map(x => x.key_points[1][0] - x.key_points[3][0]))
+  const height = text_lst[text_lst.length - 1].key_points[2][1] - text_lst[0].key_points[0][1]
+
+  const text_block = new Component(text_lst)
+  text_block.key_points = [
+    [left + width / 2, top],
+    [left + width, top + height / 2],
+    [left + width / 2, top + height],
+    [point[0], point[1] + height / 2]
+  ]
+
+  return text_block
+}
