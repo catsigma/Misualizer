@@ -303,9 +303,9 @@ export const Text = (point : point, content : string, size : number = 1) => {
   return text
 }
 
-export const TextBlock = (point : point, contents : Array<string>, size : number = 1) => {
+export const TextBlock = (point : point, contents : Array<string>, font_size : number = 1, with_border : bool = true) => {
   const text_lst = contents.map((content, index) => {
-    return Text([point[0], point[1] + index * size * 16], content, size)
+    return Text([point[0], point[1] + index * font_size * 16], content, font_size)
   })
 
   const top = text_lst[0].key_points[0][1]
@@ -314,6 +314,7 @@ export const TextBlock = (point : point, contents : Array<string>, size : number
   const height = text_lst[text_lst.length - 1].key_points[2][1] - text_lst[0].key_points[0][1]
 
   const text_block = new Component(text_lst)
+
   text_block.key_points = [
     [left + width / 2, top],
     [left + width, top + height / 2],
@@ -321,5 +322,12 @@ export const TextBlock = (point : point, contents : Array<string>, size : number
     [point[0], point[1] + height / 2]
   ]
 
-  return text_block
+  if (with_border) {
+    const padding = 10
+    const rect = Rect([left - padding, top - padding], width + 2 * padding, height + 2 * padding)
+    const combined = new Component([text_block, rect])
+    combined.key_points = rect.key_points
+    return combined
+  } else 
+    return text_block
 }
