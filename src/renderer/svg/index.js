@@ -2,7 +2,7 @@
 
 import { throttle } from '../../utils'
 
-import { Component, Rect, Arrow, Curve, AutoCurve, Text } from './components'
+import { Component, Rect, Arrow, Curve, AutoCurve, Text, TextBlock } from './components'
 
 export class SVGRenderer {
   position : [number, number]
@@ -211,9 +211,35 @@ export class SVGRenderer {
     return svg
   }
 
-  
-  drawCode(graph : Object, with_arrow : boolean) {
-    const top_text = Text([0,0], graph.name)
+  extractValue(node : Object) {
+    if (typeof node === 'string')
+      return node
+
+    const kind_mapping = {
+      key_hash: () => this.extractValue(node.value),
+      or: () => `[${this.extractValue(node.children[0])} | ${this.extractValue(node.children[1])}]`,
+      lambda: () => this.extractValue(node.value),
+      unit: () => 'Unit',
+      pair: () => `(${this.extractValue(node.children[0])}, ${this.extractValue(node.children[1])})`,
+      bool: () => node.value instanceof Boolean ? node.value : this.extractValue(Object.assign(node.value, {symbol: node.symbol})),
+      fail: () => `FAIL:${this.extractValue(node.value)}`,
+      list: () => `List:${node.value || this.extractValue(node.t)}`,
+      compare: () => `${this.extractValue(node.value[0])} ${node.symbol} ${this.extractValue(node.value[1])} ?`,
+      mutez: () => this.extractValue(node.value),
+      address: () => typeof node.value === 'string' ? node.value : this.extractValue(node.value),
+      contract: () => this.extractValue(node.value)
+    }
+
+    if (!(node.kind in kind_mapping))
+      throw `Cannot extract value from ${node.kind}`
+
+    return kind_mapping[node.kind]()
+  }
+
+  drawCode(graph : Object, node_mapping : Object, with_arrow : boolean = false) {
+    console.log(123, node_mapping)
+    
+    const top_text = Text([20,20], graph.name)
     const levels = {
       [0]: [top_text]
     }
@@ -225,12 +251,8 @@ export class SVGRenderer {
 
       paths.forEach(path => {
         if (path.name) {
-          const text = Text([0,0], path.name)
-          if (path.name.indexOf(':') === -1) {
-            text.setAttrs({
-              fill: '#aaa'
-            })
-          }
+          const node = node_mapping[path.name.slice(4)]
+          const text = TextBlock([0,0], [`*${node.name}*`].concat(node.value.map(x => this.extractValue(x))))
 
           links.push({
             from: parent_graph,
@@ -291,10 +313,17 @@ export class SVGRenderer {
     }
   }
 
-  renderCode(graph : Object, with_arrow : boolean = false) {
+  renderCode(graph : Object, node_mapping : Object, graph_parameter : Object) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    const {component, width, height} = this.drawCode(graph, with_arrow)
+    const {component, width, height} = this.drawCode(graph, node_mapping)
     svg.appendChild(component.el)
+    {
+      const {component} = this.drawMock(graph_parameter, false)
+      component.setAttrs({
+        transform: 'translate(-500,0)'
+      })
+      svg.appendChild(component.el)
+    }
 
     this.bindMouseControl(svg, width, height)
     return svg

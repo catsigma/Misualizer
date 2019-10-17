@@ -70,7 +70,7 @@ export function Code2GL(input : Object, title : string) {
         if (index)
           result.push('->')
 
-        result.push(node.name)
+        result.push('Node' + node.node_id)
         
         if (node.branchs) {
           for (const arrow in node.branchs) {

@@ -20,6 +20,19 @@ const getBox = (() => {
     return svg_el.getBBox()
   }
 })()
+const getKeyPoints = (svg_el : Object) => {
+  const box = getBox(svg_el)
+
+  const horiz_mid = box.x + box.width / 2
+  const vert_mid = box.y + box.height / 2
+
+  return [
+    [horiz_mid, box.y],
+    [box.x + box.width, vert_mid],
+    [horiz_mid, box.y + box.height],
+    [box.x, vert_mid]
+  ]
+}
 
 function normalizePoint(point : string) : point {
   const point_lst = point.split(/[\s,]+/)
@@ -116,12 +129,11 @@ export class Component {
   }
 
   relocate(pos : point) {
-    const prev_x = parseInt(this.getAttr('x'))
-    const prev_y = parseInt(this.getAttr('y'))
+    const prev_x = this.key_points[3][0]
+    const prev_y = this.key_points[0][1]
 
     this.setAttrs({
-      x: pos[0],
-      y: pos[1]
+      transform: `translate(${pos[0] - prev_x}, ${pos[1] - prev_y})`
     })
 
     this.key_points.forEach(key_point => {
@@ -288,41 +300,26 @@ export const Text = (point : point, content : string, size : number = 1) => {
     'font-size': `${size}rem`
   })
   text.append(document.createTextNode(content))
-  const box = getBox(text.el)
-
-  const horiz_mid = box.x + box.width / 2
-  const vert_mid = box.y + box.height / 2
-
-  text.key_points = [
-    [horiz_mid, box.y],
-    [box.x + box.width, vert_mid],
-    [horiz_mid, box.y + box.height],
-    [box.x, vert_mid]
-  ]
+  text.key_points = getKeyPoints(text.el)
 
   return text
 }
 
-export const TextBlock = (point : point, contents : Array<string>, font_size : number = 1, with_border : bool = true) => {
+export const TextBlock = (point : point, contents : Array<string>, font_size : number = 1, with_border : boolean = true) => {
   const text_lst = contents.map((content, index) => {
     return Text([point[0], point[1] + index * font_size * 16], content, font_size)
   })
 
-  const top = text_lst[0].key_points[0][1]
-  const left = point[0]
-  const width = Math.max.apply(null, text_lst.map(x => x.key_points[1][0] - x.key_points[3][0]))
-  const height = text_lst[text_lst.length - 1].key_points[2][1] - text_lst[0].key_points[0][1]
-
   const text_block = new Component(text_lst)
 
-  text_block.key_points = [
-    [left + width / 2, top],
-    [left + width, top + height / 2],
-    [left + width / 2, top + height],
-    [point[0], point[1] + height / 2]
-  ]
+  text_block.key_points = getKeyPoints(text_block.el)
 
   if (with_border) {
+    const top = text_lst[0].key_points[0][1]
+    const left = point[0]
+    const width = Math.max.apply(null, text_lst.map(x => x.key_points[1][0] - x.key_points[3][0]))
+    const height = text_lst[text_lst.length - 1].key_points[2][1] - text_lst[0].key_points[0][1]
+
     const padding = 10
     const rect = Rect([left - padding, top - padding], width + 2 * padding, height + 2 * padding)
     const combined = new Component([text_block, rect])

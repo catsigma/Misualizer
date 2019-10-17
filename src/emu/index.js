@@ -82,9 +82,10 @@ export class Contract {
           }
         },
         list() {
+          console.log(12345)
           return {
             kind: 'list',
-            // t: inside_value[0].prim,
+            t: inside_value[0].prim,
             value: getId('list'),
             children: inside_value
           }
@@ -152,247 +153,267 @@ export class Contract {
   }
 
   parseCode() {
-    console.log('start', clone(this.stack))
-    
+    const node_mapping = {}
+    let node_id = 1
+
     const branchs = []
-    const walk = (code_instrs : Array<Object>, stacks : Array<Array<Object>>, dip_top : number, graph_cursor : Object) => {
-      stacks = stacks.filter(stack => stack[0].kind !== 'fail')
+    const walk = (code_instrs : Array<Object>, stack : Array<Object>, dip_top : number, graph_cursor : Object) : boolean => {
+      let breaked = false
+
+      if (stack[0].kind === 'fail')
+        return false
 
       for (let i = 0; i < code_instrs.length; i++) {
         const instr = code_instrs[i]
 
         if (branchs.length) {
           const remain_codes = code_instrs.slice(i)
-          const [[stacks1, cursor1], [stacks2, cursor2]] = branchs.splice(0, branchs.length)
+          const [[stack1, cursor1], [stack2, cursor2]] : Object = branchs.splice(0, branchs.length)
 
-          walk(remain_codes, stacks1, dip_top, cursor1)
-          walk(remain_codes, stacks2, dip_top, cursor2)
+          const breaked1 = walk(remain_codes, stack1, dip_top, cursor1)
+          const breaked2 = walk(remain_codes, stack2, dip_top, cursor2)
+          
+          if (!breaked1) {
+            node_mapping[node_id] = {
+              name: 'end',
+              value: clone(stack1)
+            }
+            cursor1.push({
+              node_id: node_id++
+            })
+          }
+
+          if (breaked2) {
+            node_mapping[node_id] = {
+              name: 'end',
+              value: clone(stack2)
+            }
+            cursor2.push({
+              node_id: node_id++,
+            })
+          }
+
+          breaked = true
           break
         }
 
         if (instr instanceof Array) {
-          walk(instr, stacks, dip_top, graph_cursor)
+          walk(instr, stack, dip_top, graph_cursor)
           continue
         }
 
         if (instr.prim === 'IF') {
-          const g = {
+          node_mapping[node_id] = {
             name: 'from_if',
-            value: clone(stacks),
+            value: clone(stack)
+          }
+          const g = {
+            node_id: node_id++,
             branchs: {
               true: [],
               false: []
             }
           }
           graph_cursor.push(g)
-          console.log('from if', clone(stacks))
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 1)
-          })
-          g.branchs.true.push({
-            name: 'start_true',
-            value: clone(stacks)
-          })
-          g.branchs.false.push({
-            name: 'start_false',
-            value: clone(stacks)
-          })
-          console.log('start true', clone(stacks))
-          console.log('start false', clone(stacks))
+          stack.splice(dip_top, 1)
+          // node_mapping[node_id] = {
+          //   name: 'start_true',
+          //   value: clone(stack)
+          // }
+          // g.branchs.true.push({
+          //   node_id: node_id++
+          // })
+          // node_mapping[node_id] = {
+          //   name: 'start_false',
+          //   value: clone(stack)
+          // }
+          // g.branchs.false.push({
+          //   node_id: node_id++
+          // })
 
-          const stacks1 = walk(instr.args[0], clone(stacks), dip_top, g.branchs.true)
-          const stacks2 = walk(instr.args[1], clone(stacks), dip_top, g.branchs.false)
-          
-          g.branchs.true.push({
-            name: 'end_true',
-            value: clone(stacks1)
-          })
-          g.branchs.false.push({
-            name: 'end_false',
-            value: clone(stacks2)
-          })
+          const [stack_true, stack_false] = clone([stack, stack])
+          const breaked1 = walk(instr.args[0], stack_true, dip_top, g.branchs.true)
+          const breaked2 = walk(instr.args[1], stack_false, dip_top, g.branchs.false)
 
-          console.log('end true', clone(stacks1))
-          console.log('end false', clone(stacks2))
+          if (!breaked1) {
+            node_mapping[node_id] = {
+              name: 'end_true',
+              value: clone(stack_true)
+            }
+            g.branchs.true.push({
+              node_id: node_id++
+            })
+          }
 
-          branchs.push([stacks1, g.branchs.true])
-          branchs.push([stacks2, g.branchs.false])
+          if (!breaked2) {
+            node_mapping[node_id] = {
+              name: 'end_false',
+              value: clone(stack_false)
+            }
+            g.branchs.false.push({
+              node_id: node_id++,
+            })
+          }
+
+          branchs.push([stack_true, g.branchs.true])
+          branchs.push([stack_false, g.branchs.false])
 
         } else if (instr.prim === 'IF_LEFT') {
-          const g = {
+          node_mapping[node_id] = {
             name: 'from_if_left',
-            value: clone(stacks),
+            value: clone(stack)
+          }
+          const g = {
+            node_id: node_id++,
             branchs: {
               left: [],
               right: []
             }
           }
           graph_cursor.push(g)
-          console.log('from if_left', clone(stacks))
-          const [left_stacks, right_stacks] = clone([stacks, stacks])
-          left_stacks.forEach(stack => {
-            stack[dip_top] = stack[dip_top].children[0]
-          })
-          right_stacks.forEach(stack => {
-            stack[dip_top] = stack[dip_top].children[1]
-          })
-          g.branchs.left.push({
+          const [left_stack, right_stack] = clone([stack, stack])
+          left_stack[dip_top] = left_stack[dip_top].children[0]
+          right_stack[dip_top] = right_stack[dip_top].children[1]
+          node_mapping[node_id] = {
             name: 'start_left',
-            value: clone(left_stacks)
-          })
-          g.branchs.right.push({
-            name: 'start_right',
-            value: clone(right_stacks)
-          })
-          console.log('start left', clone(left_stacks))
-          console.log('start right', clone(right_stacks))
-
-          const stacks1 = walk(instr.args[0], left_stacks, dip_top, g.branchs.left)
-          const stacks2 = walk(instr.args[1], right_stacks, dip_top, g.branchs.right)
-
+            value: clone(left_stack)
+          }
           g.branchs.left.push({
-            name: 'end_left',
-            value: clone(stacks1)
+            node_id: node_id++,
           })
+          node_mapping[node_id] = {
+            name: 'start_right',
+            value: clone(right_stack)
+          }
           g.branchs.right.push({
-            name: 'end_right',
-            value: clone(stacks2)
+            node_id: node_id++,
           })
-          console.log('end left', clone(stacks1))
-          console.log('end right', clone(stacks2))
 
-          branchs.push([stacks1, g.branchs.left])
-          branchs.push([stacks2, g.branchs.right])
+          const breaked1 = walk(instr.args[0], left_stack, dip_top, g.branchs.left)
+          const breaked2 = walk(instr.args[1], right_stack, dip_top, g.branchs.right)
+
+          if (!breaked1) {
+            node_mapping[node_id] = {
+              name: 'end_left',
+              value: clone(left_stack)
+            }
+            g.branchs.left.push({
+              node_id: node_id++
+            })
+          }
+
+          if (!breaked2) {
+            node_mapping[node_id] = {
+              name: 'end_right',
+              value: clone(right_stack)
+            }
+            g.branchs.right.push({
+              node_id: node_id++
+            })
+          }
+
+          branchs.push([left_stack, g.branchs.left])
+          branchs.push([right_stack, g.branchs.right])
 
         } else if (instr.prim === 'DUP') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, clone(stack[dip_top]))
-          })
+          stack.splice(dip_top, 0, clone(stack[dip_top]))
 
         } else if (instr.prim === 'DROP') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 1)
-          })
+          stack.splice(dip_top, 1)
           
         } else if (instr.prim === 'SWAP') {
-          stacks.forEach(stack => {
-            const temp = stack[dip_top]
-            stack[dip_top] = stack[dip_top + 1]
-            stack[dip_top + 1] = temp
-          })
+          const temp = stack[dip_top]
+          stack[dip_top] = stack[dip_top + 1]
+          stack[dip_top + 1] = temp
 
         } else if (instr.prim === 'ADDRESS') {
-          stacks.forEach(stack => {
-            stack[dip_top] = {
-              kind: 'address',
-              value: stack[dip_top]
-            }
-          })
+          stack[dip_top] = {
+            kind: 'address',
+            value: stack[dip_top]
+          }
 
         } else if (instr.prim === 'EXEC') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 1)
-            const lambda_fn = stack[dip_top]
-            stack[dip_top] = {
-              kind: lambda_fn.return.kind,
-              value: getId(lambda_fn.return.kind)
-            }
-          })
-
+          stack.splice(dip_top, 1)
+          const lambda_fn = stack[dip_top]
+          stack[dip_top] = {
+            kind: lambda_fn.return.kind,
+            value: `exec ${lambda_fn.value} -> ` + getId(lambda_fn.return.kind)
+          }
+          
         } else if (instr.prim === 'IMPLICIT_ACCOUNT') {
-          stacks.forEach(stack => {
-            stack[dip_top] = {
-              kind: 'contract unit',
-              value: stack[dip_top]
-            }
-          })
+          stack[dip_top] = {
+            kind: 'contract',
+            parameter: {
+              kind: 'unit',
+              value: 'unit'
+            },
+            value: stack[dip_top]
+          }
 
         } else if (instr.prim === 'SENDER') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, {
-              kind: 'address',
-              value: 'SENDER'
-            })
+          stack.splice(dip_top, 0, {
+            kind: 'address',
+            value: 'SENDER'
           })
 
         } else if (instr.prim === 'PAIR') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, {
-              kind: 'pair',
-              value: stack.splice(dip_top, 2)
-            })
+          stack.splice(dip_top, 0, {
+            kind: 'pair',
+            children: stack.splice(dip_top, 2)
           })
 
         } else if (instr.prim === 'NIL') {
           const lst_t = instr.args[0].prim
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, {
-              kind: 'list',
-              t: lst_t,
-              value: []
-            })
+          stack.splice(dip_top, 0, {
+            kind: 'list',
+            t: lst_t,
+            children: []
           })
 
         } else if (instr.prim === 'UNIT') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, {
-              kind: 'unit',
-              value: 'Unit'
-            })
+          stack.splice(dip_top, 0, {
+            kind: 'unit',
+            value: 'Unit'
           })
 
         } else if (instr.prim === 'FAILWITH') {
-          stacks.forEach(stack => {
-            stack[dip_top] = {
-              kind: 'fail',
-              value: stack[dip_top]
-            }
-          })
-          stacks = []
+          stack[dip_top] = {
+            kind: 'fail',
+            value: stack[dip_top]
+          }
 
         } else if (instr.prim === 'CAR') {
-          stacks.forEach(stack => {
-            stack[dip_top] = stack[dip_top].children[0]
-          })
+          stack[dip_top] = stack[dip_top].children[0]
 
         } else if (instr.prim === 'CDR') {
-          stacks.forEach(stack => {
-            stack[dip_top] = stack[dip_top].children[1]
-          })
+          stack[dip_top] = stack[dip_top].children[1]
 
         } else if (instr.prim === 'DIP') {
-          walk(instr.args, stacks, dip_top + 1)
+          walk(instr.args, stack, dip_top + 1)
 
         } else if (instr.prim === 'PUSH') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, {
-              kind: instr.args[0].prim,
-              value: Object.values(instr.args[1])[0]
-            })
+          stack.splice(dip_top, 0, {
+            kind: instr.args[0].prim,
+            value: Object.values(instr.args[1])[0]
           })
 
         } else if (instr.prim === 'AMOUNT') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, {
-              kind: 'mutez',
-              value: 'TX_AMOUNT'
-            })
+          stack.splice(dip_top, 0, {
+            kind: 'mutez',
+            value: 'TX_AMOUNT'
           })
 
         } else if (instr.prim === 'COMPARE') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, {
-              kind: 'compare',
-              value: stack.splice(dip_top, 2)
-            })
+          stack.splice(dip_top, 0, {
+            kind: 'compare',
+            value: stack.splice(dip_top, 2)
           })
 
         } else if (instr.prim === 'EQ') {
-          stacks.forEach(stack => {
-            stack.splice(dip_top, 0, {
-              kind: 'bool',
-              value: stack.splice(dip_top, 1)[0]
-            })
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '==',
+            value: stack.splice(dip_top, 1)[0]
           })
 
         } else {
@@ -401,16 +422,22 @@ export class Contract {
         
       }
 
-      return stacks
+      return breaked
     }
 
-    const graph = [{
+    node_mapping[node_id] = {
       name: 'start',
-      value: [clone(this.stack)]
+      value: clone(this.stack)
+    }
+    const graph = [{
+      node_id: node_id++,
     }]
-    const stacks = walk(this.code[0], [clone(this.stack)], 0, graph)
+    walk(this.code[0], clone(this.stack), 0, graph)
 
-    return graph
+    return {
+      graph_tree: graph,
+      node_mapping
+    }
   }
 
   

@@ -71,22 +71,22 @@ async function main() {
 
   const contract = new Contract(contract_info)
   console.log('code', contract.code[0])
-  const graph_tree = contract.parseCode()
-  console.log('graph-tree', graph_tree)
+  const {graph_tree, node_mapping} = contract.parseCode()
+  const parameter = contract.stack[0].children[0]
+  const parameter_graph_arr = Mock2GLConvert(parameter, 'parameter')
+  const parameter_graph_str = parameter_graph_arr.join(' ')
+
   const graph_arr = Code2GLConvert(graph_tree, address)
   const graph_str = graph_arr.join(' ')
-  console.log(graph_str)
   
-  // const parameter = contract.getMockFromType(contract.parameter_t[0])
 
-  // const graph_arr = Mock2GLConvert(parameter, 'parameter')
-  // const graph_str = graph_arr.join(' ')
-
-  const gl_parser = new GLParser()
-  const graph = gl_parser.parse(graph_str)
+  const gl_parser1 = new GLParser()
+  const graph_code = gl_parser1.parse(graph_str)
+  const gl_parser2 = new GLParser()
+  const graph_parameter = gl_parser2.parse(parameter_graph_str)
   
   const renderer = new SVGRenderer()
-  const svg = renderer.renderCode(graph)
+  const svg = renderer.renderCode(graph_code, node_mapping, graph_parameter)
   const content = document.getElementById('content')
 
   if (content) {
