@@ -333,11 +333,14 @@ export class Contract {
           }
 
         } else if (instr.prim === 'EXEC') {
-          stack.splice(dip_top, 1)
+          const [p] = stack.splice(dip_top, 1)
           const lambda_fn = stack[dip_top]
           stack[dip_top] = {
-            kind: lambda_fn.return.kind,
-            value: `exec ${lambda_fn.value} -> ` + getId(lambda_fn.return.kind)
+            kind: 'exec',
+            return: lambda_fn.return.kind,
+            lambda: lambda_fn.value,
+            parameter: p,
+            value: getId(lambda_fn.return.kind)
           }
           
         } else if (instr.prim === 'IMPLICIT_ACCOUNT') {

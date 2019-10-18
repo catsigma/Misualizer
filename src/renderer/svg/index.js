@@ -219,6 +219,7 @@ export class SVGRenderer {
       key_hash: () => this.extractValue(node.value),
       or: () => `[${this.extractValue(node.children[0])} | ${this.extractValue(node.children[1])}]`,
       lambda: () => this.extractValue(node.value),
+      exec: () => `${node.value} <- ${node.lambda}(${this.extractValue(node.parameter)})`,
       unit: () => 'Unit',
       pair: () => `(${this.extractValue(node.children[0])}, ${this.extractValue(node.children[1])})`,
       bool: () => node.value instanceof Boolean ? node.value : this.extractValue(Object.assign(node.value, {symbol: node.symbol})),
@@ -301,8 +302,14 @@ export class SVGRenderer {
       })
     }
 
-    links.forEach(link => {
+    const from_nodes= new Set(links.map(link => link.from))
+    links.forEach((link, index) => {
       const curve = AutoCurve(link.from, link.to, with_arrow, link.arrow)
+      if (!from_nodes.has(link.to))
+        link.to.setAttrs({
+          fill: 'red'
+        })
+
       result.push(curve)
     })
 
@@ -313,7 +320,7 @@ export class SVGRenderer {
     }
   }
 
-  renderCode(graph : Object, node_mapping : Object, graph_parameter : Object) {
+  renderCode(graph : Object, node_mapping : Object, graph_parameter : Object, graph_storage : Object) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     const {component, width, height} = this.drawCode(graph, node_mapping)
     svg.appendChild(component.el)
@@ -321,6 +328,13 @@ export class SVGRenderer {
       const {component} = this.drawMock(graph_parameter, false)
       component.setAttrs({
         transform: 'translate(-500,0)'
+      })
+      svg.appendChild(component.el)
+    }
+    {
+      const {component} = this.drawMock(graph_storage, false)
+      component.setAttrs({
+        transform: 'translate(-500,500)'
       })
       svg.appendChild(component.el)
     }
