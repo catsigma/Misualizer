@@ -59,6 +59,15 @@ export class Contract {
             return: walk(input.args[1])
           }
 
+        } else if (input.prim === 'map') {
+          inside_value = {
+            key: walk(input.args[0]),
+            value: walk(input.args[1])
+          }
+
+        } else if (input.prim === 'set') {
+          inside_value = walk(input.args[0])
+
         } else if (input.prim === 'contract') {
           inside_value = {
             parameter: walk(input.args[0]),
@@ -82,12 +91,25 @@ export class Contract {
           }
         },
         list() {
-          console.log(12345)
           return {
             kind: 'list',
             t: inside_value[0].prim,
             value: getId('list'),
             children: inside_value
+          }
+        },
+        map() {
+          return {
+            kind: 'map',
+            t: inside_value,
+            value: getId('map')
+          }
+        },
+        set() {
+          return {
+            kind: 'set',
+            t: inside_value,
+            value: getId('set')
           }
         },
         lambda() {
@@ -126,10 +148,28 @@ export class Contract {
             value: getId('nat')
           }
         },
+        timestamp() {
+          return {
+            kind: 'timestamp',
+            value: getId('timestamp')
+          }
+        },
+        int() {
+          return {
+            kind: 'int',
+            value: getId('int')
+          }
+        },
         bool() {
           return {
             kind: 'bool',
             value: getId('bool')
+          }
+        },
+        string() {
+          return {
+            kind: 'string',
+            value: getId('string')
           }
         },
         key_hash() {
@@ -139,9 +179,9 @@ export class Contract {
           }
         }
       }
-
-      const output = prim_mapping[input.prim]()
+      
       if (input.prim in prim_mapping) {
+        const output = prim_mapping[input.prim]()
         return Object.assign(output, {annots: input.annots})
       } else {
         throw input
@@ -315,6 +355,68 @@ export class Contract {
           branchs.push([left_stack, g.branchs.left])
           branchs.push([right_stack, g.branchs.right])
 
+        } else if (instr.prim === 'IF_NONE') {
+          node_mapping[node_id] = {
+            name: 'from_if_none',
+            value: clone(stack)
+          }
+          const g = {
+            node_id: node_id++,
+            branchs: {
+              none: [],
+              some: []
+            }
+          }
+          graph_cursor.push(g)
+          
+          const [none_stack, some_stack] = clone([stack, stack])
+          none_stack.splice(dip_top, 1)
+          some_stack[dip_top] = {
+            kind: some_stack[dip_top].t,
+            value: some_stack[dip_top].value
+          }
+
+          node_mapping[node_id] = {
+            name: 'start_none',
+            value: clone(none_stack)
+          }
+          g.branchs.none.push({
+            node_id: node_id++,
+          })
+          node_mapping[node_id] = {
+            name: 'start_some',
+            value: clone(some_stack)
+          }
+          g.branchs.some.push({
+            node_id: node_id++,
+          })
+
+          const breaked1 = walk(instr.args[0], none_stack, dip_top, g.branchs.none)
+          const breaked2 = walk(instr.args[1], some_stack, dip_top, g.branchs.some)
+
+          if (!breaked1) {
+            node_mapping[node_id] = {
+              name: 'end_none',
+              value: clone(none_stack)
+            }
+            g.branchs.none.push({
+              node_id: node_id++
+            })
+          }
+
+          if (!breaked2) {
+            node_mapping[node_id] = {
+              name: 'end_some',
+              value: clone(some_stack)
+            }
+            g.branchs.some.push({
+              node_id: node_id++
+            })
+          }
+
+          branchs.push([none_stack, g.branchs.none])
+          branchs.push([some_stack, g.branchs.some])
+
         } else if (instr.prim === 'DUP') {
           stack.splice(dip_top, 0, clone(stack[dip_top]))
 
@@ -357,6 +459,12 @@ export class Contract {
           stack.splice(dip_top, 0, {
             kind: 'address',
             value: 'SENDER'
+          })
+
+        } else if (instr.prim === 'SOURCE') {
+          stack.splice(dip_top, 0, {
+            kind: 'address',
+            value: 'SOURCE'
           })
 
         } else if (instr.prim === 'PAIR') {
@@ -406,9 +514,36 @@ export class Contract {
             value: 'TX_AMOUNT'
           })
 
+        } else if (instr.prim === 'GET') {
+          const [key, map] = stack.splice(dip_top, 2)
+          stack.splice(dip_top, 0, {
+            kind: 'option',
+            t: map.t.value,
+            value: getId(map.t.value),
+            source: {key, map}
+          })
+
         } else if (instr.prim === 'COMPARE') {
           stack.splice(dip_top, 0, {
             kind: 'compare',
+            value: stack.splice(dip_top, 2)
+          })
+
+        } else if (instr.prim === 'MEM') {
+          const [elem, set] = stack.splice(dip_top, 2)
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: 'IN',
+            value: {
+              kind: 'compare',
+              value: [elem, set]
+            }
+          })
+
+        } else if (instr.prim === 'OR') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '|',
             value: stack.splice(dip_top, 2)
           })
 
@@ -417,6 +552,26 @@ export class Contract {
             kind: 'bool',
             symbol: '==',
             value: stack.splice(dip_top, 1)[0]
+          })
+
+        } else if (instr.prim === 'LE') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '<=',
+            value: stack.splice(dip_top, 1)[0]
+          })
+
+        } else if (instr.prim === 'LT') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '<',
+            value: stack.splice(dip_top, 1)[0]
+          })
+          
+        } else if (instr.prim === 'NOW') {
+          stack.splice(dip_top, 0, {
+            kind: 'timestamp',
+            value: 'NOW'
           })
 
         } else {

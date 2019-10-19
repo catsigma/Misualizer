@@ -10,7 +10,7 @@ import { Contract } from '../src/emu'
 
 // Init setup
 const client = new TBN({
-  host: 'https://mainnet.tezrpc.me'
+  host: 'https://tezos-dev.cryptonomic-infra.tech'
 })
 
 
@@ -56,8 +56,8 @@ function renderer(graph? : Object) {
 }
 
 async function main() {
-  const address = 'KT1Mfe3rRhQw9KnEUZzoxkhmyHXBeN3zCzXL'
-  // const address = 'KT1KBLcPM6BzovBfRjXKd7xVHkXairC1heSh'
+  // const address = 'KT1Mfe3rRhQw9KnEUZzoxkhmyHXBeN3zCzXL'
+  const address = 'KT1Qx7PRNAVHgam1qb2MuJohggnSdHTeBWyc'
 
   const contract_info = await client.fetch.contract(address)
 
