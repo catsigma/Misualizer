@@ -90,27 +90,40 @@ export function Code2GL(input : Object, title : string) {
 }
 
 export function Mock2GL(input : Object, title : string) {
+  const nodes = {}
+  const getId = (() => {
+    let id = 1
+    return (content : Object) => {
+      const node_id = 'Node' + id++
+      nodes[node_id] = content
+      return node_id
+    }
+  })()
+
   const result = ['contract', title, '{']
 
   const walk = (node : Object, not_first : boolean) => {
     if (not_first) {
-      result.push(node.annots ? `-${node.annots[0]}->` : '->')
+      result.push(node.annots ? `-${getId(node.annots[0])}->` : '->')
     }
 
     if (node.children instanceof Array) {
-      result.push(node.value || node.kind)
+      result.push(getId(node.value || node.kind))
       node.children.forEach(item => {
         result.push('[')
         walk(item, true)
         result.push(']')
       })
     } else {
-      result.push(node.value)
+      result.push(getId(node.value))
     }
   }
 
   walk(input, false)
 
   result.push('}')
-  return result
+  return {
+    graph_arr: result,
+    node_mapping: nodes
+  }
 }

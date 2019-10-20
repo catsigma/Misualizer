@@ -72,7 +72,7 @@ export class SVGRenderer {
     return svg
   }
 
-  drawMock(graph : Object, with_arrow : boolean) {
+  drawMock(graph : Object, node_mapping : Object, with_arrow : boolean) {
     const top_text = Text([0,0], graph.name)
     const levels = {
       [0]: [top_text]
@@ -85,7 +85,8 @@ export class SVGRenderer {
 
       paths.forEach(path => {
         if (path.name) {
-          const text = Text([0,0], path.name)
+
+          const text = Text([0,0], node_mapping[path.name])
           if (path.name.indexOf(':') === -1) {
             text.setAttrs({
               fill: '#aaa'
@@ -202,39 +203,64 @@ export class SVGRenderer {
     })
   }
 
-  renderMockData(graph : Object, with_arrow : boolean = false) {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    const {component, width, height} = this.drawMock(graph, with_arrow)
-    svg.appendChild(component.el)
+  calcValue(node : Object) {
+    const calc = node.calc
+    const stack = (index : number) => {
+      return this.extractValue(calc.stack[index])
+    }
 
-    this.bindMouseControl(svg, width, height)
-    return svg
+    const op_mapping = {
+      add: () => `${stack(0)} + ${stack(1)}`,
+      get: () => `${stack(1)}[${stack(0)}]`,
+      or: () => `${stack(0)} ${node.symbol} ${stack(1)}`,
+      update_set: () => `${this.extractValue(calc.stack[2])} ${stack(1)} ${stack(0)}`,
+      update_map: () => `${this.extractValue(calc.stack[2])}(${stack(0)}, ${stack(1)})`
+    }
+
+    if (calc.op in op_mapping) {
+      return op_mapping[calc.op]()
+    } else {
+      debugger
+      throw `Cannot calculate value from '${calc.op}'`
+    }
   }
 
-  extractValue(node : Object) {
+  extractValue(node : Object, ignore_calc : boolean = false) {
     if (typeof node === 'string')
       return node
 
     const kind_mapping = {
+      int: () => this.extractValue(node.value),
+      string: () => this.extractValue(node.value),
+      timestamp: () =>  this.extractValue(node.value),
+      bool: () => typeof node.value === 'string' ? node.value : this.extractValue(Object.assign(node.value, {symbol: node.symbol})),
       key_hash: () => this.extractValue(node.value),
       or: () => `[${this.extractValue(node.children[0])} | ${this.extractValue(node.children[1])}]`,
       lambda: () => this.extractValue(node.value),
       exec: () => `${node.value} <- ${node.lambda}(${this.extractValue(node.parameter)})`,
       unit: () => 'Unit',
       pair: () => `(${this.extractValue(node.children[0])}, ${this.extractValue(node.children[1])})`,
-      bool: () => node.value instanceof Boolean ? node.value : this.extractValue(Object.assign(node.value, {symbol: node.symbol})),
-      fail: () => `FAIL:${this.extractValue(node.value)}`,
-      list: () => `List:${node.value || this.extractValue(node.t)}`,
+      fail: () => `Fail:${this.extractValue(node.value)}`,
+      list: () => `${this.extractValue(node.value)}[${node.children.map(x => this.extractValue(x)).join(', ')}]`,
       compare: () => `${this.extractValue(node.value[0])} ${node.symbol} ${this.extractValue(node.value[1])} ?`,
       mutez: () => this.extractValue(node.value),
       address: () => typeof node.value === 'string' ? node.value : this.extractValue(node.value),
-      contract: () => this.extractValue(node.value)
+      contract: () => this.extractValue(node.value),
+      map: () => this.extractValue(node.value),
+      set: () => this.extractValue(node.value),
+      some: () => `Some(${this.extractValue(node.value)})`,
+      option: () => `option<${this.extractValue(node.value)}>`
     }
 
-    if (!(node.kind in kind_mapping))
-      throw `Cannot extract value from ${node.kind}`
+    if (!(node.kind in kind_mapping)) {
+      debugger
+      throw `Cannot extract value from '${node.kind}'`
+    }
 
-    return kind_mapping[node.kind]()
+    if (node.calc && !ignore_calc)
+      return `${this.extractValue(node, true)} <- ${this.calcValue(node)}`
+    else
+      return kind_mapping[node.kind]()
   }
 
   drawCode(graph : Object, node_mapping : Object, with_arrow : boolean = false) {
@@ -325,14 +351,14 @@ export class SVGRenderer {
     const {component, width, height} = this.drawCode(graph, node_mapping)
     svg.appendChild(component.el)
     {
-      const {component} = this.drawMock(graph_parameter, false)
+      const {component} = this.drawMock(graph_parameter.graph, graph_parameter.node_mapping, false)
       component.setAttrs({
         transform: 'translate(-500,0)'
       })
       svg.appendChild(component.el)
     }
     {
-      const {component} = this.drawMock(graph_storage, false)
+      const {component} = this.drawMock(graph_storage.graph, graph_storage.node_mapping, false)
       component.setAttrs({
         transform: 'translate(-500,500)'
       })

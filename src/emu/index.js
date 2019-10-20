@@ -7,7 +7,10 @@ function clone(x : Object) {
 const getId = (() => {
   const ids = 'abcdefghijklmnopqrstuvwxyz'.toUpperCase().split('')
   const mem = {}
-  return (t : string) => {
+  return (t : string, node? : Object) => {
+    if (node && node.annots)
+      return node.annots[0] + ':' + t
+
     if (!(t in mem)) {
       mem[t] = ids.slice()
     }
@@ -94,34 +97,36 @@ export class Contract {
           return {
             kind: 'list',
             t: inside_value[0].prim,
-            value: getId('list'),
+            value: getId(`list<${inside_value[0].prim}>`, input),
             children: inside_value
           }
         },
         map() {
+          const key_t = inside_value.key ? inside_value.key.kind : ''
+          const value_t = inside_value.value ? inside_value.value.kind : ''
           return {
             kind: 'map',
             t: inside_value,
-            value: getId('map')
+            value: getId(`map<${key_t}, ${value_t}>`, input)
           }
         },
         set() {
           return {
             kind: 'set',
             t: inside_value,
-            value: getId('set')
+            value: getId(`set<${inside_value.kind || ''}>`, input)
           }
         },
         lambda() {
           return Object.assign({}, {
             kind: 'lambda',
-            value: getId('lambda')
+            value: getId('lambda', input)
           }, inside_value)
         },
         contract() {
           return Object.assign({}, {
             kind: 'contract',
-            value: getId('contract')
+            value: getId('contract', input)
           }, inside_value)
         },
         unit() {
@@ -133,49 +138,49 @@ export class Contract {
         operation() {
           return {
             kind: 'operation',
-            value: getId('operation')
+            value: getId('operation', input)
           }
         },
         address() {
           return {
             kind: 'address',
-            value: getId('address')
+            value: getId('address', input)
           }
         },
         nat() {
           return {
             kind: 'nat',
-            value: getId('nat')
+            value: getId('nat', input)
           }
         },
         timestamp() {
           return {
             kind: 'timestamp',
-            value: getId('timestamp')
+            value: getId('timestamp', input)
           }
         },
         int() {
           return {
             kind: 'int',
-            value: getId('int')
+            value: getId('int', input)
           }
         },
         bool() {
           return {
             kind: 'bool',
-            value: getId('bool')
+            value: getId('bool', input)
           }
         },
         string() {
           return {
             kind: 'string',
-            value: getId('string')
+            value: getId('string', input)
           }
         },
         key_hash() {
           return {
             kind: 'key_hash',
-            value: getId('key_hash')
+            value: getId('key_hash', input)
           }
         }
       }
@@ -201,7 +206,7 @@ export class Contract {
       let breaked = false
 
       if (stack[0].kind === 'fail')
-        return false
+        return true
 
       for (let i = 0; i < code_instrs.length; i++) {
         const instr = code_instrs[i]
@@ -223,7 +228,7 @@ export class Contract {
             })
           }
 
-          if (breaked2) {
+          if (!breaked2) {
             node_mapping[node_id] = {
               name: 'end',
               value: clone(stack2)
@@ -478,6 +483,7 @@ export class Contract {
           stack.splice(dip_top, 0, {
             kind: 'list',
             t: lst_t,
+            value: getId(`list<${lst_t}>`),
             children: []
           })
 
@@ -514,13 +520,66 @@ export class Contract {
             value: 'TX_AMOUNT'
           })
 
+        } else if (instr.prim === 'ADD') {
+          const [a, b] = stack.splice(dip_top, 2)
+          const kind_set = new Set([a, b].map(x => x.kind))
+          const kind = 
+            kind_set.has('timestamp') ? 'timestamp' : 
+            kind_set.has('int') ? 'int' :
+            kind_set.has('mutez') ? 'mutez' : 'nat'
+
+          stack.splice(dip_top, 0, {
+            kind,
+            value: getId(kind),
+            calc: {
+              op: 'add',
+              stack: [a, b]
+            }
+          })
+
+        } else if (instr.prim === 'UPDATE') {
+          const elems = stack.splice(dip_top, 3)
+          if (elems[2].kind === 'set') {
+            const [elem, is_adding, set] = elems
+            stack.splice(dip_top, 0, {
+              kind: 'set',
+              t: set.t,
+              value: getId('set'),
+              calc: {
+                op: 'update_set',
+                stack: elems
+              }
+            })
+          } else {
+            const [key, val, map] = elems
+            stack.splice(dip_top, 0, {
+              kind: map.kind,
+              t: map.t,
+              value: getId(map.kind),
+              calc: {
+                op: 'update_map',
+                stack: elems
+              }
+            })
+          }
+
+        } else if (instr.prim === 'SOME') {
+          stack[dip_top] = {
+            kind: 'some',
+            t: stack[dip_top].kind,
+            value: stack[dip_top]
+          }
+
         } else if (instr.prim === 'GET') {
           const [key, map] = stack.splice(dip_top, 2)
           stack.splice(dip_top, 0, {
             kind: 'option',
-            t: map.t.value,
-            value: getId(map.t.value),
-            source: {key, map}
+            t: map.t.value.kind,
+            value: map.t.value,
+            calc: {
+              op: 'get',
+              stack: [key, map]
+            }
           })
 
         } else if (instr.prim === 'COMPARE') {
@@ -544,7 +603,11 @@ export class Contract {
           stack.splice(dip_top, 0, {
             kind: 'bool',
             symbol: '|',
-            value: stack.splice(dip_top, 2)
+            value: getId('bool'),
+            calc: {
+              op: 'or',
+              stack: stack.splice(dip_top, 2)
+            }
           })
 
         } else if (instr.prim === 'EQ') {

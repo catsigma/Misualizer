@@ -74,12 +74,12 @@ async function main() {
   const {graph_tree, node_mapping} = contract.parseCode()
   
   const parameter = contract.stack[0].children[0]
-  const parameter_graph_arr = Mock2GLConvert(parameter, 'parameter')
-  const parameter_graph_str = parameter_graph_arr.join(' ')
+  const parameter_graph = Mock2GLConvert(parameter, 'parameter')
+  const parameter_graph_str = parameter_graph.graph_arr.join(' ')
 
   const storage = contract.stack[0].children[1]
-  const storage_graph_arr = Mock2GLConvert(storage, 'storage')
-  const storage_graph_str = storage_graph_arr.join(' ')
+  const storage_graph = Mock2GLConvert(storage, 'storage')
+  const storage_graph_str = storage_graph.graph_arr.join(' ')
 
   const graph_arr = Code2GLConvert(graph_tree, address)
   const graph_str = graph_arr.join(' ')
@@ -93,7 +93,16 @@ async function main() {
   const graph_storage = gl_parser2.parse(storage_graph_str)
 
   const renderer = new SVGRenderer()
-  const svg = renderer.renderCode(graph_code, node_mapping, graph_parameter, graph_storage)
+  const svg = renderer.renderCode(graph_code, node_mapping, 
+    {
+      graph: graph_parameter, 
+      node_mapping: parameter_graph.node_mapping
+    },
+    {
+      graph: graph_storage,
+      node_mapping: storage_graph.node_mapping
+    })
+
   const content = document.getElementById('content')
 
   if (content) {
