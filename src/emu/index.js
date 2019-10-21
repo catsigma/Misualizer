@@ -68,6 +68,12 @@ export class Contract {
             value: walk(input.args[1])
           }
 
+        } else if (input.prim === 'big_map') {
+          inside_value = {
+            key: walk(input.args[0]),
+            value: walk(input.args[1])
+          }
+
         } else if (input.prim === 'set') {
           inside_value = walk(input.args[0])
 
@@ -94,10 +100,11 @@ export class Contract {
           }
         },
         list() {
+          const t = inside_value[0].prim || inside_value[0].kind
           return {
             kind: 'list',
-            t: inside_value[0].prim,
-            value: getId(`list<${inside_value[0].prim}>`, input),
+            t,
+            value: getId(`list<${t}>`, input),
             children: inside_value
           }
         },
@@ -108,6 +115,15 @@ export class Contract {
             kind: 'map',
             t: inside_value,
             value: getId(`map<${key_t}, ${value_t}>`, input)
+          }
+        },
+        big_map() {
+          const key_t = inside_value.key ? inside_value.key.kind : ''
+          const value_t = inside_value.value ? inside_value.value.kind : ''
+          return {
+            kind: 'big_map',
+            t: inside_value,
+            value: getId(`big_map<${key_t}, ${value_t}>`, input)
           }
         },
         set() {
@@ -182,6 +198,18 @@ export class Contract {
             kind: 'key_hash',
             value: getId('key_hash', input)
           }
+        },
+        bytes() {
+          return {
+            kind: 'bytes',
+            value: getId('bytes', input)
+          }
+        },
+        mutez() {
+          return {
+            kind: 'mutez',
+            value: getId('mutez', input)
+          }
         }
       }
       
@@ -189,7 +217,7 @@ export class Contract {
         const output = prim_mapping[input.prim]()
         return Object.assign(output, {annots: input.annots})
       } else {
-        throw input
+        throw `unhandled type '${input.prim}'`
       }
 
     }
@@ -201,50 +229,13 @@ export class Contract {
     const node_mapping = {}
     let node_id = 1
 
-    const branchs = []
     const walk = (code_instrs : Array<Object>, stack : Array<Object>, dip_top : number, graph_cursor : Object) : boolean => {
-      let breaked = false
-
-      if (stack[0].kind === 'fail')
-        return true
-
       for (let i = 0; i < code_instrs.length; i++) {
         const instr = code_instrs[i]
 
-        if (branchs.length) {
-          const remain_codes = code_instrs.slice(i)
-          const [[stack1, cursor1], [stack2, cursor2]] : Object = branchs.splice(0, branchs.length)
-
-          const breaked1 = walk(remain_codes, stack1, dip_top, cursor1)
-          const breaked2 = walk(remain_codes, stack2, dip_top, cursor2)
-          
-          if (!breaked1) {
-            node_mapping[node_id] = {
-              name: 'end',
-              value: clone(stack1)
-            }
-            cursor1.push({
-              node_id: node_id++
-            })
-          }
-
-          if (!breaked2) {
-            node_mapping[node_id] = {
-              name: 'end',
-              value: clone(stack2)
-            }
-            cursor2.push({
-              node_id: node_id++,
-            })
-          }
-
-          breaked = true
-          break
-        }
-
         if (instr instanceof Array) {
-          walk(instr, stack, dip_top, graph_cursor)
-          continue
+          const remain_codes = code_instrs.slice(i + 1)
+          return walk(instr.concat(remain_codes), stack, dip_top, graph_cursor)
         }
 
         if (instr.prim === 'IF') {
@@ -276,11 +267,12 @@ export class Contract {
           //   node_id: node_id++
           // })
 
+          const remain_codes = code_instrs.slice(i + 1)
           const [stack_true, stack_false] = clone([stack, stack])
-          const breaked1 = walk(instr.args[0], stack_true, dip_top, g.branchs.true)
-          const breaked2 = walk(instr.args[1], stack_false, dip_top, g.branchs.false)
+          const has_branchs1 = walk(instr.args[0].concat(remain_codes), stack_true, dip_top, g.branchs.true)
+          const has_branchs2 = walk(instr.args[1].concat(remain_codes), stack_false, dip_top, g.branchs.false)
 
-          if (!breaked1) {
+          if (!has_branchs1) {
             node_mapping[node_id] = {
               name: 'end_true',
               value: clone(stack_true)
@@ -290,7 +282,7 @@ export class Contract {
             })
           }
 
-          if (!breaked2) {
+          if (!has_branchs2) {
             node_mapping[node_id] = {
               name: 'end_false',
               value: clone(stack_false)
@@ -300,8 +292,7 @@ export class Contract {
             })
           }
 
-          branchs.push([stack_true, g.branchs.true])
-          branchs.push([stack_false, g.branchs.false])
+          return true
 
         } else if (instr.prim === 'IF_LEFT') {
           node_mapping[node_id] = {
@@ -316,6 +307,7 @@ export class Contract {
             }
           }
           graph_cursor.push(g)
+
           const [left_stack, right_stack] = clone([stack, stack])
           left_stack[dip_top] = left_stack[dip_top].children[0]
           right_stack[dip_top] = right_stack[dip_top].children[1]
@@ -334,10 +326,11 @@ export class Contract {
             node_id: node_id++,
           })
 
-          const breaked1 = walk(instr.args[0], left_stack, dip_top, g.branchs.left)
-          const breaked2 = walk(instr.args[1], right_stack, dip_top, g.branchs.right)
-
-          if (!breaked1) {
+          const remain_codes = code_instrs.slice(i + 1)
+          const has_branchs1 = walk(instr.args[0].concat(remain_codes), left_stack, dip_top, g.branchs.left)
+          const has_branchs2 = walk(instr.args[1].concat(remain_codes), right_stack, dip_top, g.branchs.right)
+        
+          if (!has_branchs1) {
             node_mapping[node_id] = {
               name: 'end_left',
               value: clone(left_stack)
@@ -347,7 +340,7 @@ export class Contract {
             })
           }
 
-          if (!breaked2) {
+          if (!has_branchs2) {
             node_mapping[node_id] = {
               name: 'end_right',
               value: clone(right_stack)
@@ -357,8 +350,7 @@ export class Contract {
             })
           }
 
-          branchs.push([left_stack, g.branchs.left])
-          branchs.push([right_stack, g.branchs.right])
+          return true
 
         } else if (instr.prim === 'IF_NONE') {
           node_mapping[node_id] = {
@@ -376,11 +368,11 @@ export class Contract {
           
           const [none_stack, some_stack] = clone([stack, stack])
           none_stack.splice(dip_top, 1)
-          some_stack[dip_top] = {
-            kind: some_stack[dip_top].t,
-            value: some_stack[dip_top].value
-          }
-
+          some_stack[dip_top] = Object.assign(
+            some_stack[dip_top].item,
+            {clac: some_stack[dip_top].calc}
+          )
+          
           node_mapping[node_id] = {
             name: 'start_none',
             value: clone(none_stack)
@@ -396,10 +388,11 @@ export class Contract {
             node_id: node_id++,
           })
 
-          const breaked1 = walk(instr.args[0], none_stack, dip_top, g.branchs.none)
-          const breaked2 = walk(instr.args[1], some_stack, dip_top, g.branchs.some)
+          const remain_codes = code_instrs.slice(i + 1)
+          const has_branchs1 = walk(instr.args[0].concat(remain_codes), none_stack, dip_top, g.branchs.none)
+          const has_branchs2 = walk(instr.args[1].concat(remain_codes), some_stack, dip_top, g.branchs.some)
 
-          if (!breaked1) {
+          if (!has_branchs1) {
             node_mapping[node_id] = {
               name: 'end_none',
               value: clone(none_stack)
@@ -409,7 +402,7 @@ export class Contract {
             })
           }
 
-          if (!breaked2) {
+          if (!has_branchs2) {
             node_mapping[node_id] = {
               name: 'end_some',
               value: clone(some_stack)
@@ -419,11 +412,17 @@ export class Contract {
             })
           }
 
-          branchs.push([none_stack, g.branchs.none])
-          branchs.push([some_stack, g.branchs.some])
+          return true
 
         } else if (instr.prim === 'DUP') {
           stack.splice(dip_top, 0, clone(stack[dip_top]))
+
+        } else if (instr.prim === 'RENAME') {
+          stack[dip_top].annots = instr.annots 
+
+        } else if (instr.prim === 'CONS') {
+          const [elem] = stack.splice(dip_top, 1)
+          stack[dip_top].children.unshift(elem)
 
         } else if (instr.prim === 'DROP') {
           stack.splice(dip_top, 1)
@@ -439,15 +438,34 @@ export class Contract {
             value: stack[dip_top]
           }
 
+        } else if (instr.prim === 'LAMBDA') {
+          stack.splice(dip_top, 0, {
+            kind: 'lambda',
+            value: getId('lambda'),
+            parameter: instr.args[0],
+            return: instr.args[1],
+            code: instr.args[2]
+          })
+
         } else if (instr.prim === 'EXEC') {
-          const [p] = stack.splice(dip_top, 1)
-          const lambda_fn = stack[dip_top]
-          stack[dip_top] = {
-            kind: 'exec',
-            return: lambda_fn.return.kind,
-            lambda: lambda_fn.value,
-            parameter: p,
-            value: getId(lambda_fn.return.kind)
+          const [p, lambda_fn] = stack.splice(dip_top, 2)
+
+          if (lambda_fn.code) {
+            stack.splice(dip_top, 0, p)
+            code_instrs[i--] = lambda_fn.code
+
+            // const breaked = walk(lambda_fn.code, stack, dip_top, graph_cursor)
+            // if (breaked)
+            //   break
+
+          } else {
+            stack.splice(dip_top, 0, {
+              kind: 'exec',
+              return: lambda_fn.return.kind,
+              lambda: lambda_fn.value,
+              parameter: p,
+              value: getId(lambda_fn.return.kind)
+            })
           }
           
         } else if (instr.prim === 'IMPLICIT_ACCOUNT') {
@@ -498,6 +516,7 @@ export class Contract {
             kind: 'fail',
             value: stack[dip_top]
           }
+          return false;
 
         } else if (instr.prim === 'CAR') {
           stack[dip_top] = stack[dip_top].children[0]
@@ -506,7 +525,7 @@ export class Contract {
           stack[dip_top] = stack[dip_top].children[1]
 
         } else if (instr.prim === 'DIP') {
-          walk(instr.args, stack, dip_top + 1)
+          walk(instr.args, stack, dip_top + 1, graph_cursor)
 
         } else if (instr.prim === 'PUSH') {
           stack.splice(dip_top, 0, {
@@ -574,8 +593,7 @@ export class Contract {
           const [key, map] = stack.splice(dip_top, 2)
           stack.splice(dip_top, 0, {
             kind: 'option',
-            t: map.t.value.kind,
-            value: map.t.value,
+            item: map.t.value,
             calc: {
               op: 'get',
               stack: [key, map]
@@ -608,6 +626,13 @@ export class Contract {
               op: 'or',
               stack: stack.splice(dip_top, 2)
             }
+          })
+
+        } else if (instr.prim === 'NEQ') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '!=',
+            value: stack.splice(dip_top, 1)[0]
           })
 
         } else if (instr.prim === 'EQ') {
@@ -643,7 +668,7 @@ export class Contract {
         
       }
 
-      return breaked
+      return false
     }
 
     node_mapping[node_id] = {

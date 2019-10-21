@@ -141,7 +141,7 @@ export class SVGRenderer {
     }
 
     links.forEach(link => {
-      const curve = AutoCurve(link.from, link.to, with_arrow, link.arrow)
+      const curve = AutoCurve(link.from, link.to, with_arrow, node_mapping[link.arrow])
       result.push(curve)
     })
 
@@ -182,9 +182,9 @@ export class SVGRenderer {
 
       let offset = 0
       if (e.deltaY > 1) {
-        offset += 50
+        offset += 100
       } else if (e.deltaY < -1) {
-        offset -= 50
+        offset -= 100
       }
 
       if (width + offset > 10) {
@@ -230,6 +230,7 @@ export class SVGRenderer {
       return node
 
     const kind_mapping = {
+      bytes: () => this.extractValue(node.value),
       int: () => this.extractValue(node.value),
       string: () => this.extractValue(node.value),
       timestamp: () =>  this.extractValue(node.value),
@@ -247,9 +248,10 @@ export class SVGRenderer {
       address: () => typeof node.value === 'string' ? node.value : this.extractValue(node.value),
       contract: () => this.extractValue(node.value),
       map: () => this.extractValue(node.value),
+      big_map: () => this.extractValue(node.value),
       set: () => this.extractValue(node.value),
       some: () => `Some(${this.extractValue(node.value)})`,
-      option: () => `option<${this.extractValue(node.value)}>`
+      option: () => `option<${this.extractValue(node.item)}>`
     }
 
     if (!(node.kind in kind_mapping)) {
@@ -280,6 +282,10 @@ export class SVGRenderer {
         if (path.name) {
           const node = node_mapping[path.name.slice(4)]
           const text = TextBlock([0,0], [`*${node.name}*`].concat(node.value.map(x => this.extractValue(x))))
+          if (node.value[0].kind === 'fail')
+            text.setAttrs({
+              fill: 'red'
+            })
 
           links.push({
             from: parent_graph,
@@ -313,7 +319,7 @@ export class SVGRenderer {
     const result = []
     for (let level in levels) {
       levels[level].forEach((item, index) => {
-        const top = +level ? +level * 200 : 20
+        const top = +level ? +level * 400 : 20
         max_height = top
 
         const span = (max_width - len_mapping[level]) / (levels[level].length + 1)
@@ -331,9 +337,9 @@ export class SVGRenderer {
     const from_nodes= new Set(links.map(link => link.from))
     links.forEach((link, index) => {
       const curve = AutoCurve(link.from, link.to, with_arrow, link.arrow)
-      if (!from_nodes.has(link.to))
+      if (!from_nodes.has(link.to) && !link.to.getAttr('fill'))
         link.to.setAttrs({
-          fill: 'red'
+          fill: 'blue'
         })
 
       result.push(curve)
