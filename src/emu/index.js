@@ -524,8 +524,12 @@ export class Contract {
         } else if (instr.prim === 'CDR') {
           stack[dip_top] = stack[dip_top].children[1]
 
+        } else if (instr.prim === 'UNDIP') {
+          dip_top -= 1
+          
         } else if (instr.prim === 'DIP') {
-          walk(instr.args, stack, dip_top + 1, graph_cursor)
+          code_instrs[i--] = instr.args.concat({prim: 'UNDIP'})
+          dip_top += 1
 
         } else if (instr.prim === 'PUSH') {
           stack.splice(dip_top, 0, {
