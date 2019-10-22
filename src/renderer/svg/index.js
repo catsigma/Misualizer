@@ -211,11 +211,16 @@ export class SVGRenderer {
 
     const op_mapping = {
       add: () => `${stack(0)} + ${stack(1)}`,
+      sub: () => `${stack(0)} - ${stack(1)}`,
       get: () => `${stack(1)}[${stack(0)}]`,
       or: () => `${stack(0)} ${node.symbol} ${stack(1)}`,
       not: () => `${node.symbol}${stack(0)}`,
-      update_set: () => `${this.extractValue(calc.stack[2])} ${stack(1)} ${stack(0)}`,
-      update_map: () => `${this.extractValue(calc.stack[2])}(${stack(0)}, ${stack(1)})`
+      pack: () => `${stack(0)}`,
+      int: () => `INT(${stack(0)})`,
+      update_set: () => `${stack(2)} ${stack(1)} ${stack(0)}`,
+      update_map: () => `${stack(2)}(${stack(0)}, ${stack(1)})`,
+      check_signature: () => `CHECK_SIG(${stack(0)}, ${stack(1)}, ${stack(2)})`,
+      transfer_tokens: () => `CALL(${stack(2)}, ${stack(1)}, ${stack(0)})`
     }
 
     if (calc.op in op_mapping) {
@@ -233,7 +238,10 @@ export class SVGRenderer {
     const kind_mapping = {
       bytes: () => this.extractValue(node.value),
       int: () => this.extractValue(node.value),
+      nat: () => this.extractValue(node.value),
+      key: () => this.extractValue(node.value),
       string: () => this.extractValue(node.value),
+      signature: () => this.extractValue(node.value),
       timestamp: () =>  this.extractValue(node.value),
       bool: () => typeof node.value === 'string' ? node.value : this.extractValue(Object.assign(node.value, {symbol: node.symbol})),
       key_hash: () => this.extractValue(node.value),
@@ -243,7 +251,7 @@ export class SVGRenderer {
       unit: () => 'Unit',
       pair: () => `(${this.extractValue(node.children[0])}, ${this.extractValue(node.children[1])})`,
       fail: () => `Fail:${this.extractValue(node.value)}`,
-      list: () => `${this.extractValue(node.value)}[${node.children.map(x => this.extractValue(x)).join(', ')}]`,
+      list: () => `${this.extractValue(node.value)}[${node.children ? node.children.map(x => this.extractValue(x)).join(', ') : ''}]`,
       compare: () => `${this.extractValue(node.value[0])} ${node.symbol} ${this.extractValue(node.value[1])} ?`,
       mutez: () => this.extractValue(node.value),
       address: () => typeof node.value === 'string' ? node.value : this.extractValue(node.value),
@@ -252,7 +260,8 @@ export class SVGRenderer {
       big_map: () => this.extractValue(node.value),
       set: () => this.extractValue(node.value),
       some: () => `Some(${this.extractValue(node.value)})`,
-      option: () => `option<${this.extractValue(node.item)}>`
+      option: () => `option<${this.extractValue(node.item)}>`,
+      operation: () => this.extractValue(node.value)
     }
 
     if (!(node.kind in kind_mapping)) {

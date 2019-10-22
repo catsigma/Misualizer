@@ -130,7 +130,8 @@ export class Contract {
           return {
             kind: 'map',
             t: inside_value,
-            value: getId(`map<${key_t}, ${value_t}>`, input)
+            value: getId(`map<${key_t}, ${value_t}>`, input),
+            children: []
           }
         },
         big_map() {
@@ -139,7 +140,8 @@ export class Contract {
           return {
             kind: 'big_map',
             t: inside_value,
-            value: getId(`big_map<${key_t}, ${value_t}>`, input)
+            value: getId(`big_map<${key_t}, ${value_t}>`, input),
+            children: []
           }
         },
         set() {
@@ -509,6 +511,7 @@ export class Contract {
         //   return true
 
         } else if (instr.prim === 'IF_CONS') {
+          // TODO branchs
           const [lst] = stack.splice(dip_top, 1)
           const remain_codes = code_instrs.slice(i + 1)
 
@@ -547,6 +550,7 @@ export class Contract {
         } else if (instr.prim === 'PACK') {
           stack[dip_top] = {
             kind: 'bytes',
+            value: getId('bytes'),
             calc: {
               op: 'pack',
               stack: [stack[dip_top]]
@@ -652,10 +656,11 @@ export class Contract {
           })
 
         } else if (instr.prim === 'FAILWITH') {
-          stack[dip_top] = {
+          stack.unshift({
             kind: 'fail',
-            value: stack[dip_top]
-          }
+            value: stack.splice(dip_top, 1)[0]
+          })
+          
           return false
 
         } else if (instr.prim === 'CAR') {
