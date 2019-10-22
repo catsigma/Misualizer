@@ -10,8 +10,8 @@ import { Contract } from '../src/emu'
 
 // Init setup
 const client = new TBN({
-  // host: 'https://mainnet.tezrpc.me'
-  host: 'https://tezos-dev.cryptonomic-infra.tech'
+  host: 'https://mainnet.tezrpc.me'
+  // host: 'https://tezos-dev.cryptonomic-infra.tech'
 })
 
 
@@ -58,8 +58,11 @@ function renderer(graph? : Object) {
 
 async function main() {
   // const address = 'KT1Mfe3rRhQw9KnEUZzoxkhmyHXBeN3zCzXL'
+  // const address = 'KT1RA48D7YPmS1bcpfhZKsN6DpZbC4oAxpVW'
+  const address = 'KT1Q1kfbvzteafLvnGz92DGvkdypXfTGfEA3'
+  
   // const address = 'KT1Qx7PRNAVHgam1qb2MuJohggnSdHTeBWyc'
-  const address = 'KT1P3j1VonQytW3b2SzCnGVpjdf3oWajM79E'
+  // const address = 'KT1P3j1VonQytW3b2SzCnGVpjdf3oWajM79E'
   // const address = 'KT1WhouvVKZFH94VXj9pa8v4szvfrBwXoBUj'
   
   const contract_info = await client.fetch.contract(address)
@@ -87,7 +90,6 @@ async function main() {
   const graph_arr = Code2GLConvert(graph_tree, address)
   const graph_str = graph_arr.join(' ')
   
-
   const gl_parser1 = new GLParser()
   const graph_code = gl_parser1.parse(graph_str)
   const gl_parser2 = new GLParser()

@@ -1,7 +1,13 @@
+import { get } from "https"
+
 // @flow
 
 function clone(x : Object) {
-  return JSON.parse(JSON.stringify(x))
+  try {
+    return JSON.parse(JSON.stringify(x))
+  } catch(e) {
+    debugger
+  }
 }
 
 const getId = (() => {
@@ -62,6 +68,9 @@ export class Contract {
             return: walk(input.args[1])
           }
 
+        } else if (input.prim === 'option') {
+          inside_value = walk(input.args[0])
+
         } else if (input.prim === 'map') {
           inside_value = {
             key: walk(input.args[0]),
@@ -105,7 +114,14 @@ export class Contract {
             kind: 'list',
             t,
             value: getId(`list<${t}>`, input),
-            children: inside_value
+            uncertain: true,
+            children: []
+          }
+        },
+        option() {
+          return {
+            kind: 'option',
+            item: inside_value
           }
         },
         map() {
@@ -210,6 +226,18 @@ export class Contract {
             kind: 'mutez',
             value: getId('mutez', input)
           }
+        },
+        key() {
+          return {
+            kind: 'key',
+            value: getId('key', input)
+          }
+        },
+        signature() {
+          return {
+            kind: 'signature',
+            value: getId('signature', input)
+          }
         }
       }
       
@@ -225,7 +253,7 @@ export class Contract {
     return walk(input_type)
   }
 
-  parseCode() {
+  parseCode(no_branchs : boolean = false) {
     const node_mapping = {}
     let node_id = 1
 
@@ -269,8 +297,9 @@ export class Contract {
 
           const remain_codes = code_instrs.slice(i + 1)
           const [stack_true, stack_false] = clone([stack, stack])
+
           const has_branchs1 = walk(instr.args[0].concat(remain_codes), stack_true, dip_top, g.branchs.true)
-          const has_branchs2 = walk(instr.args[1].concat(remain_codes), stack_false, dip_top, g.branchs.false)
+          const has_branchs2 = no_branchs || walk(instr.args[1].concat(remain_codes), stack_false, dip_top, g.branchs.false)
 
           if (!has_branchs1) {
             node_mapping[node_id] = {
@@ -328,7 +357,7 @@ export class Contract {
 
           const remain_codes = code_instrs.slice(i + 1)
           const has_branchs1 = walk(instr.args[0].concat(remain_codes), left_stack, dip_top, g.branchs.left)
-          const has_branchs2 = walk(instr.args[1].concat(remain_codes), right_stack, dip_top, g.branchs.right)
+          const has_branchs2 = no_branchs || walk(instr.args[1].concat(remain_codes), right_stack, dip_top, g.branchs.right)
         
           if (!has_branchs1) {
             node_mapping[node_id] = {
@@ -389,7 +418,7 @@ export class Contract {
           })
 
           const remain_codes = code_instrs.slice(i + 1)
-          const has_branchs1 = walk(instr.args[0].concat(remain_codes), none_stack, dip_top, g.branchs.none)
+          const has_branchs1 = no_branchs || walk(instr.args[0].concat(remain_codes), none_stack, dip_top, g.branchs.none)
           const has_branchs2 = walk(instr.args[1].concat(remain_codes), some_stack, dip_top, g.branchs.some)
 
           if (!has_branchs1) {
@@ -414,11 +443,115 @@ export class Contract {
 
           return true
 
+        // } else if (instr.prim === 'IF_CONS' && instr.uncertain) {
+        //   node_mapping[node_id] = {
+        //     name: 'from_if_cons',
+        //     value: clone(stack)
+        //   }
+        //   const g = {
+        //     node_id: node_id++,
+        //     branchs: {
+        //       rest: [],
+        //       empty: []
+        //     }
+        //   }
+        //   graph_cursor.push(g)
+          
+        //   const [rest_stack, empty_stack] = clone([stack, stack])
+        //   const [lst] = rest_stack.splice(dip_top, 1)
+        //   const hd = lst
+        //   rest_stack.splice(dip_top, 0, [{
+        //     kind: lst.t,
+        //     value: getId(lst.t)
+        //   }, lst])
+
+        //   empty_stack.splice(dip_top, 1)
+          
+        //   node_mapping[node_id] = {
+        //     name: 'start_rest',
+        //     value: clone(rest_stack)
+        //   }
+        //   g.branchs.rest.push({
+        //     node_id: node_id++,
+        //   })
+        //   node_mapping[node_id] = {
+        //     name: 'start_some',
+        //     value: clone(empty_stack)
+        //   }
+        //   g.branchs.empty.push({
+        //     node_id: node_id++,
+        //   })
+
+        //   const remain_codes = code_instrs.slice(i + 1)
+        //   const has_branchs1 = walk(instr.args[0].concat(remain_codes), rest_stack, dip_top, g.branchs.rest)
+        //   const has_branchs2 = no_branchs || walk(instr.args[1].concat(remain_codes), empty_stack, dip_top, g.branchs.empty)
+
+        //   if (!has_branchs1) {
+        //     node_mapping[node_id] = {
+        //       name: 'end_none',
+        //       value: clone(rest_stack)
+        //     }
+        //     g.branchs.rest.push({
+        //       node_id: node_id++
+        //     })
+        //   }
+
+        //   if (!has_branchs2) {
+        //     node_mapping[node_id] = {
+        //       name: 'end_empty',
+        //       value: clone(empty_stack)
+        //     }
+        //     g.branchs.empty.push({
+        //       node_id: node_id++
+        //     })
+        //   }
+
+        //   return true
+
+        } else if (instr.prim === 'IF_CONS') {
+          const [lst] = stack.splice(dip_top, 1)
+          const remain_codes = code_instrs.slice(i + 1)
+
+          if (lst.children && lst.children.length) {
+            const hd = lst.children.shift()
+            stack.splice(dip_top, 0, [hd, lst])
+            return walk(instr.args[0].concat(remain_codes), stack, dip_top, graph_cursor)
+          } else {
+            return walk(instr.args[1].concat(remain_codes), stack, dip_top, graph_cursor)
+          }
+
         } else if (instr.prim === 'DUP') {
           stack.splice(dip_top, 0, clone(stack[dip_top]))
 
         } else if (instr.prim === 'RENAME') {
           stack[dip_top].annots = instr.annots 
+
+        } else if (instr.prim === 'ITER') {
+          // TODO
+          stack[dip_top] = {
+            kind: stack[dip_top].t,
+            value: getId(stack[dip_top].t)
+          }
+          code_instrs[i--] = instr.args[0]
+
+        } else if (instr.prim === 'INT') {
+          stack[dip_top] = {
+            kind: 'int',
+            value: getId('int'),
+            calc: {
+              op: 'int',
+              stack: [stack[dip_top]]
+            }
+          }
+
+        } else if (instr.prim === 'PACK') {
+          stack[dip_top] = {
+            kind: 'bytes',
+            calc: {
+              op: 'pack',
+              stack: [stack[dip_top]]
+            }
+          }
 
         } else if (instr.prim === 'CONS') {
           const [elem] = stack.splice(dip_top, 1)
@@ -431,6 +564,13 @@ export class Contract {
           const temp = stack[dip_top]
           stack[dip_top] = stack[dip_top + 1]
           stack[dip_top + 1] = temp
+
+        } else if (instr.prim === 'SELF') {
+          stack.splice(dip_top, 0, {
+            kind: 'contract',
+            parameter: this.getMockFromType(this.parameter_t[0]),
+            value: 'SELF'
+          })
 
         } else if (instr.prim === 'ADDRESS') {
           stack[dip_top] = {
@@ -516,7 +656,7 @@ export class Contract {
             kind: 'fail',
             value: stack[dip_top]
           }
-          return false;
+          return false
 
         } else if (instr.prim === 'CAR') {
           stack[dip_top] = stack[dip_top].children[0]
@@ -536,11 +676,47 @@ export class Contract {
             kind: instr.args[0].prim,
             value: Object.values(instr.args[1])[0]
           })
+          
+        } else if (instr.prim === 'TRANSFER_TOKENS') {
+          stack.splice(dip_top, 0, {
+            kind: 'operation',
+            value: getId('operation'),
+            calc: {
+              op: 'transfer_tokens',
+              stack: stack.splice(dip_top, 3)
+            }
+          })
+          
+        } else if (instr.prim === 'CHECK_SIGNATURE') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            value: getId('bool'),
+            calc: {
+              op: 'check_signature',
+              stack: stack.splice(dip_top, 3)
+            }
+          })
+
+        } else if (instr.prim === 'BALANCE') {
+          stack.splice(dip_top, 0, {
+            kind: 'mutez',
+            value: 'BALANCE'
+          })
 
         } else if (instr.prim === 'AMOUNT') {
           stack.splice(dip_top, 0, {
             kind: 'mutez',
             value: 'TX_AMOUNT'
+          })
+
+        } else if (instr.prim === 'SUB') {
+          stack.splice(dip_top, 0, {
+            kind: 'int',
+            value: getId('int'),
+            calc: {
+              op: 'sub',
+              stack: stack.splice(dip_top, 2)
+            }
           })
 
         } else if (instr.prim === 'ADD') {
@@ -621,6 +797,17 @@ export class Contract {
             }
           })
 
+        } else if (instr.prim === 'NOT') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '~',
+            value: getId('bool'),
+            calc: {
+              op: 'not',
+              stack: stack.splice(dip_top, 1)
+            }
+          })
+
         } else if (instr.prim === 'OR') {
           stack.splice(dip_top, 0, {
             kind: 'bool',
@@ -646,6 +833,13 @@ export class Contract {
             value: stack.splice(dip_top, 1)[0]
           })
 
+        } else if (instr.prim === 'GT') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '>',
+            value: stack.splice(dip_top, 1)[0]
+          })
+
         } else if (instr.prim === 'LE') {
           stack.splice(dip_top, 0, {
             kind: 'bool',
@@ -660,6 +854,13 @@ export class Contract {
             value: stack.splice(dip_top, 1)[0]
           })
           
+        } else if (instr.prim === 'GE') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '>=',
+            value: stack.splice(dip_top, 1)[0]
+          })
+
         } else if (instr.prim === 'NOW') {
           stack.splice(dip_top, 0, {
             kind: 'timestamp',

@@ -74,10 +74,12 @@ export function Code2GL(input : Object, title : string) {
         
         if (node.branchs) {
           for (const arrow in node.branchs) {
-            result.push('[')
-            result.push(`-${arrow}->`)
-            walk(node.branchs[arrow])
-            result.push(']')
+            if (node.branchs[arrow].length) {
+              result.push('[')
+              result.push(`-${arrow}->`)
+              walk(node.branchs[arrow])
+              result.push(']')
+            }
           }
         }
       })

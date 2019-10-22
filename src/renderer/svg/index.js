@@ -213,6 +213,7 @@ export class SVGRenderer {
       add: () => `${stack(0)} + ${stack(1)}`,
       get: () => `${stack(1)}[${stack(0)}]`,
       or: () => `${stack(0)} ${node.symbol} ${stack(1)}`,
+      not: () => `${node.symbol}${stack(0)}`,
       update_set: () => `${this.extractValue(calc.stack[2])} ${stack(1)} ${stack(0)}`,
       update_map: () => `${this.extractValue(calc.stack[2])}(${stack(0)}, ${stack(1)})`
     }
@@ -266,8 +267,6 @@ export class SVGRenderer {
   }
 
   drawCode(graph : Object, node_mapping : Object, with_arrow : boolean = false) {
-    console.log(123, node_mapping)
-    
     const top_text = Text([20,20], graph.name)
     const levels = {
       [0]: [top_text]
