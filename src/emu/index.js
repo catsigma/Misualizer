@@ -530,12 +530,13 @@ export class Contract {
           stack[dip_top].annots = instr.annots 
 
         } else if (instr.prim === 'ITER') {
-          // TODO
-          stack[dip_top] = {
-            kind: stack[dip_top].t,
-            value: getId(stack[dip_top].t)
-          }
-          code_instrs[i--] = instr.args[0]
+          stack.splice(dip_top, 1)
+          // // TODO
+          // stack[dip_top] = {
+          //   kind: stack[dip_top].t,
+          //   value: getId(stack[dip_top].t)
+          // }
+          // code_instrs[i--] = instr.args[0]
 
         } else if (instr.prim === 'INT') {
           stack[dip_top] = {
@@ -682,6 +683,16 @@ export class Contract {
             value: Object.values(instr.args[1])[0]
           })
           
+        } else if (instr.prim === 'SET_DELEGATE') {
+          stack[dip_top] = {
+            kind: 'operation',
+            value: getId('operation'),
+            calc: {
+              op: 'set_delegate',
+              stack: [stack[dip_top]]
+            }
+          }
+
         } else if (instr.prim === 'TRANSFER_TOKENS') {
           stack.splice(dip_top, 0, {
             kind: 'operation',

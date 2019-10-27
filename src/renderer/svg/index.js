@@ -220,7 +220,8 @@ export class SVGRenderer {
       update_set: () => `${stack(2)} ${stack(1)} ${stack(0)}`,
       update_map: () => `${stack(2)}(${stack(0)}, ${stack(1)})`,
       check_signature: () => `CHECK_SIG(${stack(0)}, ${stack(1)}, ${stack(2)})`,
-      transfer_tokens: () => `CALL(${stack(2)}, ${stack(1)}, ${stack(0)})`
+      transfer_tokens: () => `CALL(${stack(2)}, ${stack(1)}, ${stack(0)})`,
+      set_delegate: () => `SET_DELEGATE(${stack(0)})`
     }
 
     if (calc.op in op_mapping) {
