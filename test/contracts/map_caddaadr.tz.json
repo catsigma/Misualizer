@@ -1,0 +1,347 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "nat"
+              },
+              {
+                "prim": "pair",
+                "args": [
+                  {
+                    "prim": "nat"
+                  },
+                  {
+                    "prim": "pair",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "pair",
+                            "args": [
+                              {
+                                "prim": "nat",
+                                "annots": [
+                                  "%p"
+                                ]
+                              },
+                              {
+                                "prim": "mutez",
+                                "annots": [
+                                  "%value"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "prim": "nat"
+                          }
+                        ]
+                      },
+                      {
+                        "prim": "nat"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "prim": "nat"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        [
+          {
+            "prim": "DUP"
+          },
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                {
+                  "prim": "CDR",
+                  "annots": [
+                    "@%%"
+                  ]
+                },
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CAR",
+                          "annots": [
+                            "@%%"
+                          ]
+                        },
+                        [
+                          {
+                            "prim": "DUP"
+                          },
+                          {
+                            "prim": "DIP",
+                            "args": [
+                              [
+                                {
+                                  "prim": "CDR",
+                                  "annots": [
+                                    "@%%"
+                                  ]
+                                },
+                                [
+                                  {
+                                    "prim": "DUP"
+                                  },
+                                  {
+                                    "prim": "DIP",
+                                    "args": [
+                                      [
+                                        {
+                                          "prim": "CDR",
+                                          "annots": [
+                                            "@%%"
+                                          ]
+                                        },
+                                        [
+                                          {
+                                            "prim": "DUP"
+                                          },
+                                          {
+                                            "prim": "DIP",
+                                            "args": [
+                                              [
+                                                {
+                                                  "prim": "CAR",
+                                                  "annots": [
+                                                    "@%%"
+                                                  ]
+                                                },
+                                                [
+                                                  {
+                                                    "prim": "DUP"
+                                                  },
+                                                  {
+                                                    "prim": "DIP",
+                                                    "args": [
+                                                      [
+                                                        {
+                                                          "prim": "CAR",
+                                                          "annots": [
+                                                            "@%%"
+                                                          ]
+                                                        },
+                                                        [
+                                                          {
+                                                            "prim": "DUP"
+                                                          },
+                                                          {
+                                                            "prim": "CDR",
+                                                            "annots": [
+                                                              "@value"
+                                                            ]
+                                                          },
+                                                          [
+                                                            {
+                                                              "prim": "PUSH",
+                                                              "args": [
+                                                                {
+                                                                  "prim": "mutez"
+                                                                },
+                                                                {
+                                                                  "int": "1000000"
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "prim": "ADD"
+                                                            }
+                                                          ],
+                                                          {
+                                                            "prim": "SWAP"
+                                                          },
+                                                          {
+                                                            "prim": "CAR",
+                                                            "annots": [
+                                                              "@%%"
+                                                            ]
+                                                          },
+                                                          {
+                                                            "prim": "PAIR",
+                                                            "annots": [
+                                                              "%@",
+                                                              "%value"
+                                                            ]
+                                                          }
+                                                        ]
+                                                      ]
+                                                    ]
+                                                  },
+                                                  {
+                                                    "prim": "CDR",
+                                                    "annots": [
+                                                      "@%%"
+                                                    ]
+                                                  },
+                                                  {
+                                                    "prim": "SWAP"
+                                                  },
+                                                  {
+                                                    "prim": "PAIR",
+                                                    "annots": [
+                                                      "%@",
+                                                      "%@"
+                                                    ]
+                                                  }
+                                                ]
+                                              ]
+                                            ]
+                                          },
+                                          {
+                                            "prim": "CDR",
+                                            "annots": [
+                                              "@%%"
+                                            ]
+                                          },
+                                          {
+                                            "prim": "SWAP"
+                                          },
+                                          {
+                                            "prim": "PAIR",
+                                            "annots": [
+                                              "%@",
+                                              "%@"
+                                            ]
+                                          }
+                                        ]
+                                      ]
+                                    ]
+                                  },
+                                  {
+                                    "prim": "CAR",
+                                    "annots": [
+                                      "@%%"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "PAIR",
+                                    "annots": [
+                                      "%@",
+                                      "%@"
+                                    ]
+                                  }
+                                ]
+                              ]
+                            ]
+                          },
+                          {
+                            "prim": "CAR",
+                            "annots": [
+                              "@%%"
+                            ]
+                          },
+                          {
+                            "prim": "PAIR",
+                            "annots": [
+                              "%@",
+                              "%@"
+                            ]
+                          }
+                        ]
+                      ]
+                    ]
+                  },
+                  {
+                    "prim": "CDR",
+                    "annots": [
+                      "@%%"
+                    ]
+                  },
+                  {
+                    "prim": "SWAP"
+                  },
+                  {
+                    "prim": "PAIR",
+                    "annots": [
+                      "%@",
+                      "%@"
+                    ]
+                  }
+                ]
+              ]
+            ]
+          },
+          {
+            "prim": "CAR",
+            "annots": [
+              "@%%"
+            ]
+          },
+          {
+            "prim": "PAIR",
+            "annots": [
+              "%@",
+              "%@",
+              "@new_storage"
+            ]
+          }
+        ],
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        [
+          {
+            "prim": "CDR",
+            "annots": [
+              "@%%"
+            ]
+          },
+          {
+            "prim": "SWAP"
+          },
+          {
+            "prim": "PAIR",
+            "annots": [
+              "%",
+              "%@"
+            ]
+          }
+        ]
+      ]
+    ]
+  }
+]

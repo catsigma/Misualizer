@@ -1,0 +1,45 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "address"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "DROP"
+        },
+        {
+          "prim": "SELF"
+        },
+        {
+          "prim": "ADDRESS"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

@@ -1,0 +1,227 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "bytes"
+          },
+          {
+            "prim": "signature"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "bytes"
+          },
+          {
+            "prim": "key"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "DUP"
+        },
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR"
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ]
+        ],
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "SHA256"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "CAR"
+              }
+            ]
+          ]
+        },
+        [
+          [
+            {
+              "prim": "COMPARE"
+            },
+            {
+              "prim": "EQ"
+            }
+          ],
+          {
+            "prim": "IF",
+            "args": [
+              [],
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        {
+          "prim": "DUP"
+        },
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR"
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ]
+        ],
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              [
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "CAR"
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CDR"
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              ],
+              {
+                "prim": "SWAP"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "CDR"
+        },
+        {
+          "prim": "CHECK_SIGNATURE"
+        },
+        [
+          {
+            "prim": "IF",
+            "args": [
+              [],
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        {
+          "prim": "CDR"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "CDR"
+        },
+        {
+          "prim": "HASH_KEY"
+        },
+        {
+          "prim": "IMPLICIT_ACCOUNT"
+        },
+        {
+          "prim": "BALANCE"
+        },
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "TRANSFER_TOKENS"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "CONS"
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

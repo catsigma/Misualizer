@@ -1,0 +1,90 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "int"
+          },
+          {
+            "prim": "int"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "CDR"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "COMPARE"
+        },
+        [
+          {
+            "prim": "LE"
+          },
+          {
+            "prim": "IF",
+            "args": [
+              [],
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

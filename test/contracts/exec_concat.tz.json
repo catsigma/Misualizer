@@ -1,0 +1,92 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "string"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "string"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "LAMBDA",
+          "args": [
+            {
+              "prim": "string"
+            },
+            {
+              "prim": "string"
+            },
+            [
+              {
+                "prim": "PUSH",
+                "args": [
+                  {
+                    "prim": "string"
+                  },
+                  {
+                    "string": "_abc"
+                  }
+                ]
+              },
+              {
+                "prim": "NIL",
+                "args": [
+                  {
+                    "prim": "string"
+                  }
+                ]
+              },
+              {
+                "prim": "SWAP"
+              },
+              {
+                "prim": "CONS"
+              },
+              {
+                "prim": "SWAP"
+              },
+              {
+                "prim": "CONS"
+              },
+              {
+                "prim": "CONCAT"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "EXEC"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

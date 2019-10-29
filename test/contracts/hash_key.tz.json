@@ -1,0 +1,50 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "key"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "option",
+        "args": [
+          {
+            "prim": "key_hash"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "HASH_KEY"
+        },
+        {
+          "prim": "SOME"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

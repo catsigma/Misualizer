@@ -1,0 +1,170 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "nat"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "nat"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR",
+          "annots": [
+            "@counter"
+          ]
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "nat"
+            }
+          ],
+          "annots": [
+            "@acc"
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "DUP",
+          "annots": [
+            "@cmp_num"
+          ]
+        },
+        {
+          "prim": "PUSH",
+          "args": [
+            {
+              "prim": "nat"
+            },
+            {
+              "int": "0"
+            }
+          ]
+        },
+        [
+          {
+            "prim": "COMPARE"
+          },
+          {
+            "prim": "NEQ"
+          }
+        ],
+        {
+          "prim": "LOOP",
+          "args": [
+            [
+              {
+                "prim": "DUP"
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "SWAP"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "CONS",
+                "annots": [
+                  "@acc"
+                ]
+              },
+              {
+                "prim": "SWAP"
+              },
+              {
+                "prim": "PUSH",
+                "args": [
+                  {
+                    "prim": "nat"
+                  },
+                  {
+                    "int": "1"
+                  }
+                ]
+              },
+              {
+                "prim": "SWAP"
+              },
+              {
+                "prim": "SUB",
+                "annots": [
+                  "@counter"
+                ]
+              },
+              {
+                "prim": "DUP"
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "ABS"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "PUSH",
+                "args": [
+                  {
+                    "prim": "int"
+                  },
+                  {
+                    "int": "0"
+                  }
+                ]
+              },
+              [
+                {
+                  "prim": "COMPARE"
+                },
+                {
+                  "prim": "NEQ"
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "prim": "CONS"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "map",
+        "args": [
+          {
+            "prim": "string"
+          },
+          {
+            "prim": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "DROP"
+        },
+        {
+          "prim": "EMPTY_MAP",
+          "args": [
+            {
+              "prim": "string"
+            },
+            {
+              "prim": "string"
+            }
+          ]
+        },
+        {
+          "prim": "PUSH",
+          "args": [
+            {
+              "prim": "string"
+            },
+            {
+              "string": "world"
+            }
+          ]
+        },
+        {
+          "prim": "SOME"
+        },
+        {
+          "prim": "PUSH",
+          "args": [
+            {
+              "prim": "string"
+            },
+            {
+              "string": "hello"
+            }
+          ]
+        },
+        {
+          "prim": "UPDATE"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

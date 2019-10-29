@@ -1,0 +1,133 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "string"
+            }
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "PUSH",
+          "args": [
+            {
+              "prim": "bool"
+            },
+            {
+              "prim": "True"
+            }
+          ]
+        },
+        {
+          "prim": "LOOP",
+          "args": [
+            [
+              {
+                "prim": "IF_CONS",
+                "args": [
+                  [
+                    {
+                      "prim": "SWAP"
+                    },
+                    {
+                      "prim": "DIP",
+                      "args": [
+                        [
+                          {
+                            "prim": "CONS"
+                          }
+                        ]
+                      ]
+                    },
+                    {
+                      "prim": "PUSH",
+                      "args": [
+                        {
+                          "prim": "bool"
+                        },
+                        {
+                          "prim": "True"
+                        }
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "prim": "NIL",
+                      "args": [
+                        {
+                          "prim": "string"
+                        }
+                      ]
+                    },
+                    {
+                      "prim": "PUSH",
+                      "args": [
+                        {
+                          "prim": "bool"
+                        },
+                        {
+                          "prim": "False"
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "DROP"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

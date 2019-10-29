@@ -1,0 +1,271 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "timestamp",
+                "annots": [
+                  "%T"
+                ]
+              },
+              {
+                "prim": "mutez",
+                "annots": [
+                  "%N"
+                ]
+              }
+            ]
+          },
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "address",
+                "annots": [
+                  "%A"
+                ]
+              },
+              {
+                "prim": "address",
+                "annots": [
+                  "%B"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CDR"
+        },
+        {
+          "prim": "DUP"
+        },
+        [
+          {
+            "prim": "CAR"
+          },
+          {
+            "prim": "CAR",
+            "annots": [
+              "%T"
+            ]
+          }
+        ],
+        {
+          "prim": "NOW"
+        },
+        {
+          "prim": "COMPARE"
+        },
+        {
+          "prim": "LE"
+        },
+        {
+          "prim": "IF",
+          "args": [
+            [
+              {
+                "prim": "DUP"
+              },
+              [
+                {
+                  "prim": "CAR"
+                },
+                {
+                  "prim": "CDR",
+                  "annots": [
+                    "%N"
+                  ]
+                }
+              ],
+              {
+                "prim": "BALANCE"
+              },
+              {
+                "prim": "COMPARE"
+              },
+              {
+                "prim": "LE"
+              },
+              {
+                "prim": "IF",
+                "args": [
+                  [
+                    {
+                      "prim": "NIL",
+                      "args": [
+                        {
+                          "prim": "operation"
+                        }
+                      ]
+                    },
+                    {
+                      "prim": "PAIR"
+                    }
+                  ],
+                  [
+                    {
+                      "prim": "DUP"
+                    },
+                    [
+                      {
+                        "prim": "CDR"
+                      },
+                      {
+                        "prim": "CDR",
+                        "annots": [
+                          "%B"
+                        ]
+                      }
+                    ],
+                    {
+                      "prim": "CONTRACT",
+                      "args": [
+                        {
+                          "prim": "unit"
+                        }
+                      ]
+                    },
+                    [
+                      {
+                        "prim": "IF_NONE",
+                        "args": [
+                          [
+                            [
+                              {
+                                "prim": "UNIT"
+                              },
+                              {
+                                "prim": "FAILWITH"
+                              }
+                            ]
+                          ],
+                          []
+                        ]
+                      }
+                    ],
+                    {
+                      "prim": "BALANCE"
+                    },
+                    {
+                      "prim": "UNIT"
+                    },
+                    {
+                      "prim": "TRANSFER_TOKENS"
+                    },
+                    {
+                      "prim": "NIL",
+                      "args": [
+                        {
+                          "prim": "operation"
+                        }
+                      ]
+                    },
+                    {
+                      "prim": "SWAP"
+                    },
+                    {
+                      "prim": "CONS"
+                    },
+                    {
+                      "prim": "PAIR"
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              {
+                "prim": "DUP"
+              },
+              [
+                {
+                  "prim": "CDR"
+                },
+                {
+                  "prim": "CAR",
+                  "annots": [
+                    "%A"
+                  ]
+                }
+              ],
+              {
+                "prim": "CONTRACT",
+                "args": [
+                  {
+                    "prim": "unit"
+                  }
+                ]
+              },
+              [
+                {
+                  "prim": "IF_NONE",
+                  "args": [
+                    [
+                      [
+                        {
+                          "prim": "UNIT"
+                        },
+                        {
+                          "prim": "FAILWITH"
+                        }
+                      ]
+                    ],
+                    []
+                  ]
+                }
+              ],
+              {
+                "prim": "BALANCE"
+              },
+              {
+                "prim": "UNIT"
+              },
+              {
+                "prim": "TRANSFER_TOKENS"
+              },
+              {
+                "prim": "NIL",
+                "args": [
+                  {
+                    "prim": "operation"
+                  }
+                ]
+              },
+              {
+                "prim": "SWAP"
+              },
+              {
+                "prim": "CONS"
+              },
+              {
+                "prim": "PAIR"
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
+]

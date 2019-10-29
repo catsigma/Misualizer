@@ -1,0 +1,708 @@
+[
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "big_map",
+            "args": [
+              {
+                "prim": "string"
+              },
+              {
+                "prim": "nat"
+              }
+            ]
+          },
+          {
+            "prim": "big_map",
+            "args": [
+              {
+                "prim": "string"
+              },
+              {
+                "prim": "nat"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "or",
+        "args": [
+          {
+            "prim": "unit",
+            "annots": [
+              "%default"
+            ]
+          },
+          {
+            "prim": "or",
+            "args": [
+              {
+                "prim": "or",
+                "args": [
+                  {
+                    "prim": "string",
+                    "annots": [
+                      "%mem_left"
+                    ]
+                  },
+                  {
+                    "prim": "string",
+                    "annots": [
+                      "%mem_right"
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%mem"
+                ]
+              },
+              {
+                "prim": "or",
+                "args": [
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "string"
+                          },
+                          {
+                            "prim": "nat"
+                          }
+                        ],
+                        "annots": [
+                          "%add_left"
+                        ]
+                      },
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "string"
+                          },
+                          {
+                            "prim": "nat"
+                          }
+                        ],
+                        "annots": [
+                          "%add_right"
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%add"
+                    ]
+                  },
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "string",
+                        "annots": [
+                          "%rem_left"
+                        ]
+                      },
+                      {
+                        "prim": "string",
+                        "annots": [
+                          "%rem_right"
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%rem"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR"
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ]
+        ],
+        {
+          "prim": "IF_LEFT",
+          "args": [
+            [
+              {
+                "prim": "DROP"
+              },
+              {
+                "prim": "DUP"
+              },
+              {
+                "prim": "CAR"
+              },
+              {
+                "prim": "PUSH",
+                "args": [
+                  {
+                    "prim": "mutez"
+                  },
+                  {
+                    "int": "0"
+                  }
+                ]
+              },
+              {
+                "prim": "NONE",
+                "args": [
+                  {
+                    "prim": "key_hash"
+                  }
+                ]
+              },
+              {
+                "prim": "CREATE_CONTRACT",
+                "args": [
+                  [
+                    {
+                      "prim": "parameter",
+                      "args": [
+                        {
+                          "prim": "string"
+                        }
+                      ]
+                    },
+                    {
+                      "prim": "storage",
+                      "args": [
+                        {
+                          "prim": "big_map",
+                          "args": [
+                            {
+                              "prim": "string"
+                            },
+                            {
+                              "prim": "nat"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "prim": "code",
+                      "args": [
+                        [
+                          [
+                            [
+                              {
+                                "prim": "DUP"
+                              },
+                              {
+                                "prim": "CAR"
+                              },
+                              {
+                                "prim": "DIP",
+                                "args": [
+                                  [
+                                    {
+                                      "prim": "CDR"
+                                    }
+                                  ]
+                                ]
+                              }
+                            ]
+                          ],
+                          {
+                            "prim": "DROP"
+                          },
+                          {
+                            "prim": "NIL",
+                            "args": [
+                              {
+                                "prim": "operation"
+                              }
+                            ]
+                          },
+                          {
+                            "prim": "PAIR"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "DROP"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "NIL",
+                "args": [
+                  {
+                    "prim": "operation"
+                  }
+                ]
+              },
+              {
+                "prim": "SWAP"
+              },
+              {
+                "prim": "CONS"
+              },
+              {
+                "prim": "PAIR"
+              }
+            ],
+            [
+              {
+                "prim": "IF_LEFT",
+                "args": [
+                  [
+                    {
+                      "prim": "IF_LEFT",
+                      "args": [
+                        [
+                          {
+                            "prim": "DIP",
+                            "args": [
+                              [
+                                [
+                                  [
+                                    {
+                                      "prim": "DUP"
+                                    },
+                                    {
+                                      "prim": "CAR"
+                                    },
+                                    {
+                                      "prim": "DIP",
+                                      "args": [
+                                        [
+                                          {
+                                            "prim": "CDR"
+                                          }
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                ]
+                              ]
+                            ]
+                          },
+                          {
+                            "prim": "DIP",
+                            "args": [
+                              [
+                                {
+                                  "prim": "DUP"
+                                }
+                              ]
+                            ]
+                          },
+                          {
+                            "prim": "MEM"
+                          },
+                          [
+                            {
+                              "prim": "IF",
+                              "args": [
+                                [],
+                                [
+                                  [
+                                    {
+                                      "prim": "UNIT"
+                                    },
+                                    {
+                                      "prim": "FAILWITH"
+                                    }
+                                  ]
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          {
+                            "prim": "DIP",
+                            "args": [
+                              [
+                                [
+                                  [
+                                    {
+                                      "prim": "DUP"
+                                    },
+                                    {
+                                      "prim": "CAR"
+                                    },
+                                    {
+                                      "prim": "DIP",
+                                      "args": [
+                                        [
+                                          {
+                                            "prim": "CDR"
+                                          }
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                ],
+                                {
+                                  "prim": "SWAP"
+                                }
+                              ]
+                            ]
+                          },
+                          {
+                            "prim": "DIP",
+                            "args": [
+                              [
+                                {
+                                  "prim": "DUP"
+                                }
+                              ]
+                            ]
+                          },
+                          {
+                            "prim": "MEM"
+                          },
+                          [
+                            {
+                              "prim": "IF",
+                              "args": [
+                                [],
+                                [
+                                  [
+                                    {
+                                      "prim": "UNIT"
+                                    },
+                                    {
+                                      "prim": "FAILWITH"
+                                    }
+                                  ]
+                                ]
+                              ]
+                            }
+                          ],
+                          {
+                            "prim": "SWAP"
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "prim": "IF_LEFT",
+                      "args": [
+                        [
+                          {
+                            "prim": "IF_LEFT",
+                            "args": [
+                              [
+                                [
+                                  [
+                                    {
+                                      "prim": "DUP"
+                                    },
+                                    {
+                                      "prim": "CAR"
+                                    },
+                                    {
+                                      "prim": "DIP",
+                                      "args": [
+                                        [
+                                          {
+                                            "prim": "CDR"
+                                          }
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                ],
+                                {
+                                  "prim": "DIP",
+                                  "args": [
+                                    {
+                                      "int": "2"
+                                    },
+                                    [
+                                      [
+                                        [
+                                          {
+                                            "prim": "DUP"
+                                          },
+                                          {
+                                            "prim": "CAR"
+                                          },
+                                          {
+                                            "prim": "DIP",
+                                            "args": [
+                                              [
+                                                {
+                                                  "prim": "CDR"
+                                                }
+                                              ]
+                                            ]
+                                          }
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                },
+                                {
+                                  "prim": "DIP",
+                                  "args": [
+                                    [
+                                      {
+                                        "prim": "SOME"
+                                      }
+                                    ]
+                                  ]
+                                },
+                                {
+                                  "prim": "UPDATE"
+                                }
+                              ],
+                              [
+                                [
+                                  [
+                                    {
+                                      "prim": "DUP"
+                                    },
+                                    {
+                                      "prim": "CAR"
+                                    },
+                                    {
+                                      "prim": "DIP",
+                                      "args": [
+                                        [
+                                          {
+                                            "prim": "CDR"
+                                          }
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                ],
+                                {
+                                  "prim": "DIP",
+                                  "args": [
+                                    {
+                                      "int": "2"
+                                    },
+                                    [
+                                      [
+                                        [
+                                          {
+                                            "prim": "DUP"
+                                          },
+                                          {
+                                            "prim": "CAR"
+                                          },
+                                          {
+                                            "prim": "DIP",
+                                            "args": [
+                                              [
+                                                {
+                                                  "prim": "CDR"
+                                                }
+                                              ]
+                                            ]
+                                          }
+                                        ]
+                                      ],
+                                      {
+                                        "prim": "SWAP"
+                                      }
+                                    ]
+                                  ]
+                                },
+                                {
+                                  "prim": "DIP",
+                                  "args": [
+                                    [
+                                      {
+                                        "prim": "SOME"
+                                      }
+                                    ]
+                                  ]
+                                },
+                                {
+                                  "prim": "UPDATE"
+                                },
+                                {
+                                  "prim": "SWAP"
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "prim": "IF_LEFT",
+                            "args": [
+                              [
+                                {
+                                  "prim": "DIP",
+                                  "args": [
+                                    [
+                                      [
+                                        [
+                                          {
+                                            "prim": "DUP"
+                                          },
+                                          {
+                                            "prim": "CAR"
+                                          },
+                                          {
+                                            "prim": "DIP",
+                                            "args": [
+                                              [
+                                                {
+                                                  "prim": "CDR"
+                                                }
+                                              ]
+                                            ]
+                                          }
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                },
+                                {
+                                  "prim": "DIP",
+                                  "args": [
+                                    [
+                                      {
+                                        "prim": "NONE",
+                                        "args": [
+                                          {
+                                            "prim": "nat"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                },
+                                {
+                                  "prim": "UPDATE"
+                                }
+                              ],
+                              [
+                                {
+                                  "prim": "DIP",
+                                  "args": [
+                                    [
+                                      [
+                                        [
+                                          {
+                                            "prim": "DUP"
+                                          },
+                                          {
+                                            "prim": "CAR"
+                                          },
+                                          {
+                                            "prim": "DIP",
+                                            "args": [
+                                              [
+                                                {
+                                                  "prim": "CDR"
+                                                }
+                                              ]
+                                            ]
+                                          }
+                                        ]
+                                      ],
+                                      {
+                                        "prim": "SWAP"
+                                      }
+                                    ]
+                                  ]
+                                },
+                                {
+                                  "prim": "DIP",
+                                  "args": [
+                                    [
+                                      {
+                                        "prim": "NONE",
+                                        "args": [
+                                          {
+                                            "prim": "nat"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                },
+                                {
+                                  "prim": "UPDATE"
+                                },
+                                {
+                                  "prim": "SWAP"
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "PAIR"
+              },
+              {
+                "prim": "NIL",
+                "args": [
+                  {
+                    "prim": "operation"
+                  }
+                ]
+              },
+              {
+                "prim": "PAIR"
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
+]

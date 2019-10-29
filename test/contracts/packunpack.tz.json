@@ -1,0 +1,190 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "pair",
+                "args": [
+                  {
+                    "prim": "string"
+                  },
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "int"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "prim": "set",
+                "args": [
+                  {
+                    "prim": "nat"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "prim": "bytes"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR"
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ]
+        ],
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "DUP"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "PACK"
+        },
+        [
+          [
+            {
+              "prim": "COMPARE"
+            },
+            {
+              "prim": "EQ"
+            }
+          ],
+          {
+            "prim": "IF",
+            "args": [
+              [],
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        {
+          "prim": "UNPACK",
+          "args": [
+            {
+              "prim": "pair",
+              "args": [
+                {
+                  "prim": "pair",
+                  "args": [
+                    {
+                      "prim": "string"
+                    },
+                    {
+                      "prim": "list",
+                      "args": [
+                        {
+                          "prim": "int"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "prim": "set",
+                  "args": [
+                    {
+                      "prim": "nat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        [
+          {
+            "prim": "IF_NONE",
+            "args": [
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ],
+              []
+            ]
+          }
+        ],
+        {
+          "prim": "DROP"
+        },
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

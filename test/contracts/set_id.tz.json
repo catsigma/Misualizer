@@ -1,0 +1,49 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "set",
+        "args": [
+          {
+            "prim": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "set",
+        "args": [
+          {
+            "prim": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

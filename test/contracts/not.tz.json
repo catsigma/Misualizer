@@ -1,0 +1,50 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "bool"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "option",
+        "args": [
+          {
+            "prim": "bool"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "NOT"
+        },
+        {
+          "prim": "SOME"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

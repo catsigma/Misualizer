@@ -1,0 +1,87 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "string"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "option",
+            "args": [
+              {
+                "prim": "string"
+              }
+            ]
+          },
+          {
+            "prim": "map",
+            "args": [
+              {
+                "prim": "string"
+              },
+              {
+                "prim": "string"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              [
+                {
+                  "prim": "CDR"
+                },
+                {
+                  "prim": "CDR"
+                }
+              ],
+              {
+                "prim": "DUP"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "GET"
+        },
+        {
+          "prim": "PAIR"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

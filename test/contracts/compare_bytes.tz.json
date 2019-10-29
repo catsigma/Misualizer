@@ -1,0 +1,244 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "bytes"
+          },
+          {
+            "prim": "bytes"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "bool"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            {
+              "int": "5"
+            },
+            [
+              {
+                "prim": "NIL",
+                "args": [
+                  {
+                    "prim": "bool"
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            {
+              "int": "4"
+            },
+            [
+              {
+                "prim": "DUP"
+              },
+              {
+                "prim": "CAR"
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "CDR"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "COMPARE"
+              },
+              {
+                "prim": "LE"
+              },
+              {
+                "prim": "CONS"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            {
+              "int": "3"
+            },
+            [
+              {
+                "prim": "DUP"
+              },
+              {
+                "prim": "CAR"
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "CDR"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "COMPARE"
+              },
+              {
+                "prim": "GE"
+              },
+              {
+                "prim": "CONS"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            {
+              "int": "2"
+            },
+            [
+              {
+                "prim": "DUP"
+              },
+              {
+                "prim": "CAR"
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "CDR"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "COMPARE"
+              },
+              {
+                "prim": "LT"
+              },
+              {
+                "prim": "CONS"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "DUP"
+              },
+              {
+                "prim": "CAR"
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "CDR"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "COMPARE"
+              },
+              {
+                "prim": "GT"
+              },
+              {
+                "prim": "CONS"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "CDR"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "COMPARE"
+        },
+        {
+          "prim": "EQ"
+        },
+        {
+          "prim": "CONS"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

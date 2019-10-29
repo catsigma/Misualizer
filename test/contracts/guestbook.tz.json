@@ -1,0 +1,141 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "string"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "map",
+        "args": [
+          {
+            "prim": "address"
+          },
+          {
+            "prim": "option",
+            "args": [
+              {
+                "prim": "string"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR",
+              "annots": [
+                "@message"
+              ]
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR",
+                    "annots": [
+                      "@guestbook"
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ],
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "SENDER"
+        },
+        {
+          "prim": "GET",
+          "annots": [
+            "@previous_message"
+          ]
+        },
+        [
+          {
+            "prim": "IF_NONE",
+            "args": [
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ],
+              []
+            ]
+          }
+        ],
+        [
+          {
+            "prim": "IF_NONE",
+            "args": [
+              [],
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "SOME"
+        },
+        {
+          "prim": "SOME"
+        },
+        {
+          "prim": "SENDER"
+        },
+        {
+          "prim": "UPDATE"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

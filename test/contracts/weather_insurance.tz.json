@@ -1,0 +1,345 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "signature",
+            "annots": [
+              "%signed_weather_data"
+            ]
+          },
+          {
+            "prim": "nat",
+            "annots": [
+              ":rain",
+              "%actual_level"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "address",
+                "annots": [
+                  "%under_key"
+                ]
+              },
+              {
+                "prim": "address",
+                "annots": [
+                  "%over_key"
+                ]
+              }
+            ]
+          },
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "nat",
+                "annots": [
+                  ":rain",
+                  "%rain_level"
+                ]
+              },
+              {
+                "prim": "key",
+                "annots": [
+                  "%weather_service_key"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "CAR"
+        },
+        [
+          {
+            "prim": "DUP"
+          },
+          {
+            "prim": "CDR"
+          },
+          [
+            {
+              "prim": "PACK"
+            },
+            {
+              "prim": "BLAKE2B"
+            }
+          ],
+          {
+            "prim": "SWAP"
+          },
+          {
+            "prim": "CAR",
+            "annots": [
+              "@%%"
+            ]
+          },
+          {
+            "prim": "PAIR",
+            "annots": [
+              "%@",
+              "%"
+            ]
+          }
+        ],
+        {
+          "prim": "SWAP"
+        },
+        [
+          {
+            "prim": "CDR"
+          },
+          {
+            "prim": "CDR"
+          },
+          {
+            "prim": "CDR",
+            "annots": [
+              "%weather_service_key"
+            ]
+          }
+        ],
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              [
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "CAR"
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CDR"
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            ]
+          ]
+        },
+        {
+          "prim": "CHECK_SIGNATURE",
+          "annots": [
+            "@sigok"
+          ]
+        },
+        [
+          {
+            "prim": "IF",
+            "args": [
+              [],
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            {
+              "int": "3"
+            },
+            [
+              {
+                "prim": "CDR",
+                "annots": [
+                  "%storage"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            {
+              "int": "2"
+            },
+            [
+              [
+                {
+                  "prim": "CDR"
+                },
+                {
+                  "prim": "CAR"
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              [
+                {
+                  "prim": "CAR"
+                },
+                {
+                  "prim": "CDR",
+                  "annots": [
+                    "%actual_level"
+                  ]
+                }
+              ]
+            ]
+          ]
+        },
+        [
+          {
+            "prim": "CDR"
+          },
+          {
+            "prim": "CDR"
+          },
+          {
+            "prim": "CAR",
+            "annots": [
+              "%rain_level"
+            ]
+          }
+        ],
+        [
+          {
+            "prim": "COMPARE"
+          },
+          {
+            "prim": "LT"
+          }
+        ],
+        {
+          "prim": "IF",
+          "args": [
+            [
+              {
+                "prim": "CAR",
+                "annots": [
+                  "%under_key"
+                ]
+              }
+            ],
+            [
+              {
+                "prim": "CDR",
+                "annots": [
+                  "%over_key"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "CONTRACT",
+          "args": [
+            {
+              "prim": "unit"
+            }
+          ]
+        },
+        [
+          {
+            "prim": "IF_NONE",
+            "args": [
+              [
+                [
+                  {
+                    "prim": "UNIT"
+                  },
+                  {
+                    "prim": "FAILWITH"
+                  }
+                ]
+              ],
+              []
+            ]
+          }
+        ],
+        {
+          "prim": "BALANCE"
+        },
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "TRANSFER_TOKENS",
+          "annots": [
+            "@trans.op"
+          ]
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "CONS"
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

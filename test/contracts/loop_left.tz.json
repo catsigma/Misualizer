@@ -1,0 +1,163 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "string"
+            }
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "PAIR"
+        },
+        {
+          "prim": "LEFT",
+          "args": [
+            {
+              "prim": "list",
+              "args": [
+                {
+                  "prim": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "prim": "LOOP_LEFT",
+          "args": [
+            [
+              {
+                "prim": "DUP"
+              },
+              {
+                "prim": "CAR"
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "CDR"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "IF_CONS",
+                "args": [
+                  [
+                    {
+                      "prim": "SWAP"
+                    },
+                    {
+                      "prim": "DIP",
+                      "args": [
+                        [
+                          {
+                            "prim": "CONS"
+                          }
+                        ]
+                      ]
+                    },
+                    {
+                      "prim": "PAIR"
+                    },
+                    {
+                      "prim": "LEFT",
+                      "args": [
+                        {
+                          "prim": "list",
+                          "args": [
+                            {
+                              "prim": "string"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "prim": "RIGHT",
+                      "args": [
+                        {
+                          "prim": "pair",
+                          "args": [
+                            {
+                              "prim": "list",
+                              "args": [
+                                {
+                                  "prim": "string"
+                                }
+                              ]
+                            },
+                            {
+                              "prim": "list",
+                              "args": [
+                                {
+                                  "prim": "string"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

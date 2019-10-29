@@ -39,12 +39,18 @@ export class Contract {
   op_tree : Object
 
   constructor(contract_info : Object) {
-    this.storage = contract_info.script.storage
-    this.balance = contract_info.balance
-
-    this.parameter_t = contract_info.script.code[0].args
-    this.storage_t = contract_info.script.code[1].args
-    this.code = contract_info.script.code[2].args
+    if (contract_info instanceof Array) {
+      this.parameter_t = contract_info[0].args
+      this.storage_t = contract_info[1].args
+      this.code = contract_info[2].args
+    } else {
+      this.storage = contract_info.script.storage
+      this.balance = contract_info.balance
+  
+      this.parameter_t = contract_info.script.code[0].args
+      this.storage_t = contract_info.script.code[1].args
+      this.code = contract_info.script.code[2].args
+    }
 
     this.stack = [{
       kind: 'pair',
@@ -259,7 +265,13 @@ export class Contract {
     const node_mapping = {}
     let node_id = 1
 
+    let last : Object
     const walk = (code_instrs : Array<Object>, stack : Array<Object>, dip_top : number, graph_cursor : Object) : boolean => {
+      last = {
+        cursor: graph_cursor,
+        stack
+      }
+
       for (let i = 0; i < code_instrs.length; i++) {
         const instr = code_instrs[i]
 
@@ -901,6 +913,17 @@ export class Contract {
     }]
     walk(this.code[0], clone(this.stack), 0, graph)
 
+
+    node_mapping[node_id] = {
+      name: 'final',
+      value: clone(last.stack)
+    }
+    const g = {
+      node_id: node_id++
+    }
+    last.cursor.push(g)
+
+    
     return {
       graph_tree: graph,
       node_mapping

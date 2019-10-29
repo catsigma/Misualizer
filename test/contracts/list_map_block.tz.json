@@ -1,0 +1,114 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "int"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "int"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "PUSH",
+          "args": [
+            {
+              "prim": "int"
+            },
+            {
+              "int": "0"
+            }
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "MAP",
+          "args": [
+            [
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "DUP"
+                    }
+                  ]
+                ]
+              },
+              {
+                "prim": "ADD"
+              },
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "PUSH",
+                      "args": [
+                        {
+                          "prim": "int"
+                        },
+                        {
+                          "int": "1"
+                        }
+                      ]
+                    },
+                    {
+                      "prim": "ADD"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "DROP"
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
+]

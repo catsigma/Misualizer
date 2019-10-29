@@ -1,0 +1,71 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "nat"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "nat"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "IF_CONS",
+          "args": [
+            [
+              {
+                "prim": "DIP",
+                "args": [
+                  [
+                    {
+                      "prim": "DROP"
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              [
+                {
+                  "prim": "UNIT"
+                },
+                {
+                  "prim": "FAILWITH"
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

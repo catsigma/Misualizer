@@ -1,0 +1,75 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CDR"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "SELF"
+        },
+        {
+          "prim": "PUSH",
+          "args": [
+            {
+              "prim": "mutez"
+            },
+            {
+              "int": "0"
+            }
+          ]
+        },
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "TRANSFER_TOKENS"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "CONS"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "CONS"
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

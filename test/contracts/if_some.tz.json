@@ -1,0 +1,65 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "option",
+        "args": [
+          {
+            "prim": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "string"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        [
+          {
+            "prim": "IF_NONE",
+            "args": [
+              [
+                {
+                  "prim": "PUSH",
+                  "args": [
+                    {
+                      "prim": "string"
+                    },
+                    {
+                      "string": ""
+                    }
+                  ]
+                }
+              ],
+              []
+            ]
+          }
+        ],
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

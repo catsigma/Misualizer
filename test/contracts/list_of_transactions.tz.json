@@ -1,0 +1,170 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "address"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CDR"
+        },
+        {
+          "prim": "DUP"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "NIL",
+                "args": [
+                  {
+                    "prim": "operation"
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "PUSH",
+          "args": [
+            {
+              "prim": "bool"
+            },
+            {
+              "prim": "True"
+            }
+          ]
+        },
+        {
+          "prim": "LOOP",
+          "args": [
+            [
+              {
+                "prim": "IF_CONS",
+                "args": [
+                  [
+                    {
+                      "prim": "CONTRACT",
+                      "args": [
+                        {
+                          "prim": "unit"
+                        }
+                      ]
+                    },
+                    [
+                      {
+                        "prim": "IF_NONE",
+                        "args": [
+                          [
+                            [
+                              {
+                                "prim": "UNIT"
+                              },
+                              {
+                                "prim": "FAILWITH"
+                              }
+                            ]
+                          ],
+                          []
+                        ]
+                      }
+                    ],
+                    {
+                      "prim": "PUSH",
+                      "args": [
+                        {
+                          "prim": "mutez"
+                        },
+                        {
+                          "int": "1000000"
+                        }
+                      ]
+                    },
+                    {
+                      "prim": "UNIT"
+                    },
+                    {
+                      "prim": "TRANSFER_TOKENS"
+                    },
+                    {
+                      "prim": "SWAP"
+                    },
+                    {
+                      "prim": "DIP",
+                      "args": [
+                        [
+                          {
+                            "prim": "CONS"
+                          }
+                        ]
+                      ]
+                    },
+                    {
+                      "prim": "PUSH",
+                      "args": [
+                        {
+                          "prim": "bool"
+                        },
+                        {
+                          "prim": "True"
+                        }
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "prim": "NIL",
+                      "args": [
+                        {
+                          "prim": "address"
+                        }
+                      ]
+                    },
+                    {
+                      "prim": "PUSH",
+                      "args": [
+                        {
+                          "prim": "bool"
+                        },
+                        {
+                          "prim": "False"
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "DROP"
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

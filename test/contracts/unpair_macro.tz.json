@@ -1,0 +1,471 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "unit",
+        "annots": [
+          ":param_unit"
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "unit",
+        "annots": [
+          ":u1"
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "DROP"
+        },
+        {
+          "prim": "UNIT",
+          "annots": [
+            ":u4",
+            "@a4"
+          ]
+        },
+        {
+          "prim": "UNIT",
+          "annots": [
+            ":u3",
+            "@a3"
+          ]
+        },
+        {
+          "prim": "UNIT",
+          "annots": [
+            ":u2",
+            "@a2"
+          ]
+        },
+        {
+          "prim": "UNIT",
+          "annots": [
+            ":u1",
+            "@a1"
+          ]
+        },
+        {
+          "prim": "PAIR"
+        },
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR",
+              "annots": [
+                "@x1"
+              ]
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR",
+                    "annots": [
+                      "@x2"
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ],
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                {
+                  "prim": "PAIR",
+                  "annots": [
+                    "%x3",
+                    "%x4"
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "PAIR",
+            "annots": [
+              "%x1",
+              "%x2"
+            ]
+          },
+          {
+            "prim": "PAIR",
+            "annots": [
+              "@p1"
+            ]
+          }
+        ],
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR"
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR",
+              "annots": [
+                "%x1"
+              ]
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR",
+                    "annots": [
+                      "%"
+                    ]
+                  }
+                ]
+              ]
+            }
+          ],
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "CAR",
+                    "annots": [
+                      "%x3"
+                    ]
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CDR",
+                          "annots": [
+                            "%x4"
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                {
+                  "prim": "PAIR",
+                  "annots": [
+                    "%x3",
+                    "%x4"
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                {
+                  "prim": "PAIR",
+                  "annots": [
+                    "%x2"
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "PAIR",
+            "annots": [
+              "%x1",
+              "@p2"
+            ]
+          }
+        ],
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR",
+              "annots": [
+                "@un"
+              ]
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ],
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "CAR",
+                    "annots": [
+                      "@deux"
+                    ]
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CDR"
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            ]
+          },
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "CAR",
+                    "annots": [
+                      "@trois"
+                    ]
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CDR",
+                          "annots": [
+                            "@quatre"
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                {
+                  "prim": "PAIR",
+                  "annots": [
+                    "%x2",
+                    "%x3"
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                {
+                  "prim": "PAIR",
+                  "annots": [
+                    "%",
+                    "%x4"
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "PAIR",
+            "annots": [
+              "%x1",
+              "@p3"
+            ]
+          }
+        ],
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR",
+              "annots": [
+                "@one"
+              ]
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ],
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "CAR"
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CDR",
+                          "annots": [
+                            "@four"
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            ]
+          },
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "CAR",
+                    "annots": [
+                      "@two"
+                    ]
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CDR",
+                          "annots": [
+                            "@three"
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "DROP"
+              },
+              {
+                "prim": "DROP"
+              },
+              {
+                "prim": "DROP"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

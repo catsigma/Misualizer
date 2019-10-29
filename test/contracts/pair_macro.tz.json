@@ -1,0 +1,130 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "unit"
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "UNIT"
+        },
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "3"
+              },
+              [
+                {
+                  "prim": "PAIR",
+                  "annots": [
+                    "%x4",
+                    "%x5"
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                {
+                  "prim": "PAIR",
+                  "annots": [
+                    "%x3"
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                {
+                  "prim": "PAIR",
+                  "annots": [
+                    "%x2"
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "PAIR",
+            "annots": [
+              "%x1",
+              "@name"
+            ]
+          }
+        ],
+        [
+          {
+            "prim": "CDR"
+          },
+          {
+            "prim": "CDR"
+          },
+          {
+            "prim": "CDR"
+          },
+          {
+            "prim": "CAR",
+            "annots": [
+              "%x4",
+              "@fourth"
+            ]
+          }
+        ],
+        {
+          "prim": "DROP"
+        },
+        {
+          "prim": "CDR"
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

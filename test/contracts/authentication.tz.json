@@ -1,0 +1,327 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "lambda",
+            "args": [
+              {
+                "prim": "unit"
+              },
+              {
+                "prim": "list",
+                "args": [
+                  {
+                    "prim": "operation"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "prim": "signature"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "nat",
+            "annots": [
+              "%counter"
+            ]
+          },
+          {
+            "prim": "key"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR"
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR"
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ],
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                [
+                  {
+                    "prim": "DUP"
+                  },
+                  {
+                    "prim": "CAR"
+                  },
+                  {
+                    "prim": "DIP",
+                    "args": [
+                      [
+                        {
+                          "prim": "CDR"
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            ]
+          }
+        ],
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                {
+                  "prim": "DUP"
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "DIG",
+            "args": [
+              {
+                "int": "3"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                {
+                  "prim": "DUP"
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "SWAP"
+          }
+        ],
+        {
+          "prim": "SELF"
+        },
+        {
+          "prim": "CHAIN_ID"
+        },
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                {
+                  "prim": "PAIR"
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "PAIR"
+          },
+          {
+            "prim": "PAIR"
+          }
+        ],
+        {
+          "prim": "PACK"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "SWAP"
+              }
+            ]
+          ]
+        },
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "4"
+              },
+              [
+                {
+                  "prim": "DUP"
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "DIG",
+            "args": [
+              {
+                "int": "5"
+              }
+            ]
+          }
+        ],
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "SWAP"
+              }
+            ]
+          ]
+        },
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              {
+                "int": "2"
+              },
+              [
+                {
+                  "prim": "DUP"
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "DIG",
+            "args": [
+              {
+                "int": "3"
+              }
+            ]
+          }
+        ],
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "CHECK_SIGNATURE"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "SWAP"
+        },
+        {
+          "prim": "IF",
+          "args": [
+            [
+              {
+                "prim": "DROP"
+              }
+            ],
+            [
+              {
+                "prim": "FAILWITH"
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "UNIT"
+        },
+        {
+          "prim": "EXEC"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "PUSH",
+                "args": [
+                  {
+                    "prim": "nat"
+                  },
+                  {
+                    "int": "1"
+                  }
+                ]
+              },
+              {
+                "prim": "ADD"
+              }
+            ]
+          ]
+        },
+        [
+          {
+            "prim": "DIP",
+            "args": [
+              [
+                {
+                  "prim": "PAIR"
+                }
+              ]
+            ]
+          },
+          {
+            "prim": "PAIR"
+          }
+        ]
+      ]
+    ]
+  }
+]

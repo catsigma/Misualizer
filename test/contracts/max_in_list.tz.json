@@ -1,0 +1,142 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "int"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "option",
+        "args": [
+          {
+            "prim": "int"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        {
+          "prim": "DIP",
+          "args": [
+            [
+              {
+                "prim": "NONE",
+                "args": [
+                  {
+                    "prim": "int"
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "ITER",
+          "args": [
+            [
+              {
+                "prim": "SWAP"
+              },
+              {
+                "prim": "IF_NONE",
+                "args": [
+                  [
+                    {
+                      "prim": "SOME"
+                    }
+                  ],
+                  [
+                    {
+                      "prim": "DIP",
+                      "args": [
+                        [
+                          {
+                            "prim": "DUP"
+                          }
+                        ]
+                      ]
+                    },
+                    {
+                      "prim": "DUP"
+                    },
+                    {
+                      "prim": "DIP",
+                      "args": [
+                        [
+                          {
+                            "prim": "SWAP"
+                          }
+                        ]
+                      ]
+                    },
+                    [
+                      {
+                        "prim": "COMPARE"
+                      },
+                      {
+                        "prim": "LE"
+                      }
+                    ],
+                    {
+                      "prim": "IF",
+                      "args": [
+                        [
+                          {
+                            "prim": "DROP"
+                          }
+                        ],
+                        [
+                          {
+                            "prim": "DIP",
+                            "args": [
+                              [
+                                {
+                                  "prim": "DROP"
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    },
+                    {
+                      "prim": "SOME"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ]
+        },
+        {
+          "prim": "PAIR"
+        }
+      ]
+    ]
+  }
+]

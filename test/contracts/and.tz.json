@@ -1,0 +1,129 @@
+[
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "bool",
+            "annots": [
+              "%first"
+            ]
+          },
+          {
+            "prim": "bool",
+            "annots": [
+              "%second"
+            ]
+          }
+        ],
+        "annots": [
+          ":param"
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "storage",
+    "args": [
+      {
+        "prim": "option",
+        "args": [
+          {
+            "prim": "bool"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        {
+          "prim": "CAR"
+        },
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR"
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR"
+                  }
+                ]
+              ]
+            }
+          ]
+        ],
+        {
+          "prim": "AND",
+          "annots": [
+            "@and"
+          ]
+        },
+        {
+          "prim": "SOME",
+          "annots": [
+            "@res"
+          ]
+        },
+        {
+          "prim": "NIL",
+          "args": [
+            {
+              "prim": "operation"
+            }
+          ],
+          "annots": [
+            "@noop"
+          ]
+        },
+        {
+          "prim": "PAIR"
+        },
+        [
+          [
+            {
+              "prim": "DUP"
+            },
+            {
+              "prim": "CAR",
+              "annots": [
+                "@x"
+              ]
+            },
+            {
+              "prim": "DIP",
+              "args": [
+                [
+                  {
+                    "prim": "CDR",
+                    "annots": [
+                      "@y"
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ],
+        {
+          "prim": "PAIR",
+          "annots": [
+            "%a",
+            "%b"
+          ]
+        }
+      ]
+    ]
+  }
+]
