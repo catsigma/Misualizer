@@ -221,7 +221,9 @@ export class SVGRenderer {
       update_map: () => `${stack(2)}(${stack(0)}, ${stack(1)})`,
       check_signature: () => `CHECK_SIG(${stack(0)}, ${stack(1)}, ${stack(2)})`,
       transfer_tokens: () => `CALL(${stack(2)}, ${stack(1)}, ${stack(0)})`,
-      set_delegate: () => `SET_DELEGATE(${stack(0)})`
+      set_delegate: () => `SET_DELEGATE(${stack(0)})`,
+      blake2b: () => `BLAKE2B(${stack(0)})`,
+      hash_key: () => `HASH_KEY(${stack(0)})`
     }
 
     if (calc.op in op_mapping) {
@@ -261,6 +263,7 @@ export class SVGRenderer {
       big_map: () => this.extractValue(node.value),
       set: () => this.extractValue(node.value),
       some: () => `Some(${this.extractValue(node.value)})`,
+      none: () => `None(${this.extractValue(node.value)})`,
       option: () => `option<${this.extractValue(node.item)}>`,
       operation: () => this.extractValue(node.value)
     }

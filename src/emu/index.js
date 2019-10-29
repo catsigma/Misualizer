@@ -686,8 +686,10 @@ export class Contract {
           dip_top -= 1
           
         } else if (instr.prim === 'DIP') {
-          code_instrs[i--] = instr.args.concat({prim: 'UNDIP'})
-          dip_top += 1
+          const level = instr.args[0].int ? parseInt(instr.args.shift().int) : 1
+          const value = Array.from(Array(level)).map(() => ({prim: 'UNDIP'}))
+          code_instrs[i--] = instr.args.concat(value)
+          dip_top += level
 
         } else if (instr.prim === 'PUSH') {
           stack.splice(dip_top, 0, {
@@ -695,6 +697,26 @@ export class Contract {
             value: Object.values(instr.args[1])[0]
           })
           
+        } else if (instr.prim === 'HASH_KEY') {
+          stack[dip_top] = {
+            kind: 'key_hash',
+            value: getId('key_hash'),
+            calc: {
+              op: 'hash_key',
+              stack: [stack[dip_top]]
+            }
+          }
+
+        } else if (instr.prim === 'BLAKE2B') {
+          stack[dip_top] = {
+            kind: 'bytes',
+            value: getId('bytes'),
+            calc: {
+              op: 'blake2b',
+              stack: [stack[dip_top]]
+            }
+          }
+
         } else if (instr.prim === 'SET_DELEGATE') {
           stack[dip_top] = {
             kind: 'operation',
@@ -789,6 +811,13 @@ export class Contract {
               }
             })
           }
+
+        } else if (instr.prim === 'NONE') {
+          stack.splice(dip_top, 0, {
+            kind: 'none',
+            t: instr.args[0],
+            value: getId('none')
+          })
 
         } else if (instr.prim === 'SOME') {
           stack[dip_top] = {
@@ -896,6 +925,7 @@ export class Contract {
           })
 
         } else {
+          debugger
           throw `unhandled instruction: ${instr.prim}`
         }
         
