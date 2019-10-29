@@ -541,6 +541,16 @@ export class Contract {
         } else if (instr.prim === 'RENAME') {
           stack[dip_top].annots = instr.annots 
 
+        } else if (instr.prim === 'MAP') {
+          stack[dip_top] = {
+            kind: stack[dip_top].t,
+            value: getId(stack[dip_top].t),
+            calc: {
+              op: 'map',
+              stack: [stack[dip_top]]
+            }
+          }
+          
         } else if (instr.prim === 'ITER') {
           stack.splice(dip_top, 1)
           // // TODO
@@ -862,6 +872,17 @@ export class Contract {
             calc: {
               op: 'not',
               stack: stack.splice(dip_top, 1)
+            }
+          })
+
+        } else if (instr.prim === 'AND') {
+          stack.splice(dip_top, 0, {
+            kind: 'bool',
+            symbol: '&',
+            value: getId('bool'),
+            calc: {
+              op: 'and',
+              stack: stack.splice(dip_top, 2)
             }
           })
 

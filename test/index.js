@@ -17,11 +17,11 @@ async function getContract(index : number) {
 }
 
 async function main() {
-  const index = 0
+  const index = 12
 
   const contract = await getContract(index)
   const {graph_tree, node_mapping} = contract.parseCode()
-  
+
   const parameter = contract.stack[0].children[0]
   const parameter_graph = Mock2GLConvert(parameter, 'parameter')
   const parameter_graph_str = parameter_graph.graph_arr.join(' ')
