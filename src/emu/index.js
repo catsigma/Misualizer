@@ -584,9 +584,6 @@ export class Contract {
           const [elem] = stack.splice(dip_top, 1)
           stack[dip_top].children.unshift(elem)
 
-        } else if (instr.prim === 'DROP') {
-          stack.splice(dip_top, 1)
-          
         } else if (instr.prim === 'SWAP') {
           const temp = stack[dip_top]
           stack[dip_top] = stack[dip_top + 1]
@@ -663,6 +660,12 @@ export class Contract {
             children: stack.splice(dip_top, 2)
           })
 
+        } else if (instr.prim === 'CHAIN_ID') {
+          stack.splice(dip_top, 0, {
+            kind: 'chain_id',
+            value: 'CHAIN_ID'
+          })
+          
         } else if (instr.prim === 'NIL') {
           const lst_t = instr.args[0].prim
           stack.splice(dip_top, 0, {
@@ -695,11 +698,24 @@ export class Contract {
         } else if (instr.prim === 'UNDIP') {
           dip_top -= 1
           
+        } else if (instr.prim === 'DROP') {
+          const num = instr.args && instr.args[0].int ? parseInt(instr.args[0].int) : 1
+          stack.splice(dip_top, num)
+          
         } else if (instr.prim === 'DIP') {
           const level = instr.args[0].int ? parseInt(instr.args.shift().int) : 1
           const value = Array.from(Array(level)).map(() => ({prim: 'UNDIP'}))
           code_instrs[i--] = instr.args.concat(value)
           dip_top += level
+
+        } else if (instr.prim === 'DUG') {
+          const n_slots = parseInt(instr.args[0].int)
+          const [item] = stack.splice(dip_top, 1)
+          stack.splice(dip_top + n_slots, 0, item)
+
+        } else if (instr.prim === 'DIG') {
+          const nth = parseInt(instr.args[0].int)
+          stack.splice(dip_top, 0, stack.splice(dip_top + nth, 1)[0])
 
         } else if (instr.prim === 'PUSH') {
           stack.splice(dip_top, 0, {
@@ -835,6 +851,17 @@ export class Contract {
             t: stack[dip_top].kind,
             value: stack[dip_top]
           }
+
+        } else if (instr.prim === 'CONTRACT') {
+          const [address] = stack.splice(dip_top, 1)
+          stack.splice(dip_top, 0, {
+            kind: 'option',
+            item: address,
+            calc: {
+              op: 'contract',
+              stack: [address]
+            }
+          })
 
         } else if (instr.prim === 'GET') {
           const [key, map] = stack.splice(dip_top, 2)

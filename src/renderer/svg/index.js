@@ -225,7 +225,8 @@ export class SVGRenderer {
       transfer_tokens: () => `CALL(${stack(2)}, ${stack(1)}, ${stack(0)})`,
       set_delegate: () => `SET_DELEGATE(${stack(0)})`,
       blake2b: () => `BLAKE2B(${stack(0)})`,
-      hash_key: () => `HASH_KEY(${stack(0)})`
+      hash_key: () => `HASH_KEY(${stack(0)})`,
+      contract: () => `CONTRACT(${stack(0)})`
     }
 
     if (calc.op in op_mapping) {
@@ -241,6 +242,7 @@ export class SVGRenderer {
       return node
 
     const kind_mapping = {
+      chain_id: () => this.extractValue(node.value),
       bytes: () => this.extractValue(node.value),
       int: () => this.extractValue(node.value),
       nat: () => this.extractValue(node.value),
