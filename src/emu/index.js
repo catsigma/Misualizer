@@ -40,9 +40,15 @@ export class Contract {
 
   constructor(contract_info : Object) {
     if (contract_info instanceof Array) {
-      this.parameter_t = contract_info[0].args
-      this.storage_t = contract_info[1].args
-      this.code = contract_info[2].args
+      const contract = {}
+      contract_info.forEach(item => {
+        const key = item.prim
+        contract[key] = item.args
+      })
+
+      this.parameter_t = contract.parameter
+      this.storage_t = contract.storage
+      this.code = contract.code
     } else {
       this.storage = contract_info.script.storage
       this.balance = contract_info.balance
@@ -540,6 +546,16 @@ export class Contract {
 
         } else if (instr.prim === 'RENAME') {
           stack[dip_top].annots = instr.annots 
+          
+        } else if (instr.prim === 'EMPTY_BIG_MAP') {
+          stack.splice(dip_top, 0, {
+            kind: 'big_map',
+            t: {
+              key: instr.args[0],
+              value: instr.args[1]
+            },
+            value: getId('big_map')
+          })
 
         } else if (instr.prim === 'MAP') {
           stack[dip_top] = {
@@ -852,6 +868,27 @@ export class Contract {
             value: stack[dip_top]
           }
 
+        } else if (instr.prim === 'CREATE_CONTRACT') {
+          const args = stack.splice(dip_top, 3)
+
+          stack.splice(dip_top, 0, {
+            kind: 'address',
+            value: getId('address'),
+            calc: {
+              op: 'create_contract_address',
+              stack: args
+            }
+          })
+
+          stack.splice(dip_top, 0, {
+            kind: 'operation',
+            value: getId('operation'),
+            calc: {
+              op: 'create_contract_operation',
+              stack: args
+            }
+          })
+
         } else if (instr.prim === 'CONTRACT') {
           const [address] = stack.splice(dip_top, 1)
           stack.splice(dip_top, 0, {
@@ -911,6 +948,20 @@ export class Contract {
               op: 'and',
               stack: stack.splice(dip_top, 2)
             }
+          })
+
+        } else if (instr.prim === 'LEFT') {
+          stack.splice(dip_top, 0, {
+            kind: 'or',
+            value: getId('or'),
+            children: [stack.splice(dip_top, 1)[0], this.getMockFromType(instr.args[0])]
+          })
+
+        } else if (instr.prim === 'RIGHT') {
+          stack.splice(dip_top, 0, {
+            kind: 'or',
+            value: getId('or'),
+            children: [this.getMockFromType(instr.args[0]), stack.splice(dip_top, 1)[0]]
           })
 
         } else if (instr.prim === 'OR') {

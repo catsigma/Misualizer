@@ -226,7 +226,8 @@ export class SVGRenderer {
       set_delegate: () => `SET_DELEGATE(${stack(0)})`,
       blake2b: () => `BLAKE2B(${stack(0)})`,
       hash_key: () => `HASH_KEY(${stack(0)})`,
-      contract: () => `CONTRACT(${stack(0)})`
+      contract: () => `CONTRACT(${stack(0)})`,
+      create_contract_operation: () => `CREATE_CONTRACT(${stack(1)})`
     }
 
     if (calc.op in op_mapping) {
