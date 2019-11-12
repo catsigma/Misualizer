@@ -210,7 +210,9 @@ export class SVGRenderer {
     }
 
     const op_mapping = {
+      abs: () => `ABS(${stack(0)})`,
       add: () => `${stack(0)} + ${stack(1)}`,
+      concat: () => calc.stack.length === 1 ? `CONCAT(${stack(0)})` : `${stack(0)} + ${stack(1)}`,
       sub: () => `${stack(0)} - ${stack(1)}`,
       get: () => `${stack(1)}[${stack(0)}]`,
       and: () => `${stack(0)} ${node.symbol} ${stack(1)}`,
@@ -273,6 +275,12 @@ export class SVGRenderer {
       operation: () => this.extractValue(node.value)
     }
 
+
+    if (node.int || node.string) {
+      const [result] : Object = Object.values(node)
+      return result
+    }
+
     if (!(node.kind in kind_mapping)) {
       debugger
       throw `Cannot extract value from '${node.kind}'`
@@ -299,7 +307,7 @@ export class SVGRenderer {
         if (path.name) {
           const node = node_mapping[path.name.slice(4)]
           const text = TextBlock([0,0], [`*${node.name}*`].concat(node.value.map(x => this.extractValue(x))))
-          if (node.value[0].kind === 'fail')
+          if (node.value.length && node.value[0].kind === 'fail')
             text.setAttrs({
               fill: 'red'
             })

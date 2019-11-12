@@ -18,7 +18,7 @@ async function getContract(index : number) {
 }
 
 async function main() {
-  const index = 29
+  const index = 45
 
   const contract = await getContract(index)
   const {graph_tree, node_mapping} = contract.parseCode()

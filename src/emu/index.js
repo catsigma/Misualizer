@@ -343,6 +343,64 @@ export class Contract {
 
           return true
 
+        } else if (instr.prim === 'LOOP') {
+          node_mapping[node_id] = {
+            name: 'from_looped',
+            value: clone(stack)
+          }
+          const g = {
+            node_id: node_id++,
+            branchs: {
+              looped: [],
+              nonlooped: []
+            }
+          }
+          graph_cursor.push(g)
+
+          const [detection] = stack.splice(dip_top, 1)
+          const [looped_stack, nonlooped_stack] = clone([stack, stack])
+
+          node_mapping[node_id] = {
+            name: 'start_looped',
+            value: clone(looped_stack)
+          }
+          g.branchs.looped.push({
+            node_id: node_id++,
+          })
+          node_mapping[node_id] = {
+            name: 'start_nonlooped',
+            value: clone(nonlooped_stack)
+          }
+          g.branchs.nonlooped.push({
+            node_id: node_id++,
+          })
+
+          const remain_codes = code_instrs.slice(i + 1)
+          const has_branchs1 = walk(instr.args[0].concat({prim: 'DROP'}, remain_codes), looped_stack, dip_top, g.branchs.looped)
+          const has_branchs2 = no_branchs || walk(remain_codes, nonlooped_stack, dip_top, g.branchs.nonlooped)
+        
+          if (!has_branchs1) {
+            node_mapping[node_id] = {
+              name: 'end_looped',
+              value: clone(looped_stack)
+            }
+            g.branchs.looped.push({
+              node_id: node_id++
+            })
+          }
+
+          if (!has_branchs2) {
+            node_mapping[node_id] = {
+              name: 'end_nonlooped',
+              value: clone(nonlooped_stack)
+            }
+            g.branchs.nonlooped.push({
+              node_id: node_id++
+            })
+          }
+
+          return true
+
         } else if (instr.prim === 'IF_LEFT') {
           node_mapping[node_id] = {
             name: 'from_if_left',
@@ -544,9 +602,39 @@ export class Contract {
         } else if (instr.prim === 'DUP') {
           stack.splice(dip_top, 0, clone(stack[dip_top]))
 
+        } else if (instr.prim === 'CONCAT') {
+          const [head] = stack.splice(dip_top, 1)
+          if (head.kind === 'list') {
+            stack.splice(dip_top, 0, {
+              kind: head.t,
+              value: getId(head.t),
+              calc: {
+                op: 'concat',
+                stack: [head]
+              }
+            })
+          } else {
+            const [tail] = stack.splice(dip_top, 1)
+            stack.splice(dip_top, 0, {
+              kind: head.kind,
+              value: getId(head.kind),
+              calc: {
+                op: 'concat',
+                stack: [head, tail]
+              }
+            })
+          }
+
         } else if (instr.prim === 'RENAME') {
           stack[dip_top].annots = instr.annots 
           
+        } else if (instr.prim === 'EMPTY_SET') {
+          stack.splice(dip_top, 0, {
+            kind: 'set',
+            t: instr.args[0],
+            value: getId('set')
+          })
+
         } else if (instr.prim === 'EMPTY_BIG_MAP') {
           stack.splice(dip_top, 0, {
             kind: 'big_map',
@@ -566,7 +654,7 @@ export class Contract {
               stack: [stack[dip_top]]
             }
           }
-          
+                  
         } else if (instr.prim === 'ITER') {
           stack.splice(dip_top, 1)
           // // TODO
@@ -576,6 +664,29 @@ export class Contract {
           // }
           // code_instrs[i--] = instr.args[0]
 
+        } else if (instr.prim === 'ABS') {
+          stack[dip_top] = {
+            kind: 'nat',
+            value: getId('nat'),
+            calc: {
+              op: 'abs',
+              stack: [stack[dip_top]]
+            }
+          }
+
+        } else if (instr.prim === 'ISNAT') {
+          const [item] = stack.splice(dip_top, 1)
+          stack.splice(dip_top, 0, {
+            kind: 'option',
+            item,
+            calc: {
+              op: 'isnat',
+              stack: [item]
+            }
+          })
+
+        } else if (instr.prim === 'MUL') {
+          
         } else if (instr.prim === 'INT') {
           stack[dip_top] = {
             kind: 'int',
@@ -734,10 +845,18 @@ export class Contract {
           stack.splice(dip_top, 0, stack.splice(dip_top + nth, 1)[0])
 
         } else if (instr.prim === 'PUSH') {
-          stack.splice(dip_top, 0, {
-            kind: instr.args[0].prim,
-            value: Object.values(instr.args[1])[0]
-          })
+          const kind = instr.args[0].prim
+          if (kind === 'option') {
+            stack.splice(dip_top, 0, {
+              kind: 'option',
+              item: instr.args[1].prim === 'Some' ? instr.args[1].args[0] : instr.args[1].prim
+            })
+          } else {
+            stack.splice(dip_top, 0, {
+              kind: instr.args[0].prim,
+              value: Object.values(instr.args[1])[0]
+            })
+          }
           
         } else if (instr.prim === 'HASH_KEY') {
           stack[dip_top] = {
