@@ -211,6 +211,7 @@ export class SVGRenderer {
 
     const op_mapping = {
       abs: () => `ABS(${stack(0)})`,
+      isnat: () => `ISNAT(${stack(0)})`,
       add: () => `${stack(0)} + ${stack(1)}`,
       concat: () => calc.stack.length === 1 ? `CONCAT(${stack(0)})` : `${stack(0)} + ${stack(1)}`,
       sub: () => `${stack(0)} - ${stack(1)}`,

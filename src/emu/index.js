@@ -1,5 +1,3 @@
-import { get } from "https"
-
 // @flow
 
 function clone(x : Object) {
