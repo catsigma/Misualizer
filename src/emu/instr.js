@@ -49,9 +49,9 @@ export const instrs = {
 
     if (condition.is_concrate) {
       if (condition.value === 'True') {
-        return this.walkCode(instr.args[1], [stack.clone()])
-      } else if (condition.value === 'False') {
         return this.walkCode(instr.args[0], [stack.clone()])
+      } else if (condition.value === 'False') {
+        return this.walkCode(instr.args[1], [stack.clone()])
       } else {
         throw `Invalid condition in 'if': ${condition.value}`
       }
@@ -67,6 +67,30 @@ export const instrs = {
       children: [x],
       annots: instr.annots
     }, 'generate'))
+    return stack
+  },
+  MAP(stack : Stack, instr : Object) {
+    const [map_data] = stack.drop(1)
+    if (map_data.children.length) {
+      map_data.children = map_data.children.map(child => {
+        const cloned_stack = stack.clone()
+        cloned_stack.insert(child)
+        const [s] = this.walkCode(instr.args[0], [cloned_stack])
+        const [result] = s.drop(1)
+        return result
+      })
+    } else {
+      map_data.continuation = new Continuation('map', [map_data])
+    }
+    stack.insert(map_data)
+    return stack
+  },
+  FAILWITH(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['fail'],
+      children: [x],
+      annots: instr.annots
+    }))
     return stack
   }
 }

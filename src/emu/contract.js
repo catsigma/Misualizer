@@ -15,6 +15,12 @@ export class Stack {
     this.dip_top = 0
   }
 
+  is_failed() {
+    return this.stack.length ? 
+      this.stack[this.dip_top].t[0] === 'fail' :
+      false
+  }
+
   at(index : number) : Element {
     return this.stack[index]
   }
@@ -101,27 +107,8 @@ export class Contract {
     )
   }
 
-  // const getStacks = (stack : Array<Element | ElementSet>) : Array<Array<Element | ElementSet>> => {
-  //   let results = [stack]
-
-  //   stack.forEach((item, index) => {
-  //     const new_results = []
-  //     if (item instanceof ElementSet) {
-  //       item.elements.forEach(elem => {
-  //         results.forEach(result => {
-  //           const new_result = result.slice()
-  //           new_result[index] = elem
-  //           new_results.push(new_result)
-  //         })
-  //       })
-  //       results = new_results
-  //     }
-  //   })
-
-  //   return results
-  // }
-
   walkCode(code : Array<Object>, stacks : Array<Stack>) : Array<Stack> {
+    const failed_stacks = []
     code.forEach(instr => {
       if (!(instr.prim in instrs)) {
         debugger
@@ -130,13 +117,18 @@ export class Contract {
 
       const new_stacks = []
       stacks.forEach(stack => {
+        if (stack.is_failed()) {
+          failed_stacks.push(stack)
+          return;
+        }
+
         const result : Stack | Array<Stack> = instrs[instr.prim].call(this, stack, instr)
         ;(result instanceof Array ? result : [result]).forEach(x => new_stacks.push(x))
       })
       stacks = new_stacks
     })
 
-    return stacks
+    return stacks.concat(failed_stacks)
   }
 
   walkToExit() {
