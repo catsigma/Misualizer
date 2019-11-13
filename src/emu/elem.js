@@ -44,7 +44,11 @@ export class Continuation {
   }
 
   isConcrate(...indexes : Array<number>) {
-    return indexes.reduce((acc, x) => acc && x, true)
+    return indexes.map(index => this.stack[index]).reduce((acc, x) => acc && x, true)
+  }
+
+  clone() {
+    return new Continuation(this.operation, this.stack.map(x => x.clone()))
   }
 }
 
@@ -78,31 +82,25 @@ export class Element {
   }
 
   getVal(no_t : bool = false) {
-    let val
     if (this.annots && this.annots.length)
-      val = this.annots[0]
+      return this.annots[0]
     else if (typeof this.t[0] === 'string' && this.t[0] in t_reprs) {
-      val = t_reprs[this.t[0]].call(this)
+      return t_reprs[this.t[0]].call(this) + (no_t ? '' : ':' + this.getType(this.t))
     } else if (this.continuation)
-      val = this.continuation.getVal()
+      return this.continuation.getVal()
     else
-      val = this.value
-
-    return val + (no_t ? '' : ':' + this.getType(this.t))
-  }
-  
-}
-
-export class ElementSet {
-  elements : Set<Element>
-  constructor(elements? : Array<Element>) {
-    if (elements)
-      this.elements = new Set(elements)
-    else
-      this.elements = new Set()
+      return this.value
   }
 
-  unionElement(elem : Element) {
-    this.elements.add(elem)
+  clone() {
+    const json_clone = x => JSON.parse(JSON.stringify(x))
+    return new Element({
+      t: json_clone(this.t),
+      children: this.children.map(x => x.clone()),
+      annots: json_clone(this.annots),
+      value : json_clone(this.value),
+      continuation : this.continuation ? this.continuation.clone() : null,
+      is_concrate : this.is_concrate
+    })
   }
 }

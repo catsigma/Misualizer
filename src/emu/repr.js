@@ -6,6 +6,9 @@ export const t_reprs = {
   },
   list() {
     return `[${this.children.map(x => x.getVal()).join(', ')}]`
+  },
+  option() {
+    return this.children.length ? `Some(${this.children[0].getVal()})` : `None`
   }
 }
 
