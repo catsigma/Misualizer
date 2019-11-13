@@ -1,5 +1,14 @@
 // @flow
 
+export const t_reprs = {
+  pair() {
+    return `(${this.children[0].getVal()}, ${this.children[1].getVal()})`
+  },
+  list() {
+    return `[${this.children.map(x => x.getVal()).join(', ')}]`
+  }
+}
+
 export const reprs = {
   ADD() {
     const [s0, s1] = [this.getStackVal(0), this.getStackVal(1)]

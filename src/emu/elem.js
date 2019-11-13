@@ -1,6 +1,6 @@
 // @flow
 
-import { reprs } from './repr'
+import { t_reprs, reprs } from './repr'
 
 const getId = (() => {
   const mem = {
@@ -9,7 +9,10 @@ const getId = (() => {
     generate: 0
   }
 
-  return (field : 'parameter' | 'storage' | 'generate') => {
+  return (field? : 'parameter' | 'storage' | 'generate') => {
+    if (!field)
+      return ''
+
     mem[field]++
 
     return ({
@@ -24,8 +27,9 @@ export class Continuation {
   stack : Array<Element>
   operation : string
 
-  constructor(params : Object) {
-    Object.assign(this, params)
+  constructor(operation: string, stack: Array<Element>) {
+    this.operation = operation,
+    this.stack = stack
   }
 
   getVal() {
@@ -44,15 +48,17 @@ export class Continuation {
   }
 }
 
+export type EType = Array<string | EType>
+
 export class Element {
-  t: Array<string>
+  t: EType
   children: Array<Element>
   annots: Array<string>
   value : string
   continuation : null | Continuation
   is_concrate : bool
 
-  constructor(params : Object, field : 'parameter' | 'storage' | 'generate' = 'generate') {
+  constructor(params : Object, field? : 'parameter' | 'storage' | 'generate') {
     this.t = []
     this.children = []
     this.annots = []
@@ -63,20 +69,31 @@ export class Element {
     Object.assign(this, params)
   }
 
-  getVal() {
-    const t = this.t.length > 1 ? `(${this.t.join(' ')})` : this.t[0]
+  getType(t : EType | string) : string {
+    if (t instanceof Array) {
+      return t.length === 1 ? t[0].toString() : `(${t.map(x => this.getType(x)).join(' ')})`
+    } else {
+      return t
+    }
+  }
 
+  getVal(no_t : bool = false) {
+    let val
     if (this.annots && this.annots.length)
-      return this.annots[0] + ':' + t
-    else if (this.continuation)
-      return this.continuation.getVal()
+      val = this.annots[0]
+    else if (typeof this.t[0] === 'string' && this.t[0] in t_reprs) {
+      val = t_reprs[this.t[0]].call(this)
+    } else if (this.continuation)
+      val = this.continuation.getVal()
     else
-      return this.value
+      val = this.value
+
+    return val + (no_t ? '' : ':' + this.getType(this.t))
   }
   
 }
 
-export class ElementGroup {
+export class ElementSet {
   elements : Set<Element>
   constructor(elements? : Array<Element>) {
     if (elements)
@@ -85,7 +102,7 @@ export class ElementGroup {
       this.elements = new Set()
   }
 
-  combineElement(elem : Element) {
+  unionElement(elem : Element) {
     this.elements.add(elem)
   }
 }
