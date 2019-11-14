@@ -8,6 +8,10 @@ export const instrs = {
     stack.replace(x => x.children[0])
     return stack
   },
+  CDR(stack : Stack, instr : Object) {
+    stack.replace(x => x.children[1])
+    return stack
+  },
   PUSH(stack : Stack, instr : Object) {
     stack.insert(this.createElements(instr.args[0], instr.args[1]))
     return stack
@@ -92,5 +96,17 @@ export const instrs = {
       annots: instr.annots
     }))
     return stack
+  },
+  DUP(stack : Stack, instr : Object) {
+    stack.insert(stack.top().clone())
+    return stack
+  },
+  DIP(stack : Stack, instr : Object) {
+    const level = instr.args[0].int ? parseInt(instr.args.shift().int) : 1
+    const prev_dip_top = stack.dip_top
+    stack.dip_top += level
+    const stacks = this.walkCode(instr.args[0], [stack])
+    stacks.forEach(stack => stack.dip_top = prev_dip_top)
+    return stacks
   }
 }

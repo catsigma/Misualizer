@@ -93,7 +93,7 @@ export class Element {
   }
 
   clone() {
-    const json_clone = x => JSON.parse(JSON.stringify(x))
+    const json_clone = x => x === undefined ? x : JSON.parse(JSON.stringify(x))
     return new Element({
       t: json_clone(this.t),
       children: this.children.map(x => x.clone()),

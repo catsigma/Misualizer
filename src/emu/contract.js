@@ -45,10 +45,6 @@ export class Stack {
     this.stack.splice(this.dip_top, 0, elem)
   }
 
-  dip(count : number) {
-    this.dip_top += count
-  }
-
   clone() {
     const result = new Stack(this.stack.map(item => item.clone()))
     result.dip_top = this.dip_top
@@ -132,6 +128,7 @@ export class Contract {
   }
 
   walkToExit() {
+    console.log('start', this.stack.at(0).getVal())
     const result_stacks = this.walkCode(this.code, [this.stack])
     result_stacks.forEach(stack => {
       console.log('final', stack.at(0).getVal())
