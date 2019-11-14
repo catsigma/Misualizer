@@ -34,7 +34,7 @@ export class Continuation {
 
   getVal() {
     if (!(this.operation in reprs)) 
-      throw `Unhandeled operation: ${this.operation}`
+      throw `Unhandled repr: ${this.operation}`
 
     return reprs[this.operation].call(this)
   }

@@ -84,7 +84,7 @@ export const instrs = {
         return result
       })
     } else {
-      map_data.continuation = new Continuation('map', [map_data])
+      map_data.continuation = new Continuation(instr.prim, [map_data])
     }
     stack.insert(map_data)
     return stack
@@ -108,5 +108,29 @@ export const instrs = {
     const stacks = this.walkCode(instr.args[0], [stack])
     stacks.forEach(stack => stack.dip_top = prev_dip_top)
     return stacks
+  },
+  NOW(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['timestamp'],
+      annots: instr.annots,
+      value: 'NOW'
+    }))
+    return stack
+  },
+  COMPARE(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['int'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(2))
+    }))
+    return stack
+  },
+  GT(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['bool'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(1))
+    }))
+    return stack
   }
 }

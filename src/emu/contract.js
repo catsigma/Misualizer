@@ -106,6 +106,11 @@ export class Contract {
   walkCode(code : Array<Object>, stacks : Array<Stack>) : Array<Stack> {
     const failed_stacks = []
     code.forEach(instr => {
+      if (instr instanceof Array) {
+        stacks = this.walkCode(instr, stacks)
+        return;
+      }
+
       if (!(instr.prim in instrs)) {
         debugger
         throw `Unhandled instr: ${instr.prim}`

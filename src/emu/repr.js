@@ -19,6 +19,13 @@ export const reprs = {
       return parseInt(s0) + parseInt(s1)
     } else
       return `${s0} + ${s1}`
+  },
+  COMPARE() {
+    return [this.getStackVal(0), this.getStackVal(1)]
+  },
+  GT() {
+    const [a, b] = this.getStackVal(0)
+    return `${a} > ${b}`
   }
 }
 
