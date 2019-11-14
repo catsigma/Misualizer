@@ -15,6 +15,10 @@ export class Stack {
     this.dip_top = 0
   }
 
+  length() {
+    return this.stack.length
+  }
+  
   is_failed() {
     return this.stack.length ? 
       this.stack[this.dip_top].t[0] === 'fail' :

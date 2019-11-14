@@ -81,15 +81,15 @@ export class Element {
     }
   }
 
-  getVal(no_t : bool = false) {
-    if (this.annots && this.annots.length)
-      return this.annots[0]
-    else if (typeof this.t[0] === 'string' && this.t[0] in t_reprs) {
-      return t_reprs[this.t[0]].call(this) + (no_t ? '' : ':' + this.getType(this.t))
+  getVal() {
+    if (typeof this.t[0] === 'string' && this.t[0] in t_reprs) {
+      return t_reprs[this.t[0]].call(this)
     } else if (this.continuation)
       return this.continuation.getVal()
+    else if (this.annots && this.annots.length)
+      return this.annots[0] + `:${this.getType(this.t)}`
     else
-      return this.value
+      return this.value + `:${this.getType(this.t)}`
   }
 
   clone() {

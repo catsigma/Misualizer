@@ -31,6 +31,23 @@ export const instrs = {
     }))
     return stack
   },
+  AND(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['bool'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(2))
+    }))
+    return stack
+  },
+  CONS(stack : Stack, instr : Object) {
+    const [item, lst] = stack.drop(2)
+    stack.insert(new Element({
+      t: lst.t,
+      annots: instr.annots,
+      children: lst.children.concat(item)
+    }))
+    return stack
+  },
   NIL(stack : Stack, instr : Object) {
     stack.insert(new Element({
       t: ['list', this.readType(instr.args[0])],
@@ -73,27 +90,49 @@ export const instrs = {
     }, 'generate'))
     return stack
   },
-  MAP(stack : Stack, instr : Object) {
-    const [map_data] = stack.drop(1)
-    if (map_data.children.length) {
-      map_data.children = map_data.children.map(child => {
-        const cloned_stack = stack.clone()
-        cloned_stack.insert(child)
-        const [s] = this.walkCode(instr.args[0], [cloned_stack])
-        const [result] = s.drop(1)
-        return result
+  ITER(stack : Stack, instr : Object) {
+    const [item] = stack.drop(1)
+    let stacks = [stack]
+    if (item.children.length) {
+      item.children.forEach(child => {
+        stacks.forEach(stack => stack.insert(child))
+        stacks = this.walkCode(instr.args[0], stacks)
       })
     } else {
-      map_data.continuation = new Continuation(instr.prim, [map_data])
+      item.continuation = new Continuation(instr.prim, [item])
     }
-    stack.insert(map_data)
-    return stack
+    return stacks
+  },
+  MAP(stack : Stack, instr : Object) {
+    const [item] = stack.drop(1)
+    const prev_len = stack.length()
+    const prev_dip_top = stack.dip_top
+
+    let stacks = [stack]
+    if (item.children.length) {
+      item.children.forEach(child => {
+        stacks.forEach(stack => stack.insert(child))
+        stacks = this.walkCode(instr.args[0], stacks)
+        stacks.forEach(stack => stack.dip_top += 1)
+      })
+      stacks.forEach(stack => {
+        const cloned_item = item.clone()
+        stack.dip_top = prev_dip_top
+        cloned_item.children = stack.drop(stack.length() - prev_len)
+        stack.insert(cloned_item)
+      })
+    } else {
+      item.continuation = new Continuation(instr.prim, [item])
+      stack.insert(item)
+    }
+    return stacks
   },
   FAILWITH(stack : Stack, instr : Object) {
+    // TODO: record the last reason
     stack.replace(x => new Element({
       t: ['fail'],
-      children: [x],
-      annots: instr.annots
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
     }))
     return stack
   },
@@ -125,11 +164,67 @@ export const instrs = {
     }))
     return stack
   },
-  GT(stack : Stack, instr : Object) {
+  base_compare(stack : Stack, instr : Object) {
     stack.insert(new Element({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(1))
+    }))
+    return stack
+  },
+  GT(stack : Stack, instr : Object) {
+    return instrs.base_compare.call(this, stack, instr)
+  },
+  EQ(stack : Stack, instr : Object) {
+    return instrs.base_compare.call(this, stack, instr)
+  },
+  GE(stack : Stack, instr : Object) {
+    return instrs.base_compare.call(this, stack, instr)
+  },
+  LE(stack : Stack, instr : Object) {
+    return instrs.base_compare.call(this, stack, instr)
+  },
+  LT(stack : Stack, instr : Object) {
+    return instrs.base_compare.call(this, stack, instr)
+  },
+  NEQ(stack : Stack, instr : Object) {
+    return instrs.base_compare.call(this, stack, instr)
+  },
+  AMOUNT(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['mutez'],
+      annots: instr.annots,
+      value: 'AMOUNT'
+    }))
+    return stack
+  },
+  SWAP(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    stack.insert(a)
+    stack.insert(b)
+    return stack
+  },
+  UNIT(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['unit'],
+      annots: instr.annots,
+      value: 'UNIT'
+    }))
+    return stack
+  },
+  IMPLICIT_ACCOUNT(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['contract', 'unit'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(1))
+    }))
+    return stack
+  },
+  TRANSFER_TOKENS(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['operation'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(3))
     }))
     return stack
   }
