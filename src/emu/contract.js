@@ -9,10 +9,12 @@ import { instrs } from './instr'
 export class Stack {
   stack : Array<Element>
   dip_top : number
+  conditions : Array<Element>
 
   constructor(stack : Array<Element>) {
     this.stack = stack
     this.dip_top = 0
+    this.conditions = []
   }
 
   length() {
@@ -52,7 +54,12 @@ export class Stack {
   clone() {
     const result = new Stack(this.stack.map(item => item.clone()))
     result.dip_top = this.dip_top
+    result.conditions = this.conditions.map(item => item.clone())
     return result
+  }
+
+  getCondVal() {
+    return this.conditions.map(x => x.getVal())
   }
 }
 

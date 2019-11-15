@@ -35,8 +35,14 @@ export const reprs = {
     const [a, b] = this.getStackVal(0)
     return `${a} == ${b}`
   },
+  LE() {
+    const [a, b] = this.getStackVal(0)
+    return `${a} <= ${b}`
+  },
   FAILWITH() {
-    return `FAIL(${this.getStackVal(0)})`
+    const conds = this.stack.slice(1)
+    const reasons = conds.map((x, i) => x.getVal() + (i === conds.length - 1 ? '❌' : '✔️')).join(' -> ')
+    return `FAIL(${this.getStackVal(0)}) REASON(${reasons})`
   },
   IMPLICIT_ACCOUNT() {
     return `CONTRACT(${this.getStackVal(0)})`

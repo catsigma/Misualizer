@@ -128,11 +128,10 @@ export const instrs = {
     return stacks
   },
   FAILWITH(stack : Stack, instr : Object) {
-    // TODO: record the last reason
     stack.replace(x => new Element({
       t: ['fail'],
       annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
+      continuation: new Continuation(instr.prim, [x].concat(stack.conditions))
     }))
     return stack
   },
@@ -165,11 +164,13 @@ export const instrs = {
     return stack
   },
   base_compare(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    const result = new Element({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(1))
-    }))
+    })
+    stack.insert(result)
+    stack.conditions.push(result.clone())
     return stack
   },
   GT(stack : Stack, instr : Object) {
