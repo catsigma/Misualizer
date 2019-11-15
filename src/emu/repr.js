@@ -8,7 +8,16 @@ export const t_reprs = {
     return `[${this.children.map(x => x.getVal()).join(', ')}]`
   },
   option() {
-    return this.children.length ? `Some(${this.children[0].getVal()})` : `None`
+    if (this.raw === 'some')
+      return `Some(${this.children[0].getVal()})`
+    else if (this.raw === 'none')
+      return `None`
+    else if (this.continuation)
+      return `Option(${this.continuation.getVal()})`
+    else if (this.value)
+      return `Option<${this.getType(this.t[1])}>(${this.value})`
+    else
+      throw `Invalid option element`
   }
 }
 
@@ -39,6 +48,10 @@ export const reprs = {
     const [a, b] = this.getStackVal(0)
     return `${a} <= ${b}`
   },
+  LT() {
+    const [a, b] = this.getStackVal(0)
+    return `${a} < ${b}`
+  },
   FAILWITH() {
     return `FAIL(${this.getStackVal(0)})`
   },
@@ -47,6 +60,23 @@ export const reprs = {
   },
   TRANSFER_TOKENS() {
     return `CALL(${this.getStackVal(2)}, ${this.getStackVal(1)}, ${this.getStackVal(0)})`
+  },
+  CONCAT() {
+    const [a, b] = this.stack
+    if (b)
+      return `CONCAT(${a.getVal()}, ${b.getVal()})`
+    else
+      return `CONCAT(${a.getVal()})`
+  },
+  PACK() {
+    return `PACK(${this.getStackVal(0)})`
+  },
+  CHECK_SIGNATURE() {
+    const [key, signature, bytes] = this.getStackVals(0, 3)
+    return `CHECK_SIG(${key}, ${signature}, ${bytes})`
+  },
+  CONTRACT() {
+    return `CONTRACT(${this.getStackVal(0)})`
   }
 }
 

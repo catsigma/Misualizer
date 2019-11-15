@@ -4,7 +4,10 @@ import type { EType } from './elem'
 import { Element } from './elem'
 import { instrs } from './instr'
 
-// const extended_types = ['lambda', 'pair', 'or', 'option', 'list', 'map', 'big_map', 'set', 'contract']
+const instr_keep_mapping = {
+  lambda: t => t,
+  option: () => 'unknown'
+}
 
 export class Stack {
   stack : Array<Element>
@@ -22,9 +25,16 @@ export class Stack {
   }
   
   is_failed() {
-    return this.stack.length ? 
-      this.stack[this.dip_top].t[0] === 'fail' :
-      false
+    if (this.stack.length) {
+      if (!this.top()) {
+        debugger
+        throw `Error stack top: undefined`
+      }
+      else
+        return this.top().t[0] === 'fail'
+    } else {
+      return false
+    }
   }
 
   at(index : number) : Element {
@@ -45,6 +55,13 @@ export class Stack {
 
   drop(count : number) : Array<Element> {
     return this.stack.splice(this.dip_top, count)
+  }
+  dropAt(index : number) : Element {
+    const [result] = this.stack.splice(this.dip_top + index, 1)
+    if (!result)
+      throw `Error when stack drops element at index:${index}`
+
+    return result
   }
 
   insert(elem : Element) {
@@ -76,7 +93,7 @@ export class Contract {
 
     this.code = contract.code[0]
     this.stack = new Stack([new Element({
-      t: ['pair'].concat(this.readType(contract.parameter[0]), this.readType(contract.storage[0])),
+      t: ['pair', this.readType(contract.parameter[0]), this.readType(contract.storage[0])],
       children: [
         this.mockElements(contract.parameter[0], 'parameter'),
         this.mockElements(contract.storage[0], 'storage')
@@ -96,7 +113,8 @@ export class Contract {
     return new Element({
       t: this.readType(t),
       annots: t.annots,
-      children: t.args ? t.args.map(x => this.mockElements(x, field)) : []
+      children: t.args ? t.args.map(x => this.mockElements(x, field)) : [],
+      raw: t.prim in instr_keep_mapping ? instr_keep_mapping[t.prim](t) : null
     }, field)
   }
 
@@ -116,7 +134,7 @@ export class Contract {
 
   walkCode(code : Array<Object>, stacks : Array<Stack>) : Array<Stack> {
     const failed_stacks = []
-    code.forEach(instr => {
+    code.forEach((instr, instr_index) => {
       if (instr instanceof Array) {
         stacks = this.walkCode(instr, stacks)
         return;

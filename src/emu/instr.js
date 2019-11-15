@@ -12,6 +12,10 @@ export const instrs = {
     stack.replace(x => x.children[1])
     return stack
   },
+  DROP(stack : Stack, instr : Object) {
+    stack.drop(1)
+    return stack
+  },
   PUSH(stack : Stack, instr : Object) {
     stack.insert(this.createElements(instr.args[0], instr.args[1]))
     return stack
@@ -32,11 +36,13 @@ export const instrs = {
     return stack
   },
   AND(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    const result = new Element({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(2))
-    }))
+    })
+    stack.insert(result)
+    stack.conditions.push(result.clone())
     return stack
   },
   CONS(stack : Stack, instr : Object) {
@@ -65,14 +71,34 @@ export const instrs = {
 
     return stack
   },
-  IF(stack : Stack, instr : Object) {
+  IF_NONE(stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
 
+    if (condition.children.length) {
+      stack.insert(condition.children[0])
+      return this.walkCode(instr.args[1], [stack])
+    } else if (condition.raw === 'none') {
+      return this.walkCode(instr.args[0], [stack])
+    } else if (condition.raw === 'unknown') {
+      const clone1 = stack.clone()
+      const clone2 = stack.clone()
+      clone2.insert(new Element({
+        t: condition.t[1] instanceof Array ? condition.t[1] : [condition.t[1]],
+        continuation: condition.continuation
+      }, 'generate'))
+      const stacks1 = this.walkCode(instr.args[0], [clone1])
+      const stacks2 = this.walkCode(instr.args[1], [clone2])
+      return stacks1.concat(stacks2)
+    }
+  },
+  IF(stack : Stack, instr : Object) {
+    const [condition] = stack.drop(1)
+    
     if (condition.is_concrate) {
       if (condition.value === 'True') {
-        return this.walkCode(instr.args[0], [stack.clone()])
+        return this.walkCode(instr.args[0], [stack])
       } else if (condition.value === 'False') {
-        return this.walkCode(instr.args[1], [stack.clone()])
+        return this.walkCode(instr.args[1], [stack])
       } else {
         throw `Invalid condition in 'if': ${condition.value}`
       }
@@ -86,7 +112,8 @@ export const instrs = {
     stack.replace(x => new Element({
       t: ['option', x.t],
       children: [x],
-      annots: instr.annots
+      annots: instr.annots,
+      raw: 'some'
     }, 'generate'))
     return stack
   },
@@ -147,6 +174,11 @@ export const instrs = {
     stacks.forEach(stack => stack.dip_top = prev_dip_top)
     return stacks
   },
+  DIG(stack : Stack, instr : Object) {
+    const nth = parseInt(instr.args[0].int)
+    stack.insert(stack.dropAt(nth))
+    return stack
+  },
   NOW(stack : Stack, instr : Object) {
     stack.insert(new Element({
       t: ['timestamp'],
@@ -199,10 +231,27 @@ export const instrs = {
     }))
     return stack
   },
+  SELF(stack : Stack, instr : Object) {
+    const parameter_t = this.stack.top().t[1]
+    stack.insert(new Element({
+      t: ['contract', parameter_t],
+      annots: instr.annots,
+      value: 'SELF'
+    }))
+    return stack
+  },
   SWAP(stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
     stack.insert(a)
     stack.insert(b)
+    return stack
+  },
+  CHAIN_ID(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['chain_id'],
+      annots: instr.annots,
+      value: 'CHAIN_ID'
+    }))
     return stack
   },
   UNIT(stack : Stack, instr : Object) {
@@ -227,6 +276,79 @@ export const instrs = {
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(3))
     }))
+    return stack
+  },
+  PACK(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['bytes'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  CHECK_SIGNATURE(stack : Stack, instr : Object) {
+    const result = new Element({
+      t: ['bool'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(3))
+    })
+    stack.insert(result)
+    stack.conditions.push(result.clone())
+    return stack
+  },
+  EXEC(stack : Stack, instr : Object) {
+    const [arg, lambda] = stack.drop(2)
+    const raw = lambda.raw || {args: []}
+
+    if (raw.args.length > 2) {
+      stack.insert(arg)
+      return this.walkCode(raw.args[2], [stack])
+    }
+
+    stack.insert(new Element({
+      t: lambda.t[2],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [arg, lambda])
+    }))
+    return stack
+  },
+  LAMBDA(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['lambda', this.readType(instr.args[0]), this.readType(instr.args[1])],
+      annots: instr.annots,
+      raw: instr
+    }))
+    return stack
+  },
+  CONCAT(stack : Stack, instr : Object) {
+    const [item] = stack.drop(1)
+    if (item.t[0] === 'list') {
+      stack.insert(new Element({
+        t: [item.t[1]],
+        annots: instr.annots,
+        continuation: new Continuation(instr.prim, [item])
+      }))
+      return stack
+    } else {
+      const [item2] = stack.drop(1)
+      stack.insert(new Element({
+        t: [item.t[0]],
+        annots: instr.annots,
+        continuation: new Continuation(instr.prim, [item, item2])
+      }))
+      return stack
+    }
+  },
+  CONTRACT(stack : Stack, instr : Object) {
+    const [address] = stack.drop(1)
+    const option = new Element({
+      t: ['option', ['contract', this.readType(instr.args[0])]],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [address]),
+      raw: 'unknown'
+    })
+    stack.insert(option)
+    stack.conditions.push(option)
     return stack
   }
 }

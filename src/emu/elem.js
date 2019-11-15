@@ -43,6 +43,10 @@ export class Continuation {
     return this.stack[index].getVal()
   }
 
+  getStackVals(from : number, to : number) : Array<string> {
+    return this.stack.slice(from, to).map(x => x.getVal())
+  }
+
   isConcrate(...indexes : Array<number>) {
     return indexes.map(index => this.stack[index]).reduce((acc, x) => acc && x.is_concrate, true)
   }
@@ -60,6 +64,7 @@ export class Element {
   annots: Array<string>
   value : string
   continuation : null | Continuation
+  raw: null | Object
   is_concrate : bool
 
   constructor(params : Object, field? : 'parameter' | 'storage' | 'generate') {
@@ -68,6 +73,7 @@ export class Element {
     this.annots = []
     this.value = getId(field)
     this.continuation = null
+    this.raw = null
     this.is_concrate = params.value !== undefined ? true : false
 
     Object.assign(this, params)
@@ -100,6 +106,7 @@ export class Element {
       annots: json_clone(this.annots),
       value : json_clone(this.value),
       continuation : this.continuation ? this.continuation.clone() : null,
+      raw: this.raw ? json_clone(this.raw) : null,
       is_concrate : this.is_concrate
     })
   }
