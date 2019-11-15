@@ -143,11 +143,24 @@ export class Contract {
     return stacks.concat(failed_stacks)
   }
 
-  walkToExit() {
-    console.log('start', this.stack.at(0).getVal())
-    const result_stacks = this.walkCode(this.code, [this.stack])
-    result_stacks.forEach(stack => {
-      console.log('final', stack.at(0).getVal())
+  logResult(stacks : Array<Stack>) {
+    console.log(`%cStart%c: ${this.stack.at(0).getVal()}`, 'background: #006621; color: white', 'color: black')
+    stacks.forEach((stack, index) => {
+      if (stack.is_failed()) {
+        const conds = stack.conditions.map(
+          (x, i) => x.getVal() + (i === stack.conditions.length - 1 ? '❌' : '✔️')).join(' -> ')
+          console.log(`%cCondition ${index}%c: ${conds}`, 'background: #600; color: white', 'color: black')
+          console.log(`%cResult ${index}%c: ${stack.at(0).getVal()}`, 'background: #1a0dab; color: white', 'color: black')
+      } else {
+        const conds = stack.conditions.map(x => x.getVal() + '✔️').join(' -> ')
+          console.log(`%cCondition ${index}%c: ${conds}`, 'background: #600; color: white', 'color: black')
+          console.log(`%cResult ${index}%c: ${stack.at(0).getVal()}`, 'background: #1a0dab; color: white', 'color: black')
+      }
     })
+  }
+
+  walkToExit() {
+    const result_stacks = this.walkCode(this.code, [this.stack.clone()])
+    this.logResult(result_stacks)
   }
 }

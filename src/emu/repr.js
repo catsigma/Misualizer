@@ -40,9 +40,7 @@ export const reprs = {
     return `${a} <= ${b}`
   },
   FAILWITH() {
-    const conds = this.stack.slice(1)
-    const reasons = conds.map((x, i) => x.getVal() + (i === conds.length - 1 ? '❌' : '✔️')).join(' -> ')
-    return `FAIL(${this.getStackVal(0)}) REASON(${reasons})`
+    return `FAIL(${this.getStackVal(0)})`
   },
   IMPLICIT_ACCOUNT() {
     return `CONTRACT(${this.getStackVal(0)})`

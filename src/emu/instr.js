@@ -131,7 +131,7 @@ export const instrs = {
     stack.replace(x => new Element({
       t: ['fail'],
       annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x].concat(stack.conditions))
+      continuation: new Continuation(instr.prim, [x])
     }))
     return stack
   },
