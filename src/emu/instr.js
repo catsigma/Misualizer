@@ -71,6 +71,32 @@ export const instrs = {
 
     return stack
   },
+  IF_LEFT(stack : Stack, instr : Object) {
+    const [condition] = stack.drop(1)
+    stack.conditions.push(condition)
+    // TODO: mark left right
+    if (condition.raw === 'unknown') {
+      const clone1 = stack.clone()
+      const clone2 = stack.clone()
+      clone1.insert(condition.children[0])
+      clone2.insert(condition.children[1])
+      const stacks1 = this.walkCode(instr.args[0], [clone1])
+      const stacks2 = this.walkCode(instr.args[1], [clone2])
+      return stacks1.concat(stacks2)
+
+    } else if (condition.raw === 'left') {
+      stack.insert(condition.children[0])
+      return this.walkCode(instr.args[0], [stack])
+
+    } else if (condition.raw === 'right') {
+      stack.insert(condition.children[1])
+      return this.walkCode(instr.args[1], [stack])
+
+    } else {
+      debugger
+      throw `Invalid condition.raw in IF_LEFT: ${condition.raw || ''}`
+    }
+  },
   IF_NONE(stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
 
@@ -89,7 +115,8 @@ export const instrs = {
       const stacks1 = this.walkCode(instr.args[0], [clone1])
       const stacks2 = this.walkCode(instr.args[1], [clone2])
       return stacks1.concat(stacks2)
-    }
+    } else 
+      throw `Invalid condition.raw in IF_NONE: ${condition.raw || ''}`
   },
   IF(stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
@@ -115,6 +142,16 @@ export const instrs = {
       annots: instr.annots,
       raw: 'some'
     }, 'generate'))
+    return stack
+  },
+  NONE(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['option', this.readType(instr.args[0])],
+      children: [],
+      annots: instr.annots,
+      value: 'NONE',
+      raw: 'none'
+    }))
     return stack
   },
   ITER(stack : Stack, instr : Object) {
@@ -228,6 +265,14 @@ export const instrs = {
       t: ['mutez'],
       annots: instr.annots,
       value: 'AMOUNT'
+    }))
+    return stack
+  },
+  BALANCE(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['mutez'],
+      annots: instr.annots,
+      value: 'BALANCE'
     }))
     return stack
   },
@@ -350,5 +395,80 @@ export const instrs = {
     stack.insert(option)
     stack.conditions.push(option)
     return stack
+  },
+  CREATE_CONTRACT(stack : Stack, instr : Object) {
+    const args = stack.drop(3)
+    stack.insert(new Element({
+      t: ['address'],
+      continuation: new Continuation(instr.prim, args)
+    }, 'generate'))
+
+    stack.insert(new Element({
+      t: ['operation'],
+      continuation: new Continuation(instr.prim, args)
+    }))
+
+    return stack
+  },
+  MEM(stack : Stack, instr : Object) {
+    const [item, group] = stack.drop(2)
+
+    const items = new Set(group.children.map(x => x.value))
+
+    if (items.has(item)) {
+      const result = new Element({
+        t: ['bool'],
+        annots: instr.annots,
+        value: 'True'
+      })
+      stack.insert(result)
+      stack.conditions.push(result)
+    } else {
+      const result = new Element({
+        t: ['bool'],
+        annots: instr.annots,
+        continuation: new Continuation(instr.prim, [item, group])
+      })
+      stack.insert(result)
+      stack.conditions.push(result)
+    }
+
+    return stack
+  },
+  UPDATE(stack : Stack, instr : Object) {
+    const args = stack.drop(3)
+    if (args[2].t[0] === 'set') {
+      const [item, is_insert, group] = args
+      const index = group.children.indexOf(item)
+
+      if (is_insert.value === 'True') {
+        if (index === -1)
+          group.children.push(item)
+      } else if (is_insert.value === 'False') {
+        if (index > -1)
+          group.children.splice(index, 1)
+      } else {
+        group.continuation = new Continuation(instr.prim, args)
+      }
+      stack.insert(group)
+      return stack
+
+    } else {
+      const [key, value, group] = args
+      const group_keys = group.children.map(x => x.children[0])
+      const index = group_keys.indexOf(key)
+
+      if (index > -1) {
+        group.children[index].children = [key, value]
+      } else {
+        group.children.push(new Element({
+          t: ['elt'],
+          children: [key, value]
+        }))
+      }
+      stack.insert(group)
+      return stack
+
+    }
   }
 }

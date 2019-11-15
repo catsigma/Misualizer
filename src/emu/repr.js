@@ -77,6 +77,12 @@ export const reprs = {
   },
   CONTRACT() {
     return `CONTRACT(${this.getStackVal(0)})`
+  },
+  CREATE_CONTRACT() {
+    return `CREATE_CONTRACT(${this.getStackVals(0, 3).join(', ')})`
+  },
+  MEM() {
+    return `${this.getStackVal(0)} IN ${this.getStackVal(1)}`
   }
 }
 

@@ -4,9 +4,16 @@ import type { EType } from './elem'
 import { Element } from './elem'
 import { instrs } from './instr'
 
+const t_keep_args = new Set(
+  ['lambda', 'option', 'list', 'map', 'big_map', 'set', 'contract']
+)
+const elt_types = new Set(
+  ['map', 'big_map']
+)
 const instr_keep_mapping = {
   lambda: t => t,
-  option: () => 'unknown'
+  option: () => 'unknown',
+  or: () => 'unknown'
 }
 
 export class Stack {
@@ -25,16 +32,14 @@ export class Stack {
   }
   
   is_failed() {
-    if (this.stack.length) {
-      if (!this.top()) {
-        debugger
-        throw `Error stack top: undefined`
-      }
-      else
-        return this.top().t[0] === 'fail'
-    } else {
-      return false
+    if (this.stack.indexOf(undefined) > -1) {
+      debugger
+      throw `Error stack item found: undefined`
+    } else if (this.stack.some(x => x.t[0] === 'fail')) {
+      return true
     }
+
+    return false
   }
 
   at(index : number) : Element {
@@ -113,14 +118,18 @@ export class Contract {
     return new Element({
       t: this.readType(t),
       annots: t.annots,
-      children: t.args ? t.args.map(x => this.mockElements(x, field)) : [],
+      children: t_keep_args.has(t.prim) ? [] : t.args ? t.args.map(x => this.mockElements(x, field)) : [],
       raw: t.prim in instr_keep_mapping ? instr_keep_mapping[t.prim](t) : null
     }, field)
   }
 
   createElements(t : Object, v : Object) {
     return new Element(
-      v.args instanceof Array ?
+      elt_types.has(t.prim) ?
+      {
+        t: this.readType(t),
+        children: v.map((x, i) => this.createElements({prim: 'elt', args: t.args}, x))
+      } : v.args instanceof Array ?
       {
         t: this.readType(t),
         annots: v.annots,
@@ -153,7 +162,7 @@ export class Contract {
         }
 
         const result : Stack | Array<Stack> = instrs[instr.prim].call(this, stack, instr)
-        ;(result instanceof Array ? result : [result]).forEach(x => new_stacks.push(x))
+        ;(result instanceof Array ? result : [result]).forEach(x => {new_stacks.push(x)})
       })
       stacks = new_stacks
     })
