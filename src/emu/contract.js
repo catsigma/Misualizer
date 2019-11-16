@@ -73,6 +73,16 @@ export class Stack {
     this.stack.splice(this.dip_top, 0, elem)
   }
 
+  pushCond(elem : Element, cond : string | Element => void) {
+    const cloned = elem.clone()
+    if (typeof cond === 'string') {
+      cloned.raw = cond
+    } else {
+      cond(cloned)
+    }
+    this.conditions.push(cloned)
+  }
+
   clone() {
     const result = new Stack(this.stack.map(item => item.clone()))
     result.dip_top = this.dip_top
@@ -174,12 +184,11 @@ export class Contract {
     console.log(`%cStart%c: ${this.stack.at(0).getVal()}`, 'background: #006621; color: white', 'color: black')
     stacks.forEach((stack, index) => {
       if (stack.is_failed()) {
-        const conds = stack.conditions.map(
-          (x, i) => x.getVal() + (i === stack.conditions.length - 1 ? '❌' : '✔️')).join(' -> ')
-          console.log(`%cCondition ${index}%c: ${conds}`, 'background: #600; color: white', 'color: black')
-          console.log(`%cResult ${index}%c: ${stack.at(0).getVal()}`, 'background: #1a0dab; color: white', 'color: black')
+        const conds = stack.conditions.map(x => x.getVal() + (x.raw || '')).join(' -> ')
+        console.log(`%cCondition ${index}%c: ${conds}`, 'background: #600; color: white', 'color: black')
+        console.log(`%cResult ${index}%c: ${stack.at(0).getVal()}`, 'background: #1a0dab; color: white', 'color: black')
       } else {
-        const conds = stack.conditions.map(x => x.getVal() + '✔️').join(' -> ')
+        const conds = stack.conditions.map(x => x.getVal() + (x.raw || '')).join(' -> ')
           console.log(`%cCondition ${index}%c: ${conds}`, 'background: #600; color: white', 'color: black')
           console.log(`%cResult ${index}%c: ${stack.at(0).getVal()}`, 'background: #1a0dab; color: white', 'color: black')
       }

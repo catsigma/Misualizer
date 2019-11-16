@@ -36,13 +36,11 @@ export const instrs = {
     return stack
   },
   AND(stack : Stack, instr : Object) {
-    const result = new Element({
+    stack.insert(new Element({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(2))
-    })
-    stack.insert(result)
-    stack.conditions.push(result.clone())
+    }))
     return stack
   },
   CONS(stack : Stack, instr : Object) {
@@ -73,11 +71,13 @@ export const instrs = {
   },
   IF_LEFT(stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
-    stack.conditions.push(condition)
-    // TODO: mark left right
+
     if (condition.raw === 'unknown') {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
+      clone1.pushCond(condition, '👈')
+      clone2.pushCond(condition, '👉')
+
       clone1.insert(condition.children[0])
       clone2.insert(condition.children[1])
       const stacks1 = this.walkCode(instr.args[0], [clone1])
@@ -85,10 +85,12 @@ export const instrs = {
       return stacks1.concat(stacks2)
 
     } else if (condition.raw === 'left') {
+      stack.pushCond(condition, '👈')
       stack.insert(condition.children[0])
       return this.walkCode(instr.args[0], [stack])
 
     } else if (condition.raw === 'right') {
+      stack.pushCond(condition, '👉')
       stack.insert(condition.children[1])
       return this.walkCode(instr.args[1], [stack])
 
@@ -101,13 +103,20 @@ export const instrs = {
     const [condition] = stack.drop(1)
 
     if (condition.children.length) {
+      stack.pushCond(condition, '🈶')
       stack.insert(condition.children[0])
       return this.walkCode(instr.args[1], [stack])
+
     } else if (condition.raw === 'none') {
+      stack.pushCond(condition, '🈚')
       return this.walkCode(instr.args[0], [stack])
+
     } else if (condition.raw === 'unknown') {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
+      clone1.pushCond(condition, '🈚')
+      clone2.pushCond(condition, '🈶')
+
       clone2.insert(new Element({
         t: condition.t[1] instanceof Array ? condition.t[1] : [condition.t[1]],
         continuation: condition.continuation
@@ -115,6 +124,7 @@ export const instrs = {
       const stacks1 = this.walkCode(instr.args[0], [clone1])
       const stacks2 = this.walkCode(instr.args[1], [clone2])
       return stacks1.concat(stacks2)
+      
     } else 
       throw `Invalid condition.raw in IF_NONE: ${condition.raw || ''}`
   },
@@ -123,15 +133,22 @@ export const instrs = {
     
     if (condition.is_concrate) {
       if (condition.value === 'True') {
+        stack.pushCond(condition, '✔️')
         return this.walkCode(instr.args[0], [stack])
       } else if (condition.value === 'False') {
+        stack.pushCond(condition, '❌')
         return this.walkCode(instr.args[1], [stack])
       } else {
         throw `Invalid condition in 'if': ${condition.value}`
       }
     } else {
-      const stacks1 = this.walkCode(instr.args[0], [stack.clone()])
-      const stacks2 = this.walkCode(instr.args[1], [stack.clone()])
+      const clone1 = stack.clone()
+      const clone2 = stack.clone()
+      clone1.pushCond(condition, '✔️')
+      clone2.pushCond(condition, '❌')
+
+      const stacks1 = this.walkCode(instr.args[0], [clone1])
+      const stacks2 = this.walkCode(instr.args[1], [clone2])
       return stacks1.concat(stacks2)
     }
   },
@@ -233,13 +250,11 @@ export const instrs = {
     return stack
   },
   base_compare(stack : Stack, instr : Object) {
-    const result = new Element({
+    stack.insert(new Element({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(1))
-    })
-    stack.insert(result)
-    stack.conditions.push(result.clone())
+    }))
     return stack
   },
   GT(stack : Stack, instr : Object) {
@@ -332,13 +347,11 @@ export const instrs = {
     return stack
   },
   CHECK_SIGNATURE(stack : Stack, instr : Object) {
-    const result = new Element({
+    stack.insert(new Element({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(3))
-    })
-    stack.insert(result)
-    stack.conditions.push(result.clone())
+    }))
     return stack
   },
   EXEC(stack : Stack, instr : Object) {
@@ -386,14 +399,12 @@ export const instrs = {
   },
   CONTRACT(stack : Stack, instr : Object) {
     const [address] = stack.drop(1)
-    const option = new Element({
+    stack.insert(new Element({
       t: ['option', ['contract', this.readType(instr.args[0])]],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [address]),
       raw: 'unknown'
-    })
-    stack.insert(option)
-    stack.conditions.push(option)
+    }))
     return stack
   },
   CREATE_CONTRACT(stack : Stack, instr : Object) {
@@ -416,21 +427,17 @@ export const instrs = {
     const items = new Set(group.children.map(x => x.value))
 
     if (items.has(item)) {
-      const result = new Element({
+      stack.insert(new Element({
         t: ['bool'],
         annots: instr.annots,
         value: 'True'
-      })
-      stack.insert(result)
-      stack.conditions.push(result)
+      }))
     } else {
-      const result = new Element({
+      stack.insert(new Element({
         t: ['bool'],
         annots: instr.annots,
         continuation: new Continuation(instr.prim, [item, group])
-      })
-      stack.insert(result)
-      stack.conditions.push(result)
+      }))
     }
 
     return stack
