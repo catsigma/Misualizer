@@ -6,10 +6,11 @@ const getId = (() => {
   const mem = {
     parameter: 0,
     storage: 0,
-    generate: 0
+    generate: 0,
+    fake: 0
   }
 
-  return (field? : 'parameter' | 'storage' | 'generate') => {
+  return (field? : 'parameter' | 'storage' | 'generate' | 'fake') => {
     if (!field)
       return ''
 
@@ -18,7 +19,8 @@ const getId = (() => {
     return ({
       parameter: 'P',
       storage: 'S',
-      generate: 'G'
+      generate: 'G',
+      fake: 'F'
     })[field] + mem[field]
   }
 })()
@@ -67,7 +69,7 @@ export class Element {
   raw: null | Object
   is_concrate : bool
 
-  constructor(params : Object, field? : 'parameter' | 'storage' | 'generate') {
+  constructor(params : Object, field? : 'parameter' | 'storage' | 'generate' | 'fake') {
     this.t = []
     this.children = []
     this.annots = []

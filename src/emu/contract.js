@@ -124,11 +124,21 @@ export class Contract {
     }
   }
 
-  mockElements(t : Object, field : 'parameter' | 'storage' | 'generate' = 'generate') {
+  fakeElements(t : Object) {
+    if (t.prim === 'list' || t.prim === 'set') {
+      return [this.mockElements(t.args[0], 'fake')]
+    } else if (t.prim === 'map' || t.prim === 'big_map') {
+      return [this.mockElements({prim: 'elt', args: t.args}, 'fake')]
+    } else {
+      return []
+    }
+  }
+
+  mockElements(t : Object, field : 'parameter' | 'storage' | 'generate' | 'fake' = 'generate') {
     return new Element({
       t: this.readType(t),
       annots: t.annots,
-      children: t_keep_args.has(t.prim) ? [] : t.args ? t.args.map(x => this.mockElements(x, field)) : [],
+      children: t_keep_args.has(t.prim) ? this.fakeElements(t) : t.args ? t.args.map(x => this.mockElements(x, field)) : [],
       raw: t.prim in instr_keep_mapping ? instr_keep_mapping[t.prim](t) : null
     }, field)
   }
@@ -181,17 +191,31 @@ export class Contract {
   }
 
   logResult(stacks : Array<Stack>) {
+    const symbol_mapping = {
+      true: '✔️',
+      false: '❌',
+      left: '👈',
+      right: '👉',
+      unknown2left: '👈',
+      unknown2right: '👉',
+      some: '🈶',
+      none: '🈚️',
+      unknown2some: '🈶',
+      unknown2none: '🈚️',
+      unknown: '❓',
+      '': ''
+    }
     console.log(`%cStart%c: ${this.stack.at(0).getVal()}`, 'background: #006621; color: white', 'color: black')
     stacks.forEach((stack, index) => {
       const index_len = index.toString().length + 1
       if (stack.is_failed()) {
-        const conds = stack.conditions.map(x => `${x.getVal()}❓${x.raw || ''}`).join(' -> ')
+        const conds = stack.conditions.map(x => `${x.getVal()}${symbol_mapping[x.raw || '']}`).join(' -> ')
         console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
         console.log(`${' '.repeat(index_len)}%cFailure%c: ${stack.at(0).getVal()}`, 'background: #c00; color: white', 'color: black')
       } else {
-        const conds = stack.conditions.map(x => `${x.getVal()}❓${x.raw || ''}`).join(' -> ')
-          console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
-          console.log(`${' '.repeat(index_len)}%cResult%c: ${stack.top().getVal()}`, 'background: #1a0dab; color: white', 'color: black')
+        const conds = stack.conditions.map(x => `${x.getVal()}${symbol_mapping[x.raw || '']}`).join(' -> ')
+        console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
+        console.log(`${' '.repeat(index_len)}%cResult%c: ${stack.top().getVal()}`, 'background: #1a0dab; color: white', 'color: black')
       }
     })
   }

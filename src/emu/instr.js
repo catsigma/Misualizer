@@ -174,7 +174,6 @@ export const instrs = {
     return stack
   },
   ITER(stack : Stack, instr : Object) {
-    debugger
     const [item] = stack.drop(1)
     let stacks = [stack]
     if (item.children.length) {
