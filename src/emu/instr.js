@@ -75,8 +75,8 @@ export const instrs = {
     if (condition.raw === 'unknown') {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
-      clone1.pushCond(condition, '👈')
-      clone2.pushCond(condition, '👉')
+      clone1.pushCond(condition, 'unknown2left')
+      clone2.pushCond(condition, 'unknown2right')
 
       clone1.insert(condition.children[0])
       clone2.insert(condition.children[1])
@@ -85,12 +85,12 @@ export const instrs = {
       return stacks1.concat(stacks2)
 
     } else if (condition.raw === 'left') {
-      stack.pushCond(condition, '👈')
+      stack.pushCond(condition, 'left')
       stack.insert(condition.children[0])
       return this.walkCode(instr.args[0], [stack])
 
     } else if (condition.raw === 'right') {
-      stack.pushCond(condition, '👉')
+      stack.pushCond(condition, 'right')
       stack.insert(condition.children[1])
       return this.walkCode(instr.args[1], [stack])
 
@@ -103,19 +103,19 @@ export const instrs = {
     const [condition] = stack.drop(1)
 
     if (condition.children.length) {
-      stack.pushCond(condition, '🈶')
+      stack.pushCond(condition, 'some')
       stack.insert(condition.children[0])
       return this.walkCode(instr.args[1], [stack])
 
     } else if (condition.raw === 'none') {
-      stack.pushCond(condition, '🈚')
+      stack.pushCond(condition, 'none')
       return this.walkCode(instr.args[0], [stack])
 
     } else if (condition.raw === 'unknown') {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
-      clone1.pushCond(condition, '🈚')
-      clone2.pushCond(condition, '🈶')
+      clone1.pushCond(condition, 'unknown2none')
+      clone2.pushCond(condition, 'unknown2some')
 
       clone2.insert(new Element({
         t: condition.t[1] instanceof Array ? condition.t[1] : [condition.t[1]],
@@ -125,18 +125,20 @@ export const instrs = {
       const stacks2 = this.walkCode(instr.args[1], [clone2])
       return stacks1.concat(stacks2)
       
-    } else 
+    } else  {
+      debugger
       throw `Invalid condition.raw in IF_NONE: ${condition.raw || ''}`
+    }
   },
   IF(stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
     
     if (condition.is_concrate) {
       if (condition.value === 'True') {
-        stack.pushCond(condition, '✔️')
+        stack.pushCond(condition, 'true')
         return this.walkCode(instr.args[0], [stack])
       } else if (condition.value === 'False') {
-        stack.pushCond(condition, '❌')
+        stack.pushCond(condition, 'false')
         return this.walkCode(instr.args[1], [stack])
       } else {
         throw `Invalid condition in 'if': ${condition.value}`
@@ -144,8 +146,8 @@ export const instrs = {
     } else {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
-      clone1.pushCond(condition, '✔️')
-      clone2.pushCond(condition, '❌')
+      clone1.pushCond(condition, 'unknown2true')
+      clone2.pushCond(condition, 'unknown2false')
 
       const stacks1 = this.walkCode(instr.args[0], [clone1])
       const stacks2 = this.walkCode(instr.args[1], [clone2])
@@ -172,6 +174,7 @@ export const instrs = {
     return stack
   },
   ITER(stack : Stack, instr : Object) {
+    debugger
     const [item] = stack.drop(1)
     let stacks = [stack]
     if (item.children.length) {
@@ -209,10 +212,10 @@ export const instrs = {
     return stacks
   },
   FAILWITH(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.stack.splice(0, 0, new Element({
       t: ['fail'],
       annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
+      continuation: new Continuation(instr.prim, stack.drop(1))
     }))
     return stack
   },
@@ -442,6 +445,24 @@ export const instrs = {
 
     return stack
   },
+  GET(stack : Stack, instr : Object) {
+    const [key, group] = stack.drop(2)
+
+    const keys = group.children.map(x => x.children[0])
+    const index = keys.indexOf(key)
+
+    if (index > -1) {
+      stack.insert(group.children[index].children[1])
+    } else {
+      stack.insert(new Element({
+        t: ['option', group.t[2]],
+        annots: instr.annots,
+        continuation: new Continuation(instr.prim, [key, group]),
+        raw: 'unknown'
+      }))
+    }
+    return stack
+  },
   UPDATE(stack : Stack, instr : Object) {
     const args = stack.drop(3)
     if (args[2].t[0] === 'set') {
@@ -477,5 +498,32 @@ export const instrs = {
       return stack
 
     }
+  },
+  LEFT(stack : Stack, instr : Object) {
+    const [item] = stack.drop(1)
+    stack.insert(new Element({
+      t: ['or', item.t, this.readType(instr.args[0])],
+      annots: instr.annots,
+      children: [item],
+      raw: 'left'
+    }))
+    return stack
+  },
+  RIGHT(stack : Stack, instr : Object) {
+    const [item] = stack.drop(1)
+    stack.insert(new Element({
+      t: ['or', this.readType(instr.args[0]), item.t],
+      annots: instr.annots,
+      children: [,item],
+      raw: 'right'
+    }))
+    return stack
+  },
+  EMPTY_BIG_MAP(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['big_map', this.readType(instr.args[0]), this.readType(instr.args[1])],
+      annots: instr.annots
+    }))
+    return stack
   }
 }

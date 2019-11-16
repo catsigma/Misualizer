@@ -94,8 +94,12 @@ export class Element {
       return this.continuation.getVal()
     else if (this.annots && this.annots.length)
       return this.annots[0] + `:${this.getType(this.t)}`
-    else
+    else if (this.value)
       return this.value + `:${this.getType(this.t)}`
+    else {
+      debugger
+      throw `Unhandled Element for getVal`
+    }
   }
 
   clone() {

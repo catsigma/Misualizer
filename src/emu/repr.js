@@ -10,14 +10,46 @@ export const t_reprs = {
   option() {
     if (this.raw === 'some')
       return `Some(${this.children[0].getVal()})`
+    else if (this.raw === 'unknown2some')
+      return `Some(${this.children[0].getVal()})`
     else if (this.raw === 'none')
+      return `None`
+    else if (this.raw === 'unknown2none')
       return `None`
     else if (this.continuation)
       return `Option(${this.continuation.getVal()})`
     else if (this.value)
       return `Option<${this.getType(this.t[1])}>(${this.value})`
-    else
+    else {
+      debugger
       throw `Invalid option element`
+    }
+  },
+  or() {
+    if (this.raw === 'left') {
+      return this.children[0].getVal()
+    } else if (this.raw === 'right') {
+      return this.children[1].getVal()
+    } else if (this.raw === 'unknown2left') {
+      return `${this.value}:${this.getType(this.t)}`
+    } else if (this.raw === 'unknown2right') {
+      return `${this.value}:${this.getType(this.t)}`
+    } else if (this.raw === 'unknown') {
+      return `${this.value}:${this.getType(this.t)}`
+    } else {
+      debugger
+      throw `Invalid or element`
+    }
+  },
+  big_map() {
+    const result = {}
+    this.children.forEach(elt => {
+      const key = elt.children[0].getVal()
+      const value = elt.children[1].getVal()
+      result[key] = value
+    })
+
+    return JSON.stringify(result)
   }
 }
 
@@ -83,6 +115,10 @@ export const reprs = {
   },
   MEM() {
     return `${this.getStackVal(0)} IN ${this.getStackVal(1)}`
+  },
+  GET() {
+    const [key, group] = this.getStackVals(0, 2)
+    return `${group}[${key}]`
   }
 }
 
