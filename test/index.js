@@ -20,7 +20,7 @@ async function getContract(index : number) {
 }
 
 async function test_contract() {
-  const index = 29
+  const index = 30
   const contract = await getContract(index)
   contract.walkToExit()
 }

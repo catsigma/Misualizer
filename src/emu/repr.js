@@ -114,7 +114,7 @@ export const reprs = {
     return `CREATE_CONTRACT(${this.getStackVals(0, 3).join(', ')})`
   },
   MEM() {
-    return `${this.getStackVal(0)} IN ${this.getStackVal(1)}`
+    return `(${this.getStackVal(0)} IN ${this.getStackVal(1)})`
   },
   GET() {
     const [key, group] = this.getStackVals(0, 2)

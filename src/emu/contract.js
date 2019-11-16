@@ -191,29 +191,39 @@ export class Contract {
   }
 
   logResult(stacks : Array<Stack>) {
-    const symbol_mapping = {
-      true: '✔️',
-      false: '❌',
-      left: '👈',
-      right: '👉',
-      unknown2left: '👈',
-      unknown2right: '👉',
-      some: '🈶',
-      none: '🈚️',
-      unknown2some: '🈶',
-      unknown2none: '🈚️',
-      unknown: '❓',
-      '': ''
+    const symbolRender = (t : string | null) => {
+      const mapping = {
+        true: '✔️',
+        false: '❌',
+        unknown2true: '✔️',
+        unknown2false: '❌',
+        left: '👈',
+        right: '👉',
+        unknown2left: '👈',
+        unknown2right: '👉',
+        some: '🈶',
+        none: '🈚️',
+        unknown2some: '🈶',
+        unknown2none: '🈚️',
+        unknown: '❓'
+      }
+      
+      if (!t || !(t in mapping)) {
+        debugger
+        throw `Invalid symbol`
+      } else
+        return mapping[t]
     }
+
     console.log(`%cStart%c: ${this.stack.at(0).getVal()}`, 'background: #006621; color: white', 'color: black')
     stacks.forEach((stack, index) => {
       const index_len = index.toString().length + 1
       if (stack.is_failed()) {
-        const conds = stack.conditions.map(x => `${x.getVal()}${symbol_mapping[x.raw || '']}`).join(' -> ')
+        const conds = stack.conditions.map(x => `${x.getVal()}${symbolRender(x.raw)}`).join(' -> ')
         console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
         console.log(`${' '.repeat(index_len)}%cFailure%c: ${stack.at(0).getVal()}`, 'background: #c00; color: white', 'color: black')
       } else {
-        const conds = stack.conditions.map(x => `${x.getVal()}${symbol_mapping[x.raw || '']}`).join(' -> ')
+        const conds = stack.conditions.map(x => `${x.getVal()}${symbolRender(x.raw)}`).join(' -> ')
         console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
         console.log(`${' '.repeat(index_len)}%cResult%c: ${stack.top().getVal()}`, 'background: #1a0dab; color: white', 'color: black')
       }
