@@ -8,14 +8,15 @@ export const t_reprs = {
     return `[${this.children.map(x => x.getVal()).join(', ')}]`
   },
   option() {
+    let general_red
     if (this.raw === 'some')
       return `Some(${this.children[0].getVal()})`
     else if (this.raw === 'unknown2some')
-      return `Some(${this.children[0].getVal()})`
+      return `Option<${this.getType(this.t[1])}>(${this.continuation.getVal()})`
     else if (this.raw === 'none')
       return `None`
     else if (this.raw === 'unknown2none')
-      return `None`
+      return `Option<${this.getType(this.t[1])}>(None)`
     else if (this.continuation)
       return `Option(${this.continuation.getVal()})`
     else if (this.value)
@@ -54,12 +55,22 @@ export const t_reprs = {
 }
 
 export const reprs = {
+  ABS() {
+    return `ABS(${this.getStackVal(0)})`
+  },
   ADD() {
-    const [s0, s1] = [this.getStackVal(0), this.getStackVal(1)]
+    const [s0, s1] = this.getStackVals(0, 2)
     if (this.isConcrate(0, 1)) {
       return parseInt(s0) + parseInt(s1)
     } else
       return `${s0} + ${s1}`
+  },
+  SUB() {
+    const [s0, s1] = this.getStackVals(0, 2)
+    if (this.isConcrate(0, 1)) {
+      return parseInt(s0) - parseInt(s1)
+    } else
+      return `${s0} - ${s1}`
   },
   AND() {
     const [s0, s1] = [this.getStackVal(0), this.getStackVal(1)]
@@ -75,6 +86,10 @@ export const reprs = {
   EQ() {
     const [a, b] = this.getStackVal(0)
     return `${a} == ${b}`
+  },
+  NEQ() {
+    const [a, b] = this.getStackVal(0)
+    return `${a} <> ${b}`
   },
   LE() {
     const [a, b] = this.getStackVal(0)

@@ -20,6 +20,14 @@ export const instrs = {
     stack.insert(this.createElements(instr.args[0], instr.args[1]))
     return stack
   },
+  ABS(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['nat'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
   ADD(stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
     const kind_set = new Set([a, b].map(x => x.t[0]))
@@ -30,6 +38,16 @@ export const instrs = {
 
     stack.insert(new Element({
       t: [kind],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [a, b])
+    }))
+    return stack
+  },
+  SUB(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+
+    stack.insert(new Element({
+      t: ['int'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [a, b])
     }))
@@ -141,7 +159,7 @@ export const instrs = {
         stack.pushCond(condition, 'false')
         return this.walkCode(instr.args[1], [stack])
       } else {
-        throw `Invalid condition in 'if': ${condition.value}`
+        throw `Invalid condition in IF: ${condition.value}`
       }
     } else {
       const clone1 = stack.clone()
@@ -152,6 +170,33 @@ export const instrs = {
       const stacks1 = this.walkCode(instr.args[0], [clone1])
       const stacks2 = this.walkCode(instr.args[1], [clone2])
       return stacks1.concat(stacks2)
+    }
+  },
+  LOOP(stack : Stack, instr : Object) {
+    const [condition] = stack.drop(1)
+
+    if (condition.is_concrate) {
+      if (condition.value === 'True') {
+        stack.pushCond(condition, 'true')
+        const stacks = this.walkCode(instr.args[0], [stack])
+        return stacks.reduce((acc, stack) => acc.concat(instrs.LOOP.call(this, stack, instr)), [])
+
+      } else if (condition.value === 'False') {
+        stack.pushCond(condition, 'false')
+        return stack
+
+      } else {
+        throw `Invalid condition in LOOP: ${condition.value}`
+      }
+    } else {
+      const clone1 = stack.clone()
+      const clone2 = stack.clone()
+      clone1.pushCond(condition, 'unknown2true')
+      clone2.pushCond(condition, 'unknown2false')
+
+      const stacks1 = this.walkCode(instr.args[0], [clone1])
+      stacks1.forEach(stack => stack.drop(1))
+      return stacks1.concat(clone2)
     }
   },
   SOME(stack : Stack, instr : Object) {
