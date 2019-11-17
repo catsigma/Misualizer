@@ -144,7 +144,7 @@ export class Contract {
   }
 
   createElements(t : Object, v : Object) {
-    return new Element(
+    let result = new Element(
       elt_types.has(t.prim) ?
       {
         t: this.readType(t),
@@ -159,6 +159,16 @@ export class Contract {
         value: Object.values(v)[0]
       }
     )
+    
+    const t_str = result.t[0].toString()
+    if (t_str === 'option') {
+      result.raw = result.value === 'None' ? 'none' : 'some'
+    } else if (t_str === 'or') {
+      debugger
+    } else if (t_str === 'lambda') {
+      result.raw = v
+    }
+    return result
   }
 
   walkCode(code : Array<Object>, stacks : Array<Stack>) : Array<Stack> {

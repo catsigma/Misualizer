@@ -91,7 +91,9 @@ export const reprs = {
     return `CONTRACT(${this.getStackVal(0)})`
   },
   TRANSFER_TOKENS() {
-    return `CALL(${this.getStackVal(2)}, ${this.getStackVal(1)}, ${this.getStackVal(0)})`
+    const [entry] = this.stack[2].annots || []
+    const contract = entry ? this.stack[2].value : this.getStackVal(2)
+    return `CALL(${entry ? `${contract}.${entry}` : contract}, ${this.getStackVal(1)}, ${this.getStackVal(0)})`
   },
   CONCAT() {
     const [a, b] = this.stack
