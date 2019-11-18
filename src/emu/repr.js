@@ -99,6 +99,10 @@ export const reprs = {
     const [a, b] = this.getStackVal(0)
     return `${a} < ${b}`
   },
+  GE() {
+    const [a, b] = this.getStackVal(0)
+    return `${a} >= ${b}`
+  },
   FAILWITH() {
     return `FAIL(${this.getStackVal(0)})`
   },
