@@ -1,7 +1,8 @@
 // @flow
 
-import type { Stack, Contract } from './contract'
+import type { Contract } from './contract'
 import { Element, Continuation } from './elem'
+import { Stack } from './contract'
 
 export const instrs = {
   CAR(stack : Stack, instr : Object) {
@@ -567,6 +568,14 @@ export const instrs = {
     stack.insert(new Element({
       t: ['big_map', this.readType(instr.args[0]), this.readType(instr.args[1])],
       annots: instr.annots
+    }))
+    return stack
+  },
+  BLAKE2B(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['bytes'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
     }))
     return stack
   }

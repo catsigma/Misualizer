@@ -136,6 +136,9 @@ export const reprs = {
   GET() {
     const [key, group] = this.getStackVals(0, 2)
     return `${group}[${key}]`
+  },
+  BLAKE2B() {
+    return `BLAKE2B(${this.getStackVal(0)})`
   }
 }
 
