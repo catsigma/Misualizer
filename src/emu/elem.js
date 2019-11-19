@@ -96,6 +96,8 @@ export class Element {
       return this.continuation.getVal()
     else if (this.annots && this.annots.length)
       return this.annots[0] + `:${this.getType(this.t)}`
+    else if (this.t[0] === 'string')
+      return (this.value || '""') + `:${this.getType(this.t)}`
     else if (this.value)
       return this.value + `:${this.getType(this.t)}`
     else {

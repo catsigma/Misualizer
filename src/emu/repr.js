@@ -4,15 +4,17 @@ export const t_reprs = {
   pair() {
     return `(${this.children[0].getVal()}, ${this.children[1].getVal()})`
   },
+  set() {
+    return `SET[${this.children.map(x => x.getVal()).join(', ')}]`
+  },
   list() {
     return `[${this.children.map(x => x.getVal()).join(', ')}]`
   },
   option() {
-    let general_red
     if (this.raw === 'some')
       return `Some(${this.children[0].getVal()})`
     else if (this.raw === 'unknown2some')
-      return `Option<${this.getType(this.t[1])}>(${this.continuation.getVal()})`
+      return `Option<${this.getType(this.t[1])}>(${this.continuation ? this.continuation.getVal() : this.value})`
     else if (this.raw === 'none')
       return `None`
     else if (this.raw === 'unknown2none')

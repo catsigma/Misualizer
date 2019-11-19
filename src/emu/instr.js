@@ -564,6 +564,13 @@ export const instrs = {
     }))
     return stack
   },
+  EMPTY_SET(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['set', this.readType(instr.args[0])],
+      annots: instr.annots
+    }))
+    return stack
+  },
   EMPTY_BIG_MAP(stack : Stack, instr : Object) {
     stack.insert(new Element({
       t: ['big_map', this.readType(instr.args[0]), this.readType(instr.args[1])],
