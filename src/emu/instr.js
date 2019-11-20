@@ -469,10 +469,13 @@ export const instrs = {
   },
   CREATE_CONTRACT(stack : Stack, instr : Object) {
     const args = stack.drop(3)
-    stack.insert(new Element({
-      t: ['address'],
-      continuation: new Continuation(instr.prim, args)
-    }, 'generate'))
+
+    const addr_el = new Element({
+      t: ['address']
+    }, 'generate')
+    addr_el.continuation = new Continuation(instr.prim + '_ADDR', [addr_el].concat(args))
+
+    stack.insert(addr_el)
 
     stack.insert(new Element({
       t: ['operation'],

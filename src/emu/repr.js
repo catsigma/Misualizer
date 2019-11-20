@@ -143,6 +143,9 @@ export const reprs = {
   CREATE_CONTRACT() {
     return `CREATE_CONTRACT(${this.getStackVals(0, 3).join(', ')})`
   },
+  CREATE_CONTRACT_ADDR() {
+    return `${this.stack[0].value}:address <- CREATE_CONTRACT(${this.getStackVals(1, 4).join(', ')})`
+  },
   MEM() {
     return `(${this.getStackVal(0)} IN ${this.getStackVal(1)})`
   },
