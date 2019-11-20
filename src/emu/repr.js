@@ -74,6 +74,13 @@ export const reprs = {
     } else
       return `${s0} - ${s1}`
   },
+  MUL() {
+    const [s0, s1] = this.getStackVals(0, 2)
+    if (this.isConcrate(0, 1)) {
+      return parseInt(s0) * parseInt(s1)
+    } else
+      return `${s0} * ${s1}`
+  },
   AND() {
     const [s0, s1] = [this.getStackVal(0), this.getStackVal(1)]
     return `${s0} & ${s1}`
@@ -145,6 +152,12 @@ export const reprs = {
   },
   BLAKE2B() {
     return `BLAKE2B(${this.getStackVal(0)})`
+  },
+  ADDRESS() {
+    return `ADDRESS(${this.getStackVal(0)})`
+  },
+  ISNAT() {
+    return `ISNAT(${this.getStackVal(0)})`
   }
 }
 

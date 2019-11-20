@@ -29,6 +29,18 @@ export const instrs = {
     }))
     return stack
   },
+  MUL(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    const kind_set = new Set([a, b].map(x => x.t[0]))
+    const kind = kind_set.has('int') ? 'int' : 'nat'
+
+    stack.insert(new Element({
+      t: [kind],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [a, b])
+    }))
+    return stack
+  },
   ADD(stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
     const kind_set = new Set([a, b].map(x => x.t[0]))
@@ -581,6 +593,31 @@ export const instrs = {
   BLAKE2B(stack : Stack, instr : Object) {
     stack.replace(x => new Element({
       t: ['bytes'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  ADDRESS(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['address'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  SENDER(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['address'],
+      annots: instr.annots,
+      value: 'SENDER'
+    }))
+    return stack
+  },
+  ISNAT(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['option', 'bool'],
+      raw: 'unknown',
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
     }))
