@@ -52,7 +52,17 @@ export const t_reprs = {
       result[key] = value
     })
 
-    return JSON.stringify(result)
+    return JSON.stringify(result) + ':big_map'
+  },
+  map() {
+    const result = {}
+    this.children.forEach(elt => {
+      const key = elt.children[0].getVal()
+      const value = elt.children[1].getVal()
+      result[key] = value
+    })
+
+    return JSON.stringify(result) + ':map'
   }
 }
 
@@ -121,7 +131,7 @@ export const reprs = {
   TRANSFER_TOKENS() {
     const [entry] = this.stack[2].annots || []
     const contract = entry ? this.stack[2].value : this.getStackVal(2)
-    return `CALL(${entry ? `${contract}.${entry}` : contract}, ${this.getStackVal(1)}, ${this.getStackVal(0)})`
+    return `TRANSFER_TO(${entry ? `${contract}.${entry}` : contract}, ${this.getStackVal(1)}, ${this.getStackVal(0)})`
   },
   CONCAT() {
     const [a, b] = this.stack
@@ -151,7 +161,7 @@ export const reprs = {
   },
   GET() {
     const [key, group] = this.getStackVals(0, 2)
-    return `${group}[${key}]`
+    return `${group}.GET(${key})`
   },
   BLAKE2B() {
     return `BLAKE2B(${this.getStackVal(0)})`
@@ -161,6 +171,12 @@ export const reprs = {
   },
   ISNAT() {
     return `ISNAT(${this.getStackVal(0)})`
+  },
+  SET_DELEGATE() {
+    return `SET_DELEGATE(${this.getStackVal(0)})`
+  },
+  EXEC() {
+    return `${this.getStackVal(1)}.EXEC(${this.getStackVal(0)})`
   }
 }
 

@@ -72,6 +72,9 @@ export class Stack {
   insert(elem : Element) {
     this.stack.splice(this.dip_top, 0, elem)
   }
+  insertAt(index : number, elem : Element) {
+    this.stack.splice(this.dip_top + index, 0, elem)
+  }
 
   pushCond(elem : Element, cond : string | Element => void) {
     const cloned = elem.clone()

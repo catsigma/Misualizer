@@ -14,7 +14,8 @@ export const instrs = {
     return stack
   },
   DROP(stack : Stack, instr : Object) {
-    stack.drop(1)
+    const count = instr.args && instr.args[0].int ? parseInt(instr.args[0].int) : 1
+    stack.drop(count)
     return stack
   },
   PUSH(stack : Stack, instr : Object) {
@@ -291,6 +292,12 @@ export const instrs = {
   DIG(stack : Stack, instr : Object) {
     const nth = parseInt(instr.args[0].int)
     stack.insert(stack.dropAt(nth))
+    return stack
+  },
+  DUG(stack : Stack, instr : Object) {
+    const nth = parseInt(instr.args[0].int)
+    const [item] = stack.drop(1)
+    stack.insertAt(nth, item)
     return stack
   },
   NOW(stack : Stack, instr : Object) {
@@ -593,6 +600,13 @@ export const instrs = {
     }))
     return stack
   },
+  EMPTY_MAP(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['map', this.readType(instr.args[0]), this.readType(instr.args[1])],
+      annots: instr.annots
+    }))
+    return stack
+  },
   BLAKE2B(stack : Stack, instr : Object) {
     stack.replace(x => new Element({
       t: ['bytes'],
@@ -621,6 +635,14 @@ export const instrs = {
     stack.replace(x => new Element({
       t: ['option', 'bool'],
       raw: 'unknown',
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  SET_DELEGATE(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['operation'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
     }))
