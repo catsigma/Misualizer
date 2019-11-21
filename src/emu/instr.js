@@ -101,6 +101,42 @@ export const instrs = {
 
     return stack
   },
+  IF_CONS(stack : Stack, instr : Object) {
+    const [lst] = stack.drop(1)
+
+    if (lst.children.length) {
+      stack.pushCond(lst, 'non_empty')
+      stack.insert(lst)
+      stack.insert(lst.children.shift())
+      return this.walkCode(instr.args[0], [stack])
+       
+    } else if (lst.raw === 'unknown') {
+      const clone1 = stack.clone()
+      const clone2 = stack.clone()
+      clone1.pushCond(lst, 'unknown2non_empty')
+      clone2.pushCond(lst, 'unknown2empty')
+
+      clone1.insert(lst)
+      const elem = new Element({
+        t: lst.t[1] instanceof Array ? lst.t[1] : [lst.t[1]],
+        annots: instr.annots
+      }, 'generate')
+      elem.continuation = new Continuation(instr.prim, [elem, lst])
+      clone1.insert(elem)
+
+      const stacks1 = this.walkCode(instr.args[0], [clone1])
+      const stacks2 = this.walkCode(instr.args[1], [clone2])
+      return stacks1.concat(stacks2)
+
+    } else if (lst.raw === 'empty') {
+      stack.pushCond(lst, 'empty')
+      return this.walkCode(instr.args[1], [stack])
+       
+    } else {
+      debugger
+      throw `Invalid condition.raw in IF_CONS: ${lst.raw || ''}`
+    }
+  },
   IF_LEFT(stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
 

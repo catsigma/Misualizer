@@ -16,7 +16,7 @@ async function getContract(index : number) {
   console.log('getting: ' + contracts[index])
   const response = await fetch('/contracts/' + contracts[index])
   const json = await response.json()
-  return new Contract(json)
+  return new Contract(json, true)
 }
 
 async function test_contract() {

@@ -1,5 +1,7 @@
 // @flow
 
+import { Element } from './elem'
+
 export const t_reprs = {
   pair() {
     return `(${this.children[0].getVal()}, ${this.children[1].getVal()})`
@@ -8,21 +10,21 @@ export const t_reprs = {
     return `SET[${this.children.map(x => x.getVal()).join(', ')}]`
   },
   list() {
-    return `[${this.children.map(x => x.getVal()).join(', ')}]`
+    return `${this.value}[${this.children.map(x => x.getVal()).join(', ')}]`
   },
   option() {
     if (this.raw === 'some')
       return `Some(${this.children[0].getVal()})`
     else if (this.raw === 'unknown2some')
-      return `Option<${this.getType(this.t[1])}>(${this.continuation ? this.continuation.getVal() : this.value})`
+      return `Option<${Element.getType(this.t[1])}>(${this.continuation ? this.continuation.getVal() : this.value})`
     else if (this.raw === 'none')
       return `None`
     else if (this.raw === 'unknown2none')
-      return `Option<${this.getType(this.t[1])}>(None)`
+      return `Option<${Element.getType(this.t[1])}>(None)`
     else if (this.continuation)
       return `Option(${this.continuation.getVal()})`
     else if (this.value)
-      return `Option<${this.getType(this.t[1])}>(${this.value})`
+      return `Option<${Element.getType(this.t[1])}>(${this.value})`
     else {
       debugger
       throw `Invalid option element`
@@ -34,11 +36,11 @@ export const t_reprs = {
     } else if (this.raw === 'right') {
       return this.children[1].getVal()
     } else if (this.raw === 'unknown2left') {
-      return `${this.value}:${this.getType(this.t)}`
+      return `${this.value}:${Element.getType(this.t)}`
     } else if (this.raw === 'unknown2right') {
-      return `${this.value}:${this.getType(this.t)}`
+      return `${this.value}:${Element.getType(this.t)}`
     } else if (this.raw === 'unknown') {
-      return `${this.value}:${this.getType(this.t)}`
+      return `${this.value}:${Element.getType(this.t)}`
     } else {
       debugger
       throw `Invalid or element`
@@ -154,7 +156,8 @@ export const reprs = {
     return `CREATE_CONTRACT(${this.getStackVals(0, 3).join(', ')})`
   },
   CREATE_CONTRACT_ADDR() {
-    return `${this.stack[0].value}:address <- CREATE_CONTRACT(${this.getStackVals(1, 4).join(', ')})`
+    const elem = this.stack[0]
+    return `${elem.value}:${Element.getType(elem.t)} <- CREATE_CONTRACT(${this.getStackVals(1, 4).join(', ')})`
   },
   MEM() {
     return `(${this.getStackVal(0)} IN ${this.getStackVal(1)})`
@@ -177,6 +180,10 @@ export const reprs = {
   },
   EXEC() {
     return `${this.getStackVal(1)}.EXEC(${this.getStackVal(0)})`
+  },
+  IF_CONS() {
+    const elem = this.stack[0]
+    return `${elem.value}:${Element.getType(elem.t)} <- ${this.getStackVal(1)}`
   }
 }
 

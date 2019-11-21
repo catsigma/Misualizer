@@ -69,6 +69,14 @@ export class Element {
   raw: null | Object
   is_concrate : bool
 
+  static getType(t : EType | string) : string {
+    if (t instanceof Array) {
+      return t.length === 1 ? t[0].toString() : `(${t.map(x => Element.getType(x)).join(' ')})`
+    } else {
+      return t
+    }
+  }
+
   constructor(params : Object, field? : 'parameter' | 'storage' | 'generate' | 'fake') {
     this.t = []
     this.children = []
@@ -81,13 +89,6 @@ export class Element {
     Object.assign(this, params)
   }
 
-  getType(t : EType | string) : string {
-    if (t instanceof Array) {
-      return t.length === 1 ? t[0].toString() : `(${t.map(x => this.getType(x)).join(' ')})`
-    } else {
-      return t
-    }
-  }
 
   getVal() {
     if (typeof this.t[0] === 'string' && this.t[0] in t_reprs) {
@@ -95,11 +96,11 @@ export class Element {
     } else if (this.continuation)
       return this.continuation.getVal()
     else if (this.annots && this.annots.length)
-      return this.annots[0] + `:${this.getType(this.t)}`
+      return this.annots[0] + `:${Element.getType(this.t)}`
     else if (this.t[0] === 'string')
-      return (this.value || '""') + `:${this.getType(this.t)}`
+      return (this.value || '""') + `:${Element.getType(this.t)}`
     else if (this.value)
-      return this.value + `:${this.getType(this.t)}`
+      return this.value + `:${Element.getType(this.t)}`
     else {
       debugger
       throw `Unhandled Element for getVal`

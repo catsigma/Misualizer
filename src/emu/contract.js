@@ -13,7 +13,8 @@ const elt_types = new Set(
 const instr_keep_mapping = {
   lambda: t => t,
   option: () => 'unknown',
-  or: () => 'unknown'
+  or: () => 'unknown',
+  list: () => 'unknown'
 }
 
 export class Stack {
@@ -101,14 +102,16 @@ export class Stack {
 export class Contract {
   stack : Stack
   code : Array<Object>
+  with_fake_elems : bool
 
-  constructor(contract_raw : Array<Object>) {
+  constructor(contract_raw : Array<Object>, with_fake_elems : bool = true) {
     const contract = {}
     contract_raw.forEach(item => {
       const key = item.prim
       contract[key] = item.args
     })
-
+    
+    this.with_fake_elems = with_fake_elems
     this.code = contract.code[0]
     this.stack = new Stack([new Element({
       t: ['pair', this.readType(contract.parameter[0]), this.readType(contract.storage[0])],
@@ -128,6 +131,9 @@ export class Contract {
   }
 
   fakeElements(t : Object) {
+    if (!this.with_fake_elems)
+      return []
+      
     if (t.prim === 'list' || t.prim === 'set') {
       return [this.mockElements(t.args[0], 'fake')]
     } else if (t.prim === 'map' || t.prim === 'big_map') {
@@ -210,14 +216,22 @@ export class Contract {
         false: '❌',
         unknown2true: '✔️',
         unknown2false: '❌',
+
         left: '👈',
         right: '👉',
         unknown2left: '👈',
         unknown2right: '👉',
+
         some: '🈶',
         none: '🈚️',
         unknown2some: '🈶',
         unknown2none: '🈚️',
+
+        empty: '🈳',
+        non_empty: '🈶',
+        unknown2empty: '🈳',
+        unknown2non_empty: '🈶',
+        
         unknown: '❓'
       }
       
