@@ -10,12 +10,6 @@ const t_keep_args = new Set(
 const elt_types = new Set(
   ['map', 'big_map']
 )
-const instr_keep_mapping = {
-  lambda: t => t,
-  option: () => 'unknown',
-  or: () => 'unknown',
-  list: () => 'unknown'
-}
 
 export class Stack {
   stack : Array<Element>
@@ -80,7 +74,7 @@ export class Stack {
   pushCond(elem : Element, cond : string | Element => void) {
     const cloned = elem.clone()
     if (typeof cond === 'string') {
-      cloned.raw = cond
+      cloned.state = cond
     } else {
       cond(cloned)
     }
@@ -148,7 +142,7 @@ export class Contract {
       t: this.readType(t),
       annots: t.annots,
       children: t_keep_args.has(t.prim) ? this.fakeElements(t) : t.args ? t.args.map(x => this.mockElements(x, field)) : [],
-      raw: t.prim in instr_keep_mapping ? instr_keep_mapping[t.prim](t) : null
+      instr: t.prim === 'lambda' ? t : null
     }, field)
   }
 
@@ -171,11 +165,11 @@ export class Contract {
     
     const t_str = result.t[0].toString()
     if (t_str === 'option') {
-      result.raw = result.value === 'None' ? 'none' : 'some'
+      result.state = result.value === 'None' ? 'none' : 'some'
     } else if (t_str === 'or') {
       debugger
     } else if (t_str === 'lambda') {
-      result.raw = v
+      result.state = v
     }
     return result
   }
@@ -214,25 +208,25 @@ export class Contract {
       const mapping = {
         true: '✔️',
         false: '❌',
-        unknown2true: '✔️',
-        unknown2false: '❌',
+        default2true: '✔️',
+        default2false: '❌',
 
         left: '👈',
         right: '👉',
-        unknown2left: '👈',
-        unknown2right: '👉',
+        default2left: '👈',
+        default2right: '👉',
 
         some: '🈶',
         none: '🈚️',
-        unknown2some: '🈶',
-        unknown2none: '🈚️',
+        default2some: '🈶',
+        default2none: '🈚️',
 
         empty: '🈳',
         non_empty: '🈶',
-        unknown2empty: '🈳',
-        unknown2non_empty: '🈶',
+        default2empty: '🈳',
+        default2non_empty: '🈶',
         
-        unknown: '❓'
+        default: '❓'
       }
       
       if (!t || !(t in mapping)) {
@@ -246,11 +240,11 @@ export class Contract {
     stacks.forEach((stack, index) => {
       const index_len = index.toString().length + 1
       if (stack.is_failed()) {
-        const conds = stack.conditions.map(x => `${x.getVal()}${symbolRender(x.raw)}`).join(' -> ')
+        const conds = stack.conditions.map(x => `${x.getVal()}${symbolRender(x.state)}`).join(' -> ')
         console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
         console.log(`${' '.repeat(index_len)}%cFailure%c: ${stack.at(0).getVal()}`, 'background: #c00; color: white', 'color: black')
       } else {
-        const conds = stack.conditions.map(x => `${x.getVal()}${symbolRender(x.raw)}`).join(' -> ')
+        const conds = stack.conditions.map(x => `${x.getVal()}${symbolRender(x.state)}`).join(' -> ')
         console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
         console.log(`${' '.repeat(index_len)}%cResult%c: ${stack.top().getVal()}`, 'background: #1a0dab; color: white', 'color: black')
       }

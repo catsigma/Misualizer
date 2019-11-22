@@ -13,13 +13,13 @@ export const t_reprs = {
     return `${this.value}[${this.children.map(x => x.getVal()).join(', ')}]`
   },
   option() {
-    if (this.raw === 'some')
+    if (this.state === 'some')
       return `Some(${this.children[0].getVal()})`
-    else if (this.raw === 'unknown2some')
+    else if (this.state === 'default2some')
       return `Option<${Element.getType(this.t[1])}>(${this.continuation ? this.continuation.getVal() : this.value})`
-    else if (this.raw === 'none')
+    else if (this.state === 'none')
       return `None`
-    else if (this.raw === 'unknown2none')
+    else if (this.state === 'default2none')
       return `Option<${Element.getType(this.t[1])}>(None)`
     else if (this.continuation)
       return `Option(${this.continuation.getVal()})`
@@ -31,15 +31,15 @@ export const t_reprs = {
     }
   },
   or() {
-    if (this.raw === 'left') {
+    if (this.state === 'left') {
       return this.children[0].getVal()
-    } else if (this.raw === 'right') {
+    } else if (this.state === 'right') {
       return this.children[1].getVal()
-    } else if (this.raw === 'unknown2left') {
+    } else if (this.state === 'default2left') {
       return `${this.value}:${Element.getType(this.t)}`
-    } else if (this.raw === 'unknown2right') {
+    } else if (this.state === 'default2right') {
       return `${this.value}:${Element.getType(this.t)}`
-    } else if (this.raw === 'unknown') {
+    } else if (this.state === 'default') {
       return `${this.value}:${Element.getType(this.t)}`
     } else {
       debugger

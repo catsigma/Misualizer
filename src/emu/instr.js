@@ -110,11 +110,11 @@ export const instrs = {
       stack.insert(lst.children.shift())
       return this.walkCode(instr.args[0], [stack])
        
-    } else if (lst.raw === 'unknown') {
+    } else if (lst.state === 'default') {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
-      clone1.pushCond(lst, 'unknown2non_empty')
-      clone2.pushCond(lst, 'unknown2empty')
+      clone1.pushCond(lst, 'default2non_empty')
+      clone2.pushCond(lst, 'default2empty')
 
       clone1.insert(lst)
       const elem = new Element({
@@ -128,23 +128,23 @@ export const instrs = {
       const stacks2 = this.walkCode(instr.args[1], [clone2])
       return stacks1.concat(stacks2)
 
-    } else if (lst.raw === 'empty') {
+    } else if (lst.state === 'empty') {
       stack.pushCond(lst, 'empty')
       return this.walkCode(instr.args[1], [stack])
        
     } else {
       debugger
-      throw `Invalid condition.raw in IF_CONS: ${lst.raw || ''}`
+      throw `Invalid condition.state in IF_CONS: ${lst.state || ''}`
     }
   },
   IF_LEFT(stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
 
-    if (condition.raw === 'unknown') {
+    if (condition.state === 'default') {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
-      clone1.pushCond(condition, 'unknown2left')
-      clone2.pushCond(condition, 'unknown2right')
+      clone1.pushCond(condition, 'default2left')
+      clone2.pushCond(condition, 'default2right')
 
       clone1.insert(condition.children[0])
       clone2.insert(condition.children[1])
@@ -152,19 +152,19 @@ export const instrs = {
       const stacks2 = this.walkCode(instr.args[1], [clone2])
       return stacks1.concat(stacks2)
 
-    } else if (condition.raw === 'left') {
+    } else if (condition.state === 'left') {
       stack.pushCond(condition, 'left')
       stack.insert(condition.children[0])
       return this.walkCode(instr.args[0], [stack])
 
-    } else if (condition.raw === 'right') {
+    } else if (condition.state === 'right') {
       stack.pushCond(condition, 'right')
       stack.insert(condition.children[1])
       return this.walkCode(instr.args[1], [stack])
 
     } else {
       debugger
-      throw `Invalid condition.raw in IF_LEFT: ${condition.raw || ''}`
+      throw `Invalid condition.state in IF_LEFT: ${condition.state || ''}`
     }
   },
   IF_NONE(stack : Stack, instr : Object) {
@@ -175,15 +175,15 @@ export const instrs = {
       stack.insert(condition.children[0])
       return this.walkCode(instr.args[1], [stack])
 
-    } else if (condition.raw === 'none') {
+    } else if (condition.state === 'none') {
       stack.pushCond(condition, 'none')
       return this.walkCode(instr.args[0], [stack])
 
-    } else if (condition.raw === 'unknown') {
+    } else if (condition.state === 'default') {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
-      clone1.pushCond(condition, 'unknown2none')
-      clone2.pushCond(condition, 'unknown2some')
+      clone1.pushCond(condition, 'default2none')
+      clone2.pushCond(condition, 'default2some')
 
       clone2.insert(new Element({
         t: condition.t[1] instanceof Array ? condition.t[1] : [condition.t[1]],
@@ -195,7 +195,7 @@ export const instrs = {
       
     } else  {
       debugger
-      throw `Invalid condition.raw in IF_NONE: ${condition.raw || ''}`
+      throw `Invalid condition.state in IF_NONE: ${condition.state || ''}`
     }
   },
   IF(stack : Stack, instr : Object) {
@@ -214,8 +214,8 @@ export const instrs = {
     } else {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
-      clone1.pushCond(condition, 'unknown2true')
-      clone2.pushCond(condition, 'unknown2false')
+      clone1.pushCond(condition, 'default2true')
+      clone2.pushCond(condition, 'default2false')
 
       const stacks1 = this.walkCode(instr.args[0], [clone1])
       const stacks2 = this.walkCode(instr.args[1], [clone2])
@@ -241,8 +241,8 @@ export const instrs = {
     } else {
       const clone1 = stack.clone()
       const clone2 = stack.clone()
-      clone1.pushCond(condition, 'unknown2true')
-      clone2.pushCond(condition, 'unknown2false')
+      clone1.pushCond(condition, 'default2true')
+      clone2.pushCond(condition, 'default2false')
 
       const stacks1 = this.walkCode(instr.args[0], [clone1])
       stacks1.forEach(stack => stack.drop(1))
@@ -254,7 +254,7 @@ export const instrs = {
       t: ['option', x.t],
       children: [x],
       annots: instr.annots,
-      raw: 'some'
+      state: 'some'
     }, 'generate'))
     return stack
   },
@@ -264,7 +264,7 @@ export const instrs = {
       children: [],
       annots: instr.annots,
       value: 'NONE',
-      raw: 'none'
+      state: 'none'
     }))
     return stack
   },
@@ -459,11 +459,11 @@ export const instrs = {
   },
   EXEC(stack : Stack, instr : Object) {
     const [arg, lambda] = stack.drop(2)
-    const raw = lambda.raw || {args: []}
+    const lambda_instr = lambda.instr || {args: []}
 
-    if (raw.args.length > 2) {
+    if (lambda_instr.args.length > 2) {
       stack.insert(arg)
-      return this.walkCode(raw.args[2], [stack])
+      return this.walkCode(lambda_instr.args[2], [stack])
     }
 
     stack.insert(new Element({
@@ -477,7 +477,7 @@ export const instrs = {
     stack.insert(new Element({
       t: ['lambda', this.readType(instr.args[0]), this.readType(instr.args[1])],
       annots: instr.annots,
-      raw: instr
+      instr
     }))
     return stack
   },
@@ -506,7 +506,7 @@ export const instrs = {
       t: ['option', ['contract', this.readType(instr.args[0])]],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [address]),
-      raw: 'unknown'
+      state: 'default'
     }))
     return stack
   },
@@ -561,7 +561,7 @@ export const instrs = {
         t: ['option', group.t[2]],
         annots: instr.annots,
         continuation: new Continuation(instr.prim, [key, group]),
-        raw: 'unknown'
+        state: 'default'
       }))
     }
     return stack
@@ -608,7 +608,7 @@ export const instrs = {
       t: ['or', item.t, this.readType(instr.args[0])],
       annots: instr.annots,
       children: [item],
-      raw: 'left'
+      state: 'left'
     }))
     return stack
   },
@@ -618,7 +618,7 @@ export const instrs = {
       t: ['or', this.readType(instr.args[0]), item.t],
       annots: instr.annots,
       children: [,item],
-      raw: 'right'
+      state: 'right'
     }))
     return stack
   },
@@ -670,7 +670,7 @@ export const instrs = {
   ISNAT(stack : Stack, instr : Object) {
     stack.replace(x => new Element({
       t: ['option', 'bool'],
-      raw: 'unknown',
+      state: 'default',
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
     }))

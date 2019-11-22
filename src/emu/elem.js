@@ -66,7 +66,8 @@ export class Element {
   annots: Array<string>
   value : string
   continuation : null | Continuation
-  raw: null | Object
+  state: string
+  instr: null | Object
   is_concrate : bool
 
   static getType(t : EType | string) : string {
@@ -83,7 +84,8 @@ export class Element {
     this.annots = []
     this.value = getId(field)
     this.continuation = null
-    this.raw = null
+    this.state = 'default'
+    this.instr = null
     this.is_concrate = params.value !== undefined ? true : false
 
     Object.assign(this, params)
@@ -115,7 +117,8 @@ export class Element {
       annots: json_clone(this.annots),
       value : json_clone(this.value),
       continuation : this.continuation ? this.continuation.clone() : null,
-      raw: this.raw ? json_clone(this.raw) : null,
+      state: this.state,
+      instr: this.instr ? json_clone(this.instr) : null,
       is_concrate : this.is_concrate
     })
   }
