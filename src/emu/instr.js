@@ -225,10 +225,51 @@ export const instrs = {
       return stacks1.concat(stacks2)
     }
   },
+  LOOP_LEFT(stack : Stack, instr : Object, call_stack_level : number = 0) {
+    const [condition] = stack.drop(1)
+
+    if (call_stack_level === 8)
+      return stack
+
+    if (condition.state === 'left') {
+      stack.pushCond(condition, 'left')
+      stack.insert(condition.children[0])
+      const stacks = this.walkCode(instr.args[0], [stack])
+      return stacks.reduce((acc, stack) => acc.concat(instrs.LOOP_LEFT.call(this, stack, instr, call_stack_level + 1)), [])
+
+    } else if (condition.state === 'right') {
+      stack.pushCond(condition, 'right')
+      stack.insert(condition.children[1])
+      return stack
+
+    } else {
+      const clone1 = stack.clone()
+      const clone2 = stack.clone()
+      clone1.pushCond(condition, 'default2left')
+      clone2.pushCond(condition, 'default2right')
+
+      clone1.pushCond(condition, 'left')
+      const mocked_elem = this.mockElements(this.fallbackType(condition.t[1]), 'generate')
+      mocked_elem.continuation = new Continuation(instr.prim, [mocked_elem.clone(), condition])
+      clone1.insert(mocked_elem)
+
+      clone2.pushCond(condition, 'right')
+
+      const stacks1 = this.walkCode(instr.args[0], [clone1])
+      stacks1.forEach(stack => stack.replace(x => {
+        if (!x.children[1])
+          debugger
+          
+        return x.children[1]
+      }))
+      return stacks1.concat(clone2)
+    }
+
+  },
   LOOP(stack : Stack, instr : Object, call_stack_level : number = 0) {
     const [condition] = stack.drop(1)
 
-    if (call_stack_level === 32)
+    if (call_stack_level === 8)
       return stack
 
     if (condition.is_concrate) {
