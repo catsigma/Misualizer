@@ -5,6 +5,10 @@ import { Element, Continuation } from './elem'
 import { Stack } from './contract'
 
 export const instrs = {
+  STOP(stack : Stack, instr : Object) {
+    debugger
+    return stack
+  },
   CAR(stack : Stack, instr : Object) {
     stack.replace(x => x.children[0])
     return stack
@@ -117,12 +121,9 @@ export const instrs = {
       clone2.pushCond(lst, 'default2empty')
 
       clone1.insert(lst)
-      const elem = new Element({
-        t: lst.t[1] instanceof Array ? lst.t[1] : [lst.t[1]],
-        annots: instr.annots
-      }, 'generate')
-      elem.continuation = new Continuation(instr.prim, [elem, lst])
-      clone1.insert(elem)
+      const mocked_elem = this.mockElements(this.fallbackType(lst.t[1]), 'generate')
+      mocked_elem.continuation = new Continuation(instr.prim, [mocked_elem.clone(), lst])
+      clone1.insert(mocked_elem)
 
       const stacks1 = this.walkCode(instr.args[0], [clone1])
       const stacks2 = this.walkCode(instr.args[1], [clone2])
@@ -185,10 +186,9 @@ export const instrs = {
       clone1.pushCond(condition, 'default2none')
       clone2.pushCond(condition, 'default2some')
 
-      clone2.insert(new Element({
-        t: condition.t[1] instanceof Array ? condition.t[1] : [condition.t[1]],
-        continuation: condition.continuation
-      }, 'generate'))
+      const mocked_elem = this.mockElements(this.fallbackType(condition.t[1]), 'generate')
+      clone2.insert(mocked_elem)
+      
       const stacks1 = this.walkCode(instr.args[0], [clone1])
       const stacks2 = this.walkCode(instr.args[1], [clone2])
       return stacks1.concat(stacks2)
@@ -222,14 +222,17 @@ export const instrs = {
       return stacks1.concat(stacks2)
     }
   },
-  LOOP(stack : Stack, instr : Object) {
+  LOOP(stack : Stack, instr : Object, call_stack_level : number = 0) {
     const [condition] = stack.drop(1)
+
+    if (call_stack_level === 64)
+      return stack
 
     if (condition.is_concrate) {
       if (condition.value === 'True') {
         stack.pushCond(condition, 'true')
         const stacks = this.walkCode(instr.args[0], [stack])
-        return stacks.reduce((acc, stack) => acc.concat(instrs.LOOP.call(this, stack, instr)), [])
+        return stacks.reduce((acc, stack) => acc.concat(instrs.LOOP.call(this, stack, instr, call_stack_level + 1)), [])
 
       } else if (condition.value === 'False') {
         stack.pushCond(condition, 'false')
@@ -277,7 +280,7 @@ export const instrs = {
         stacks = this.walkCode(instr.args[0], stacks)
       })
     } else {
-      item.continuation = new Continuation(instr.prim, [item])
+      item.continuation = new Continuation(instr.prim, [item.clone()])
     }
     return stacks
   },
@@ -300,7 +303,7 @@ export const instrs = {
         stack.insert(cloned_item)
       })
     } else {
-      item.continuation = new Continuation(instr.prim, [item])
+      item.continuation = new Continuation(instr.prim, [item.clone()])
       stack.insert(item)
     }
     return stacks
@@ -646,6 +649,14 @@ export const instrs = {
   BLAKE2B(stack : Stack, instr : Object) {
     stack.replace(x => new Element({
       t: ['bytes'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  HASH_KEY(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['key_hash'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
     }))

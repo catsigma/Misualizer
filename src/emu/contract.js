@@ -123,9 +123,24 @@ export class Contract {
       return [t.prim]
     }
   }
+  fallbackType(t : EType) : Object {
+    if (t.length > 1) {
+      return {
+        prim: t[0],
+        args: t.slice(1).map((x : string | EType) => {
+          if (typeof x === 'string')
+            return {prim: x}
+          else
+            return this.fallbackType(x)
+        })
+      }
+    } else {
+      return {prim: t[0]}
+    }
+  }
 
-  fakeElements(t : Object) {
-    if (!this.with_fake_elems)
+  mockInsideElements(t : Object) {
+    if (!this.with_fake_elems) //TODO: remove this
       return []
       
     if (t.prim === 'list' || t.prim === 'set') {
@@ -141,7 +156,7 @@ export class Contract {
     return new Element({
       t: this.readType(t),
       annots: t.annots,
-      children: t_keep_args.has(t.prim) ? this.fakeElements(t) : t.args ? t.args.map(x => this.mockElements(x, field)) : [],
+      children: t_keep_args.has(t.prim) ? this.mockInsideElements(t) : t.args ? t.args.map(x => this.mockElements(x, field)) : [],
       instr: t.prim === 'lambda' ? t : null
     }, field)
   }
@@ -196,6 +211,9 @@ export class Contract {
 
         const result : Stack | Array<Stack> = instrs[instr.prim].call(this, stack, instr)
         ;(result instanceof Array ? result : [result]).forEach(x => {new_stacks.push(x)})
+
+        // instant check
+        new_stacks.forEach(stack => stack.is_failed())
       })
       stacks = new_stacks
     })

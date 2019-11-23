@@ -50,7 +50,7 @@ export class Continuation {
   }
 
   isConcrate(...indexes : Array<number>) {
-    return indexes.map(index => this.stack[index]).reduce((acc, x) => acc && x.is_concrate, true)
+    return indexes.map(index => this.stack[index]).reduce((acc, x) => acc && !isNaN(parseInt(x)), true)
   }
 
   clone() {

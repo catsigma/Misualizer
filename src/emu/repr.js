@@ -169,6 +169,9 @@ export const reprs = {
   BLAKE2B() {
     return `BLAKE2B(${this.getStackVal(0)})`
   },
+  HASH_KEY() {
+    return `HASH_KEY(${this.getStackVal(0)})`
+  },
   ADDRESS() {
     return `ADDRESS(${this.getStackVal(0)})`
   },
