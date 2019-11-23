@@ -112,6 +112,9 @@ export const instrs = {
       stack.pushCond(lst, 'non_empty')
       stack.insert(lst)
       stack.insert(lst.children.shift())
+      if (!lst.children.length)
+        lst.state = 'empty'
+
       return this.walkCode(instr.args[0], [stack])
        
     } else if (lst.state === 'default') {
@@ -225,7 +228,7 @@ export const instrs = {
   LOOP(stack : Stack, instr : Object, call_stack_level : number = 0) {
     const [condition] = stack.drop(1)
 
-    if (call_stack_level === 64)
+    if (call_stack_level === 32)
       return stack
 
     if (condition.is_concrate) {
