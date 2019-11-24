@@ -118,7 +118,7 @@ export class Element {
       value : json_clone(this.value),
       continuation : this.continuation ? this.continuation.clone() : null,
       state: this.state,
-      instr: this.instr ? json_clone(this.instr) : null,
+      instr: this.instr,
       is_concrate : this.is_concrate
     })
   }

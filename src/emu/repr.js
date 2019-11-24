@@ -97,6 +97,10 @@ export const reprs = {
     const [s0, s1] = [this.getStackVal(0), this.getStackVal(1)]
     return `${s0} & ${s1}`
   },
+  OR() {
+    const [s0, s1] = [this.getStackVal(0), this.getStackVal(1)]
+    return `${s0} | ${s1}`
+  },
   COMPARE() {
     return [this.getStackVal(0), this.getStackVal(1)]
   },
@@ -145,6 +149,9 @@ export const reprs = {
   PACK() {
     return `PACK(${this.getStackVal(0)})`
   },
+  UNPACK() {
+    return `UNPACK(${this.getStackVal(0)})`
+  },
   CHECK_SIGNATURE() {
     const [key, signature, bytes] = this.getStackVals(0, 3)
     return `CHECK_SIG(${key}, ${signature}, ${bytes})`
@@ -165,6 +172,12 @@ export const reprs = {
   GET() {
     const [key, group] = this.getStackVals(0, 2)
     return `${group}.GET(${key})`
+  },
+  SHA256() {
+    return `SHA256(${this.getStackVal(0)})`
+  },
+  SHA512() {
+    return `SHA512(${this.getStackVal(0)})`
   },
   BLAKE2B() {
     return `BLAKE2B(${this.getStackVal(0)})`
@@ -187,6 +200,16 @@ export const reprs = {
   IF_CONS() {
     const elem = this.stack[0]
     return `${elem.value}:${Element.getType(elem.t)} <- ${this.getStackVal(1)}`
+  },
+  SIZE() {
+    return `SIZE(${this.getStackVal(0)})`
+  },
+  NOT() {
+    return `~${this.getStackVal(0)}`
+  },
+  SLICE() {
+    const [offset, length, str] = this.getStackVals(0, 3)
+    return `${str}.SLICE(${offset}, ${length})`
   }
 }
 

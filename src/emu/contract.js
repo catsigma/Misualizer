@@ -123,16 +123,14 @@ export class Contract {
       return [t.prim]
     }
   }
-  fallbackType(t : EType) : Object {
+  fallbackType(t : EType | string) : Object {
+    if (typeof t === 'string')
+      return {prim: t}
+
     if (t.length > 1) {
       return {
         prim: t[0],
-        args: t.slice(1).map((x : string | EType) => {
-          if (typeof x === 'string')
-            return {prim: x}
-          else
-            return this.fallbackType(x)
-        })
+        args: t.slice(1).map((x : string | EType) => this.fallbackType(x))
       }
     } else {
       return {prim: t[0]}

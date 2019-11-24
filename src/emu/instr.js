@@ -23,7 +23,10 @@ export const instrs = {
     return stack
   },
   PUSH(stack : Stack, instr : Object) {
-    stack.insert(this.createElements(instr.args[0], instr.args[1]))
+    stack.insert(instr.args[1] instanceof Element ?
+      instr.args[1] :
+      this.createElements(instr.args[0], instr.args[1]))
+
     return stack
   },
   ABS(stack : Stack, instr : Object) {
@@ -72,6 +75,14 @@ export const instrs = {
     return stack
   },
   AND(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['bool'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(2))
+    }))
+    return stack
+  },
+  OR(stack : Stack, instr : Object) {
     stack.insert(new Element({
       t: ['bool'],
       annots: instr.annots,
@@ -259,7 +270,7 @@ export const instrs = {
       stacks1.forEach(stack => stack.replace(x => {
         if (!x.children[1])
           debugger
-          
+
         return x.children[1]
       }))
       return stacks1.concat(clone2)
@@ -496,12 +507,43 @@ export const instrs = {
     }))
     return stack
   },
+  UNPACK(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['option', this.readType(instr.args[0])],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
   CHECK_SIGNATURE(stack : Stack, instr : Object) {
     stack.insert(new Element({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(3))
     }))
+    return stack
+  },
+  APPLY(stack : Stack, instr : Object) {
+    const [param, lambda] = stack.drop(2)
+
+    if (lambda.t[1] instanceof Array)
+      lambda.t[1] = lambda.t[1][2]
+    else
+      throw `Invalid lambda in APPLY`
+
+    if (lambda.instr) {
+      const code = lambda.instr.args[2] || []
+      code.unshift({prim: 'PAIR'})
+      code.unshift({
+        prim: 'PUSH',
+        args: [
+          this.fallbackType(param.t),
+          param
+        ]
+      })
+    }
+
+    stack.insert(lambda)
     return stack
   },
   EXEC(stack : Stack, instr : Object) {
@@ -690,6 +732,22 @@ export const instrs = {
     }))
     return stack
   },
+  SHA256(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['bytes'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  SHA512(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['bytes'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
   BLAKE2B(stack : Stack, instr : Object) {
     stack.replace(x => new Element({
       t: ['bytes'],
@@ -736,6 +794,31 @@ export const instrs = {
       t: ['operation'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  SIZE(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['nat'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  NOT(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['int'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  SLICE(stack : Stack, instr : Object) {
+    const [offset, length, str] = stack.drop(3)
+    stack.insert(new Element({
+      t: ['option', 'string'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [offset, length, str])
     }))
     return stack
   }
