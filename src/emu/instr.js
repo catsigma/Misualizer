@@ -605,8 +605,7 @@ export const instrs = {
     const addr_el = new Element({
       t: ['address']
     }, 'generate')
-    addr_el.continuation = new Continuation(instr.prim + '_ADDR', [addr_el].concat(args))
-
+    addr_el.continuation = new Continuation(instr.prim + '_ADDR', [addr_el.clone()].concat(args))
     stack.insert(addr_el)
 
     stack.insert(new Element({
