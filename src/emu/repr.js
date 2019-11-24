@@ -93,6 +93,10 @@ export const reprs = {
     } else
       return `${s0} * ${s1}`
   },
+  XOR() {
+    const [s0, s1] = [this.getStackVal(0), this.getStackVal(1)]
+    return `${s0} ^ ${s1}`
+  },
   AND() {
     const [s0, s1] = [this.getStackVal(0), this.getStackVal(1)]
     return `${s0} & ${s1}`

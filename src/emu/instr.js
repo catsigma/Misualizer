@@ -74,6 +74,14 @@ export const instrs = {
     }))
     return stack
   },
+  XOR(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['bool'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(2))
+    }))
+    return stack
+  },
   AND(stack : Stack, instr : Object) {
     stack.insert(new Element({
       t: ['bool'],
@@ -303,7 +311,10 @@ export const instrs = {
       clone2.pushCond(condition, 'default2false')
 
       const stacks1 = this.walkCode(instr.args[0], [clone1])
-      stacks1.forEach(stack => stack.drop(1))
+      stacks1.forEach(stack => {
+        if (!stack.is_failed())
+          stack.drop(1)
+      })
       return stacks1.concat(clone2)
     }
   },
@@ -819,6 +830,10 @@ export const instrs = {
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [offset, length, str])
     }))
+    return stack
+  },
+  RENAME(stack : Stack, instr : Object) {
+    stack.top().annots = instr.annots
     return stack
   }
 }

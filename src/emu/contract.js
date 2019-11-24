@@ -268,7 +268,6 @@ export class Contract {
   }
 
   walkToExit() {
-    const result_stacks = this.walkCode(this.code, [this.stack.clone()])
-    this.logResult(result_stacks)
+    return this.walkCode(this.code, [this.stack.clone()])
   }
 }
