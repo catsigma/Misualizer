@@ -6,7 +6,8 @@
   "scripts": {
     "flow": "flow",
     "test": "flow && cp -r test/contracts dist/ && BROWSER_OPT=true parcel test/index.html --target browser --https",
-    "build": "parcel src/index.js"
+    "dev": "flow && BROWSER_OPT=true parcel src/web/index.html --target browser --https",
+    "build": "parcel src/web/index.html"
   },
   "repository": {
     "type": "git",
@@ -20,13 +21,18 @@
   "homepage": "https://github.com/catsigma/Misualizer#readme",
   "dependencies": {
     "chevrotain": "^6.5.0",
-    "tezbridge-network": "^1.0.40"
+    "tezbridge-network": "^1.0.40",
+    "vue": "^2.6.10",
+    "vue-hot-reload-api": "^2.3.4"
   },
   "devDependencies": {
     "@babel/core": "^7.6.0",
     "@babel/plugin-transform-flow-strip-types": "^7.4.4",
     "@babel/plugin-transform-runtime": "^7.6.0",
-    "flow-bin": "^0.107.0"
+    "@vue/component-compiler-utils": "^3.0.2",
+    "flow-bin": "^0.107.0",
+    "sass": "^1.23.7",
+    "vue-template-compiler": "^2.6.10"
   },
   "babel": {
     "plugins": [
