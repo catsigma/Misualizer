@@ -1,24 +1,32 @@
 <template>
   <div>
-    <div class="mono">
-      {{result.start}}
-    </div>
-    <div :key="`result-${i}`" v-for="(result, i) in result.results">
-      <div class="mono">
-        {{result[0]}}
-      </div>
-      <div class="mono">
-        {{result[1]}}
+    <div class="block start">
+      <h2>Start</h2>
+      <div class="stack">
+        <span class="mono">{{result.start}}</span>
       </div>
     </div>
-    <div :key="`fail-${i}`" v-for="(fail, i) in result.fails">
-      <div class="mono">
-        {{fail[0]}}
+
+    <div class="block result" :key="`result-${i}`" v-for="(result, i) in result.results">
+      <h2>Result {{i}}</h2>
+      <div class="cond">
+        <span class="mono">{{result[0]}}</span>
       </div>
-      <div class="mono">
-        {{fail[1]}}
+      <div class="stack">
+        <span class="mono">{{result[1]}}</span>
       </div>
     </div>
+
+    <div class="block fail" :key="`fail-${i}`" v-for="(fail, i) in result.fails">
+      <h2>Fail {{i}}</h2>
+      <div class="cond">
+        <span class="mono">{{fail[0]}}</span>
+      </div>
+      <div class="stack">
+        <span class="mono">{{fail[1]}}</span>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -47,8 +55,57 @@ export default {
 <style scoped lang="scss">
 @import "../colors";
 
+th {
+  text-align: right;
+  vertical-align: top;
+}
 .mono {
-  margin-bottom: 16px;
   font-size: 1.2rem;
+}
+
+.block {
+  margin-bottom: 16px;
+
+  .mono {
+    margin-left: 8px;
+  }
+}
+
+.start {
+  h2 {
+    color: $c2;
+  }
+}
+
+.result {
+  h2 {
+    color: $c8;
+  }
+}
+
+.fail {
+  h2 {
+    color: $c11;
+  }
+}
+
+.stack {
+  margin-left: 8px;
+
+  &::before {
+    display: block;
+    content: 'Stack:';
+    color: $c2;
+  }
+}
+
+.cond {
+  margin-left: 8px;
+
+  &::before {
+    display: block;
+    content: 'Condition flow:';
+    color: $c2;
+  }
 }
 </style>
