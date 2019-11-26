@@ -69,6 +69,9 @@ export const t_reprs = {
 }
 
 export const reprs = {
+  INT() {
+    return `INT(${this.getStackVal(0)})`
+  },
   ABS() {
     return `ABS(${this.getStackVal(0)})`
   },
@@ -85,6 +88,14 @@ export const reprs = {
       return parseInt(s0) - parseInt(s1)
     } else
       return `${s0} - ${s1}`
+  },
+  DIV() {
+    const [s0, s1] = this.getStackVals(0, 2)
+    return `${s0} / ${s1}`
+  },
+  MOD() {
+    const [s0, s1] = this.getStackVals(0, 2)
+    return `${s0} % ${s1}`
   },
   MUL() {
     const [s0, s1] = this.getStackVals(0, 2)

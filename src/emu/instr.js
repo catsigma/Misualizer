@@ -29,6 +29,14 @@ export const instrs = {
 
     return stack
   },
+  INT(stack : Stack, instr : Object) {
+    stack.replace(x => new Element({
+      t: ['int'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
   ABS(stack : Stack, instr : Object) {
     stack.replace(x => new Element({
       t: ['nat'],
@@ -36,6 +44,51 @@ export const instrs = {
       continuation: new Continuation(instr.prim, [x])
     }))
     return stack
+  },
+  EDIV(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    const t = a.t[0] === 'nat' && b.t[0] === 'nat' ? 'nat' : 'int'
+
+    if (b.value === '0') {
+      stack.insert(new Element({
+        t: ['option', ['pair', t, 'nat']],
+        annots: instr.annots,
+        value: 'NONE',
+        state: 'none'
+      }))
+      return stack
+    } else {
+      const stack1 = stack.clone()
+      const stack2 = stack.clone()
+
+      stack1.insert(new Element({
+        t: ['option', ['pair', t, 'nat']],
+        annots: instr.annots,
+        value: 'NONE',
+        state: 'none'
+      }))
+
+      stack2.insert(new Element({
+        t: ['option', ['pair', t, 'nat']],
+        annots: instr.annots,
+        children: [new Element({
+          t: ['pair', t, 'nat'],
+          children: [
+            new Element({
+              t: [t],
+              continuation: new Continuation('DIV', [a, b])
+            }),
+            new Element({
+              t: ['nat'],
+              continuation: new Continuation('MOD', [a, b])
+            })
+          ]
+        })]
+      }))
+
+      return [stack1, stack2]
+    }
+
   },
   MUL(stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
@@ -779,6 +832,14 @@ export const instrs = {
       t: ['address'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
+    }))
+    return stack
+  },
+  SOURCE(stack : Stack, instr : Object) {
+    stack.insert(new Element({
+      t: ['address'],
+      annots: instr.annots,
+      value: 'SOURCE'
     }))
     return stack
   },

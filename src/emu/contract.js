@@ -219,52 +219,74 @@ export class Contract {
     return stacks.concat(failed_stacks)
   }
 
-  logResult(stacks : Array<Stack>) {
-    const symbolRender = (t : string | null) => {
-      const mapping = {
-        true: '✔️',
-        false: '❌',
-        default2true: '✔️',
-        default2false: '❌',
+  symbolRender(t : string | null) {
+    const mapping = {
+      true: '✔️',
+      false: '❌',
+      default2true: '✔️',
+      default2false: '❌',
 
-        left: '👈',
-        right: '👉',
-        default2left: '👈',
-        default2right: '👉',
+      left: '👈',
+      right: '👉',
+      default2left: '👈',
+      default2right: '👉',
 
-        some: '🈶',
-        none: '🈚️',
-        default2some: '🈶',
-        default2none: '🈚️',
+      some: '🈶',
+      none: '🈚️',
+      default2some: '🈶',
+      default2none: '🈚️',
 
-        empty: '🈳',
-        non_empty: '🈶',
-        default2empty: '🈳',
-        default2non_empty: '🈶',
-        
-        default: '❓'
-      }
+      empty: '🈳',
+      non_empty: '🈶',
+      default2empty: '🈳',
+      default2non_empty: '🈶',
       
-      if (!t || !(t in mapping)) {
-        debugger
-        throw `Invalid symbol`
-      } else
-        return mapping[t]
+      default: '❓'
+    }
+    
+    if (!t || !(t in mapping)) {
+      debugger
+      throw `Invalid symbol`
+    } else
+      return mapping[t]
+  }
+
+  logResult(stacks : Array<Stack>) {
+    const {start, fails, results} = this.stacksToText(stacks)
+    console.log(`%cStart%c: ${start}`, 'background: #006621; color: white', 'color: black')
+
+    results.forEach(([conds, result], index) => {
+      const index_len = index.toString().length + 1
+      console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
+      console.log(`${' '.repeat(index_len)}%cResult%c: ${result}`, 'background: #1a0dab; color: white', 'color: black')
+    })
+
+    fails.forEach(([conds, result], index) => {
+      const index_len = index.toString().length + 1
+      console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
+      console.log(`${' '.repeat(index_len)}%cFailure%c: ${result}`, 'background: #c00; color: white', 'color: black')
+    })
+  }
+
+  stacksToText(stacks : Array<Stack>) {
+    const result = {
+      start: this.stack.at(0).getVal(),
+      fails: [],
+      results: []
     }
 
-    console.log(`%cStart%c: ${this.stack.at(0).getVal()}`, 'background: #006621; color: white', 'color: black')
     stacks.forEach((stack, index) => {
-      const index_len = index.toString().length + 1
+      const conds = stack.conditions.map(x => `${x.getVal()}${this.symbolRender(x.state)}`).join(' -> ')
+      const val = stack.at(0).getVal()
+
       if (stack.is_failed()) {
-        const conds = stack.conditions.map(x => `${x.getVal()}${symbolRender(x.state)}`).join(' -> ')
-        console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
-        console.log(`${' '.repeat(index_len)}%cFailure%c: ${stack.at(0).getVal()}`, 'background: #c00; color: white', 'color: black')
+        result.fails.push([conds, val])
       } else {
-        const conds = stack.conditions.map(x => `${x.getVal()}${symbolRender(x.state)}`).join(' -> ')
-        console.log(`${index}.%cCondition%c: ${conds}`, 'background: #def', 'color: black')
-        console.log(`${' '.repeat(index_len)}%cResult%c: ${stack.top().getVal()}`, 'background: #1a0dab; color: white', 'color: black')
+        result.results.push([conds, val])
       }
     })
+
+    return result
   }
 
   walkToExit() {

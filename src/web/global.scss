@@ -18,6 +18,11 @@ html {font-size: 10px;}
   font-family: FiraCode, monospace;
 }
 
+pre {
+  font-size: 1.2rem;
+  color: $c16;
+}
+
 body {
   background: $c6;
 }
@@ -39,6 +44,18 @@ button:hover {
 button:active {
   background: $c5;
   padding: 8px 12px;
+}
+
+.fade-enter-active {
+  animation: fade-in 1.2s;
+}
+@keyframes fade-in {
+  0% {
+    opacity: 0
+  }
+  100% {
+    opacity: 1
+  }
 }
 
 .bounce-enter-active {

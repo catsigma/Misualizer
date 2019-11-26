@@ -4,8 +4,9 @@
       <div class="logo">Misualizer</div>
       <input class="mono" placeholder="Enter the KT1 address here" v-model="address" />
       <selector :data="nets" v-model="net_type" class="net-selector"></selector>
-      <button>Check</button>
+      <button @click="checkContract">Check</button>
     </div>
+
     <transition name="bounce">
       <div class="index-center" v-if="state === 'initial'">
         <div class="logo">Misualizer</div>
@@ -14,15 +15,42 @@
         <button @click="checkContract">Check contract</button>
       </div>
     </transition>
+
+    <transition name="fade">
+      <div class="wrapper" v-if="state === 'checking'">
+        <div class="tabs">
+          <selector :data="renderers" v-model="renderer" class="renderer-selector"></selector>
+        </div>
+
+        <div class="content-wrapper" v-if="renderer === 'text'">
+          <text-renderer :contract="contract_raw"></text-renderer>
+        </div>
+        <div class="content-wrapper" v-if="renderer === 'michelson'">
+          <michelson-renderer :contract="contract_raw"></michelson-renderer>
+        </div>
+        <div class="content-wrapper" v-if="renderer === 'raw'">
+          <raw-renderer :contract="contract_raw"></raw-renderer>
+        </div>
+      </div>
+    </transition>
+
   </div>
 </template>
 
 <script>
+import TBN from 'tezbridge-network/PsBabyM1'
 import Selector from './Selector'
+
+import TextRenderer from './TextRenderer'
+import RawRenderer from './RawRenderer'
+import MichelsonRenderer from './MichelsonRenderer'
 
 export default {
   components: {
-    Selector
+    Selector,
+    TextRenderer,
+    RawRenderer,
+    MichelsonRenderer
   },
   data() {
     return {
@@ -32,17 +60,34 @@ export default {
         carthagenet: 'carthagenet'
       },
       net_type: 'mainnet',
+      renderers: {
+        text: 'text',
+        graph: 'graph',
+        raw: 'raw'
+      },
+      renderer: 'text',
       address: '',
-      state: 'initial'
+      state: 'initial',
+      contract_raw: null
     }
   },
   methods: {
-    checkContract() {
-      this.state = 'checking'
-    }
-  },
-  watch: {
-    state(s) {
+    async checkContract() {
+      const host = {
+        mainnet: 'https://mainnet.tezrpc.me',
+        babylonnet: 'babylonnet',
+        carthagenet: 'carthagenet'
+      }[this.net_type]
+
+      const client = new TBN({
+        host
+      })
+
+      try {
+        this.contract_raw = await client.fetch.contract(this.address)
+        this.state = 'checking'
+      } catch {}
+
     }
   }
 }
@@ -50,6 +95,25 @@ export default {
 
 <style scoped lang="scss">
 @import "../colors";
+
+.wrapper {
+  margin: 8px;
+}
+
+.tabs {
+  .renderer-selector {
+    display: inline-block;
+    border: 1px solid $c9;
+    border-radius: 4px;
+    padding: 4px;
+  }
+}
+
+.content-wrapper {
+  margin-top: 8px;
+  padding: 4px;
+  background: darken($c6, 10%);
+}
 
 .header {
   display: flex;

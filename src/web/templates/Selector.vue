@@ -38,7 +38,7 @@ div.item {
   padding: 4px 8px;
   color: $c5;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 div.item.active {
   background: $c9;
