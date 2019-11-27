@@ -105,7 +105,7 @@ th {
   &::before {
     display: block;
     content: '/ Stack:';
-    color: $c1;
+    color: $c15;
   }
 }
 
@@ -115,7 +115,7 @@ th {
   &::before {
     display: block;
     content: '/ Condition flow:';
-    color: $c1;
+    color: $c15;
   }
 }
 </style>
