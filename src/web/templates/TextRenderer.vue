@@ -44,10 +44,20 @@ export default {
       }
     }
   },
+  watch: {
+    contract() {
+      this.renderText()
+    }
+  },
   mounted() {
-    const contract = new Contract(this.contract.script.code)
-    const stacks = contract.walkToExit()
-    this.result = contract.stacksToText(stacks)
+    this.renderText()
+  },
+  methods: {
+    renderText() {
+      const contract = new Contract(this.contract.script.code)
+      const stacks = contract.walkToExit()
+      this.result = contract.stacksToText(stacks)
+    }
   }
 }
 </script>

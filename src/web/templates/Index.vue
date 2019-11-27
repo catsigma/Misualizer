@@ -15,7 +15,7 @@
         <button @click="checkContract">Check contract</button>
       </div>
     </transition>
-
+    
     <transition name="fade">
       <div class="wrapper" v-if="state === 'checking'">
         <div class="tabs">
@@ -40,6 +40,7 @@
 <script>
 import TBN from 'tezbridge-network/PsBabyM1'
 import Selector from './Selector'
+import Loading from './Loading'
 
 import TextRenderer from './TextRenderer'
 import RawRenderer from './RawRenderer'
@@ -47,6 +48,7 @@ import MichelsonRenderer from './MichelsonRenderer'
 
 export default {
   components: {
+    Loading,
     Selector,
     TextRenderer,
     RawRenderer,
