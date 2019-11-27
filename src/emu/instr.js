@@ -1,7 +1,7 @@
 // @flow
 
 import type { Contract } from './contract'
-import { Element, Continuation } from './elem'
+import { Continuation } from './elem'
 import { Stack } from './contract'
 
 export const instrs = {
@@ -30,7 +30,7 @@ export const instrs = {
     return stack
   },
   INT(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['int'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -38,7 +38,7 @@ export const instrs = {
     return stack
   },
   ABS(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['nat'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -50,7 +50,7 @@ export const instrs = {
     const t = a.t[0] === 'nat' && b.t[0] === 'nat' ? 'nat' : 'int'
 
     if (b.value === '0') {
-      stack.insert(new Element({
+      stack.insert(this.newElement({
         t: ['option', ['pair', t, 'nat']],
         annots: instr.annots,
         value: 'NONE',
@@ -61,24 +61,24 @@ export const instrs = {
       const stack1 = stack.clone()
       const stack2 = stack.clone()
 
-      stack1.insert(new Element({
+      stack1.insert(this.newElement({
         t: ['option', ['pair', t, 'nat']],
         annots: instr.annots,
         value: 'NONE',
         state: 'none'
       }))
 
-      stack2.insert(new Element({
+      stack2.insert(this.newElement({
         t: ['option', ['pair', t, 'nat']],
         annots: instr.annots,
-        children: [new Element({
+        children: [this.newElement({
           t: ['pair', t, 'nat'],
           children: [
-            new Element({
+            this.newElement({
               t: [t],
               continuation: new Continuation('DIV', [a, b])
             }),
-            new Element({
+            this.newElement({
               t: ['nat'],
               continuation: new Continuation('MOD', [a, b])
             })
@@ -95,7 +95,7 @@ export const instrs = {
     const kind_set = new Set([a, b].map(x => x.t[0]))
     const kind = kind_set.has('int') ? 'int' : 'nat'
 
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: [kind],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [a, b])
@@ -110,7 +110,7 @@ export const instrs = {
       kind_set.has('int') ? 'int' :
       kind_set.has('mutez') ? 'mutez' : 'nat'
 
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: [kind],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [a, b])
@@ -120,7 +120,7 @@ export const instrs = {
   SUB(stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
 
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['int'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [a, b])
@@ -128,7 +128,7 @@ export const instrs = {
     return stack
   },
   XOR(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(2))
@@ -136,7 +136,7 @@ export const instrs = {
     return stack
   },
   AND(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(2))
@@ -144,7 +144,7 @@ export const instrs = {
     return stack
   },
   OR(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(2))
@@ -153,7 +153,7 @@ export const instrs = {
   },
   CONS(stack : Stack, instr : Object) {
     const [item, lst] = stack.drop(2)
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: lst.t,
       annots: instr.annots,
       children: lst.children.concat(item)
@@ -161,7 +161,7 @@ export const instrs = {
     return stack
   },
   NIL(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['list', this.readType(instr.args[0])],
       annots: instr.annots
     }))
@@ -169,7 +169,7 @@ export const instrs = {
   },
   PAIR(stack : Stack, instr : Object) {
     const elems = stack.drop(2)
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['pair'].concat(elems.map(x => x.t)),
       annots: instr.annots,
       children: elems
@@ -372,7 +372,7 @@ export const instrs = {
     }
   },
   SOME(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['option', x.t],
       children: [x],
       annots: instr.annots,
@@ -381,7 +381,7 @@ export const instrs = {
     return stack
   },
   NONE(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['option', this.readType(instr.args[0])],
       children: [],
       annots: instr.annots,
@@ -428,7 +428,7 @@ export const instrs = {
     return stacks
   },
   FAILWITH(stack : Stack, instr : Object) {
-    stack.stack.splice(0, 0, new Element({
+    stack.stack.splice(0, 0, this.newElement({
       t: ['fail'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(1))
@@ -459,7 +459,7 @@ export const instrs = {
     return stack
   },
   NOW(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['timestamp'],
       annots: instr.annots,
       value: 'NOW'
@@ -467,7 +467,7 @@ export const instrs = {
     return stack
   },
   COMPARE(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['int'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(2))
@@ -475,7 +475,7 @@ export const instrs = {
     return stack
   },
   base_compare(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(1))
@@ -501,7 +501,7 @@ export const instrs = {
     return instrs.base_compare.call(this, stack, instr)
   },
   AMOUNT(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['mutez'],
       annots: instr.annots,
       value: 'AMOUNT'
@@ -509,7 +509,7 @@ export const instrs = {
     return stack
   },
   BALANCE(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['mutez'],
       annots: instr.annots,
       value: 'BALANCE'
@@ -518,7 +518,7 @@ export const instrs = {
   },
   SELF(stack : Stack, instr : Object) {
     const parameter_t = this.stack.top().t[1]
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['contract', parameter_t],
       annots: instr.annots,
       value: 'SELF'
@@ -532,7 +532,7 @@ export const instrs = {
     return stack
   },
   CHAIN_ID(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['chain_id'],
       annots: instr.annots,
       value: 'CHAIN_ID'
@@ -540,7 +540,7 @@ export const instrs = {
     return stack
   },
   UNIT(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['unit'],
       annots: instr.annots,
       value: 'UNIT'
@@ -548,7 +548,7 @@ export const instrs = {
     return stack
   },
   IMPLICIT_ACCOUNT(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['contract', 'unit'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(1))
@@ -556,7 +556,7 @@ export const instrs = {
     return stack
   },
   TRANSFER_TOKENS(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['operation'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(3))
@@ -564,7 +564,7 @@ export const instrs = {
     return stack
   },
   PACK(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['bytes'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -572,7 +572,7 @@ export const instrs = {
     return stack
   },
   UNPACK(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['option', this.readType(instr.args[0])],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -580,7 +580,7 @@ export const instrs = {
     return stack
   },
   CHECK_SIGNATURE(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['bool'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, stack.drop(3))
@@ -619,7 +619,7 @@ export const instrs = {
       return this.walkCode(lambda_instr.args[2], [stack])
     }
 
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: lambda.t[2],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [arg, lambda])
@@ -627,7 +627,7 @@ export const instrs = {
     return stack
   },
   LAMBDA(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['lambda', this.readType(instr.args[0]), this.readType(instr.args[1])],
       annots: instr.annots,
       instr
@@ -637,7 +637,7 @@ export const instrs = {
   CONCAT(stack : Stack, instr : Object) {
     const [item] = stack.drop(1)
     if (item.t[0] === 'list') {
-      stack.insert(new Element({
+      stack.insert(this.newElement({
         t: [item.t[1]],
         annots: instr.annots,
         continuation: new Continuation(instr.prim, [item])
@@ -645,7 +645,7 @@ export const instrs = {
       return stack
     } else {
       const [item2] = stack.drop(1)
-      stack.insert(new Element({
+      stack.insert(this.newElement({
         t: [item.t[0]],
         annots: instr.annots,
         continuation: new Continuation(instr.prim, [item, item2])
@@ -655,7 +655,7 @@ export const instrs = {
   },
   CONTRACT(stack : Stack, instr : Object) {
     const [address] = stack.drop(1)
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['option', ['contract', this.readType(instr.args[0])]],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [address]),
@@ -666,13 +666,13 @@ export const instrs = {
   CREATE_CONTRACT(stack : Stack, instr : Object) {
     const args = stack.drop(3)
 
-    const addr_el = new Element({
+    const addr_el = this.newElement({
       t: ['address']
     }, 'generate')
     addr_el.continuation = new Continuation(instr.prim + '_ADDR', [addr_el.clone()].concat(args))
     stack.insert(addr_el)
 
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['operation'],
       continuation: new Continuation(instr.prim, args)
     }))
@@ -685,13 +685,13 @@ export const instrs = {
     const items = new Set(group.children.map(x => x.value))
 
     if (items.has(item)) {
-      stack.insert(new Element({
+      stack.insert(this.newElement({
         t: ['bool'],
         annots: instr.annots,
         value: 'True'
       }))
     } else {
-      stack.insert(new Element({
+      stack.insert(this.newElement({
         t: ['bool'],
         annots: instr.annots,
         continuation: new Continuation(instr.prim, [item, group])
@@ -709,7 +709,7 @@ export const instrs = {
     if (index > -1) {
       stack.insert(group.children[index].children[1])
     } else {
-      stack.insert(new Element({
+      stack.insert(this.newElement({
         t: ['option', group.t[2]],
         annots: instr.annots,
         continuation: new Continuation(instr.prim, [key, group]),
@@ -744,7 +744,7 @@ export const instrs = {
       if (index > -1) {
         group.children[index].children = [key, value]
       } else {
-        group.children.push(new Element({
+        group.children.push(this.newElement({
           t: ['elt'],
           children: [key, value]
         }))
@@ -756,7 +756,7 @@ export const instrs = {
   },
   LEFT(stack : Stack, instr : Object) {
     const [item] = stack.drop(1)
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['or', item.t, this.readType(instr.args[0])],
       annots: instr.annots,
       children: [item],
@@ -766,7 +766,7 @@ export const instrs = {
   },
   RIGHT(stack : Stack, instr : Object) {
     const [item] = stack.drop(1)
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['or', this.readType(instr.args[0]), item.t],
       annots: instr.annots,
       children: [,item],
@@ -775,28 +775,28 @@ export const instrs = {
     return stack
   },
   EMPTY_SET(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['set', this.readType(instr.args[0])],
       annots: instr.annots
     }))
     return stack
   },
   EMPTY_BIG_MAP(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['big_map', this.readType(instr.args[0]), this.readType(instr.args[1])],
       annots: instr.annots
     }))
     return stack
   },
   EMPTY_MAP(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['map', this.readType(instr.args[0]), this.readType(instr.args[1])],
       annots: instr.annots
     }))
     return stack
   },
   SHA256(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['bytes'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -804,7 +804,7 @@ export const instrs = {
     return stack
   },
   SHA512(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['bytes'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -812,7 +812,7 @@ export const instrs = {
     return stack
   },
   BLAKE2B(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['bytes'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -820,7 +820,7 @@ export const instrs = {
     return stack
   },
   HASH_KEY(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['key_hash'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -828,7 +828,7 @@ export const instrs = {
     return stack
   },
   ADDRESS(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['address'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -836,7 +836,7 @@ export const instrs = {
     return stack
   },
   SOURCE(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['address'],
       annots: instr.annots,
       value: 'SOURCE'
@@ -844,7 +844,7 @@ export const instrs = {
     return stack
   },
   SENDER(stack : Stack, instr : Object) {
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['address'],
       annots: instr.annots,
       value: 'SENDER'
@@ -852,7 +852,7 @@ export const instrs = {
     return stack
   },
   ISNAT(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['option', 'bool'],
       state: 'default',
       annots: instr.annots,
@@ -861,7 +861,7 @@ export const instrs = {
     return stack
   },
   SET_DELEGATE(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['operation'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -869,7 +869,7 @@ export const instrs = {
     return stack
   },
   SIZE(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['nat'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -877,7 +877,7 @@ export const instrs = {
     return stack
   },
   NOT(stack : Stack, instr : Object) {
-    stack.replace(x => new Element({
+    stack.replace(x => this.newElement({
       t: ['int'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [x])
@@ -886,7 +886,7 @@ export const instrs = {
   },
   SLICE(stack : Stack, instr : Object) {
     const [offset, length, str] = stack.drop(3)
-    stack.insert(new Element({
+    stack.insert(this.newElement({
       t: ['option', 'string'],
       annots: instr.annots,
       continuation: new Continuation(instr.prim, [offset, length, str])

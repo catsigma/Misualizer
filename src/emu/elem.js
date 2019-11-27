@@ -2,29 +2,6 @@
 
 import { t_reprs, reprs } from './repr'
 
-const getId = (() => {
-  const mem = {
-    parameter: 0,
-    storage: 0,
-    generate: 0,
-    fake: 0
-  }
-
-  return (field? : 'parameter' | 'storage' | 'generate' | 'fake') => {
-    if (!field)
-      return ''
-
-    mem[field]++
-
-    return ({
-      parameter: 'P',
-      storage: 'S',
-      generate: 'G',
-      fake: 'F'
-    })[field] + mem[field]
-  }
-})()
-
 export class Continuation {
   stack : Array<Element>
   operation : string
@@ -78,11 +55,11 @@ export class Element {
     }
   }
 
-  constructor(params : Object, field? : 'parameter' | 'storage' | 'generate' | 'fake') {
+  constructor(params : Object, gen_value: string) {
     this.t = []
     this.children = []
     this.annots = []
-    this.value = getId(field)
+    this.value = gen_value
     this.continuation = null
     this.state = 'default'
     this.instr = null
@@ -115,11 +92,11 @@ export class Element {
       t: json_clone(this.t),
       children: this.children.map(x => x.clone()),
       annots: json_clone(this.annots),
-      value : json_clone(this.value),
+      value : this.value,
       continuation : this.continuation ? this.continuation.clone() : null,
       state: this.state,
       instr: this.instr,
       is_concrate : this.is_concrate
-    })
+    }, '')
   }
 }

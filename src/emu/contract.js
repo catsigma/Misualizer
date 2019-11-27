@@ -97,6 +97,12 @@ export class Contract {
   stack : Stack
   code : Array<Object>
   with_fake_elems : bool
+  mem : {
+    parameter: number,
+    storage: number,
+    generate: number,
+    fake: number
+  }
 
   constructor(contract_raw : Array<Object>, with_fake_elems : bool = true) {
     const contract = {}
@@ -105,15 +111,35 @@ export class Contract {
       contract[key] = item.args
     })
     
+    this.mem = {
+      parameter: 0,
+      storage: 0,
+      generate: 0,
+      fake: 0
+    }
     this.with_fake_elems = with_fake_elems
     this.code = contract.code[0]
-    this.stack = new Stack([new Element({
+    this.stack = new Stack([this.newElement({
       t: ['pair', this.readType(contract.parameter[0]), this.readType(contract.storage[0])],
       children: [
         this.mockElements(contract.parameter[0], 'parameter'),
         this.mockElements(contract.storage[0], 'storage')
       ]
     })])
+  }
+
+  getId(field? : 'parameter' | 'storage' | 'generate' | 'fake') {
+    if (!field)
+      return ''
+
+    this.mem[field]++
+
+    return ({
+      parameter: 'P',
+      storage: 'S',
+      generate: 'G',
+      fake: 'F'
+    })[field] + this.mem[field]
   }
 
   readType(t : Object) : EType {
@@ -137,6 +163,11 @@ export class Contract {
     }
   }
 
+  newElement(params : Object, field? : 'parameter' | 'storage' | 'generate' | 'fake') {
+    const value = this.getId(field)
+    return new Element(params, value)
+  }
+
   mockInsideElements(t : Object) {
     if (!this.with_fake_elems) //TODO: remove this
       return []
@@ -151,7 +182,7 @@ export class Contract {
   }
 
   mockElements(t : Object, field : 'parameter' | 'storage' | 'generate' | 'fake' = 'generate') {
-    return new Element({
+    return this.newElement({
       t: this.readType(t),
       annots: t.annots,
       children: t_keep_args.has(t.prim) ? this.mockInsideElements(t) : t.args ? t.args.map(x => this.mockElements(x, field)) : [],
@@ -160,7 +191,7 @@ export class Contract {
   }
 
   createElements(t : Object, v : Object) {
-    let result = new Element(
+    let result = this.newElement(
       elt_types.has(t.prim) ?
       {
         t: this.readType(t),
