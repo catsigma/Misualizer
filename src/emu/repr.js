@@ -72,8 +72,19 @@ export const reprs = {
   INT() {
     return `INT(${this.getStackVal(0)})`
   },
+  NEG() {
+    return `-${this.getStackVal(0)}`
+  },
   ABS() {
     return `ABS(${this.getStackVal(0)})`
+  },
+  LSL() {
+    const [x, s] = this.getStackVals(0, 2)
+    return `${x} << ${s}`
+  },
+  LSR() {
+    const [x, s] = this.getStackVals(0, 2)
+    return `${x} >> ${s}`
   },
   ADD() {
     const [s0, s1] = this.getStackVals(0, 2)
@@ -147,7 +158,7 @@ export const reprs = {
     return `FAIL(${this.getStackVal(0)})`
   },
   IMPLICIT_ACCOUNT() {
-    return `CONTRACT(${this.getStackVal(0)})`
+    return `IMPLICIT_ACCOUNT(${this.getStackVal(0)})`
   },
   TRANSFER_TOKENS() {
     const [entry] = this.stack[2].annots || []
@@ -174,6 +185,20 @@ export const reprs = {
   CONTRACT() {
     return `CONTRACT(${this.getStackVal(0)})`
   },
+  CREATE_ACCOUNT() {
+    return `CREATE_ACCOUNT(${this.getStackVals(0, 4).join(', ')})`
+  },
+  CREATE_ACCOUNT_ADDR() {
+    const elem = this.stack[0]
+    return `${elem.value}:${Element.getType(elem.t)} <- CREATE_ACCOUNT(${this.getStackVals(1, 5).join(', ')})`
+  },
+  OLD_CREATE_CONTRACT() {
+    return `CREATE_CONTRACT(${this.getStackVals(0, 5).join(', ')})`
+  },
+  OLD_CREATE_CONTRACT_ADDR() {
+    const elem = this.stack[0]
+    return `${elem.value}:${Element.getType(elem.t)} <- CREATE_CONTRACT(${this.getStackVals(1, 6).join(', ')})`
+  },
   CREATE_CONTRACT() {
     return `CREATE_CONTRACT(${this.getStackVals(0, 3).join(', ')})`
   },
@@ -183,6 +208,9 @@ export const reprs = {
   },
   MEM() {
     return `(${this.getStackVal(0)} IN ${this.getStackVal(1)})`
+  },
+  UPDATE() {
+    return `UPDATE(${this.getStackVals(0, 3).join(', ')})`
   },
   GET() {
     const [key, group] = this.getStackVals(0, 2)
@@ -215,6 +243,16 @@ export const reprs = {
   IF_CONS() {
     const elem = this.stack[0]
     return `${elem.value}:${Element.getType(elem.t)} <- ${this.getStackVal(1)}`
+  },
+  LOOP_LEFT() {
+    const elem = this.stack[0]
+    return `${elem.value}:${Element.getType(elem.t)} <- ${this.getStackVal(1)}`
+  },
+  ITER() {
+    return `ITER(${this.getStackVal(0)})`
+  },
+  MAP() {
+    return `MAP(${this.getStackVal(0)})`
   },
   SIZE() {
     return `SIZE(${this.getStackVal(0)})`

@@ -114,7 +114,7 @@ export default {
 .content-wrapper {
   margin-top: 8px;
   padding: 4px;
-  background: darken($c6, 10%);
+  background: lighten($c6, 10%);
 }
 
 .header {

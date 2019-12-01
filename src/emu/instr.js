@@ -1,7 +1,7 @@
 // @flow
 
 import type { Contract } from './contract'
-import { Continuation } from './elem'
+import { Continuation, Element } from './elem'
 import { Stack } from './contract'
 
 export const instrs = {
@@ -37,6 +37,14 @@ export const instrs = {
     }))
     return stack
   },
+  NEG(stack : Stack, instr : Object) {
+    stack.insert(this.newElement({
+      t: ['int'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, stack.drop(1))
+    }))
+    return stack
+  },
   ABS(stack : Stack, instr : Object) {
     stack.replace(x => this.newElement({
       t: ['nat'],
@@ -44,6 +52,66 @@ export const instrs = {
       continuation: new Continuation(instr.prim, [x])
     }))
     return stack
+  },
+  LSL(stack : Stack, instr : Object) {
+    const [x, s] = stack.drop(2)
+
+    const stack1 = stack;
+    const stack2 = stack.clone();
+
+    stack1.insert(this.newElement({
+      t: ['nat'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x, s])
+    }))
+    stack2.stack.splice(0, 0, this.newElement({
+      t: ['fail'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [this.newElement({
+        t: ['string'],
+        value: 'LSL'
+      })])
+    }))
+
+    if (x.is_concrate && s.is_concrate) {
+      if (parseInt(s.value) <= 256) {
+        return stack1
+      } else {
+        return stack2
+      }
+    } else {
+      return [stack1, stack2]
+    }
+  },
+  LSR(stack : Stack, instr : Object) {
+    const [x, s] = stack.drop(2)
+
+    const stack1 = stack;
+    const stack2 = stack.clone();
+
+    stack1.insert(this.newElement({
+      t: ['nat'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [x, s])
+    }))
+    stack2.stack.splice(0, 0, this.newElement({
+      t: ['fail'],
+      annots: instr.annots,
+      continuation: new Continuation(instr.prim, [this.newElement({
+        t: ['string'],
+        value: 'LSR'
+      })])
+    }))
+
+    if (x.is_concrate && s.is_concrate) {
+      if (parseInt(s.value) <= 256) {
+        return stack1
+      } else {
+        return stack2
+      }
+    } else {
+      return [stack1, stack2]
+    }
   },
   EDIV(stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
@@ -399,6 +467,7 @@ export const instrs = {
         stacks = this.walkCode(instr.args[0], stacks)
       })
     } else {
+      item.instr = instr
       item.continuation = new Continuation(instr.prim, [item.clone()])
     }
     return stacks
@@ -663,9 +732,16 @@ export const instrs = {
     }))
     return stack
   },
-  CREATE_CONTRACT(stack : Stack, instr : Object) {
-    const args = stack.drop(3)
-
+  STEPS_TO_QUOTA(stack : Stack, instr : Object) {
+    stack.insert(this.newElement({
+      t: ['nat'],
+      value: 'STEPS_TO_QUOTA'
+    }))
+    return stack
+  },
+  CREATE_ACCOUNT(stack : Stack, instr : Object) {
+    const args = stack.drop(4)
+    
     const addr_el = this.newElement({
       t: ['address']
     }, 'generate')
@@ -675,6 +751,23 @@ export const instrs = {
     stack.insert(this.newElement({
       t: ['operation'],
       continuation: new Continuation(instr.prim, args)
+    }))
+
+    return stack
+  },
+  CREATE_CONTRACT(stack : Stack, instr : Object) {
+    const args = stack.top().t[0] === 'key_hash' ? stack.drop(5) : stack.drop(3)
+    const prim = args.length === 5 ? 'OLD_CREATE_CONTRACT' : 'CREATE_CONTRACT'
+
+    const addr_el = this.newElement({
+      t: ['address']
+    }, 'generate')
+    addr_el.continuation = new Continuation(prim + '_ADDR', [addr_el.clone()].concat(args))
+    stack.insert(addr_el)
+
+    stack.insert(this.newElement({
+      t: ['operation'],
+      continuation: new Continuation(prim, args)
     }))
 
     return stack
@@ -895,6 +988,13 @@ export const instrs = {
   },
   RENAME(stack : Stack, instr : Object) {
     stack.top().annots = instr.annots
+    return stack
+  },
+  CAST(stack : Stack, instr : Object) {
+    stack.replace(x => {
+      x.t = [this.readType(instr.args[0])]
+      return x
+    })
     return stack
   }
 }
