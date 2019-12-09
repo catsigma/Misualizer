@@ -54,6 +54,8 @@ export default {
   },
   methods: {
     renderText() {
+      if (!this.contract) return;
+      
       const contract = new Contract(this.contract.script.code)
       const stacks = contract.walkToExit()
       this.result = contract.stacksToText(stacks)

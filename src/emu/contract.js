@@ -10,6 +10,13 @@ const t_keep_args = new Set(
 const elt_types = new Set(
   ['map', 'big_map']
 )
+const micheline_mapping = {
+  int: new Set(['int', 'nat', 'mutez', 'timestamp']),
+  string: new Set(['string', 'key_hash', 'address', 'chain_id']),
+  bytes: new Set(['bytes', 'key', 'signature']),
+  unit: new Set(['unit']),
+  bool: new Set(['bool'])
+}
 
 export class Stack {
   stack : Array<Element>
@@ -96,39 +103,40 @@ export class Stack {
 export class Contract {
   stack : Stack
   code : Array<Object>
-  with_fake_elems : bool
   mem : {
     parameter: number,
     storage: number,
     generate: number,
-    fake: number
+    mock: number
   }
 
-  constructor(contract_raw : Array<Object>, with_fake_elems : bool = true) {
+  constructor(contract_raw : Array<Object>) {
     const contract = {}
     contract_raw.forEach(item => {
       const key = item.prim
-      contract[key] = item.args
+      contract[key] = item.args[0]
     })
     
     this.mem = {
       parameter: 0,
       storage: 0,
       generate: 0,
-      fake: 0
+      mock: 0
     }
-    this.with_fake_elems = with_fake_elems
-    this.code = contract.code[0]
+    this.code = contract.code
     this.stack = new Stack([this.newElement({
-      t: ['pair', this.readType(contract.parameter[0]), this.readType(contract.storage[0])],
+      t: ['pair', this.readType(contract.parameter), this.readType(contract.storage)],
       children: [
-        this.mockElements(contract.parameter[0], 'parameter'),
-        this.mockElements(contract.storage[0], 'storage')
+        this.mockElements(contract.parameter, 'parameter'),
+        this.mockElements(contract.storage, 'storage')
       ]
     })])
+
+    const x = this.mockMichelineData(contract.parameter)
+    debugger
   }
 
-  getId(field? : 'parameter' | 'storage' | 'generate' | 'fake') {
+  getId(field? : 'parameter' | 'storage' | 'generate' | 'mock') {
     if (!field)
       return ''
 
@@ -138,7 +146,7 @@ export class Contract {
       parameter: 'P',
       storage: 'S',
       generate: 'G',
-      fake: 'F'
+      mock: 'M'
     })[field] + this.mem[field]
   }
 
@@ -163,25 +171,107 @@ export class Contract {
     }
   }
 
-  newElement(params : Object, field? : 'parameter' | 'storage' | 'generate' | 'fake') {
+  newElement(params : Object, field? : 'parameter' | 'storage' | 'generate' | 'mock') {
     const value = this.getId(field)
     return new Element(params, value)
   }
 
+  mockMichelineData(t : Object) {
+    const mapping = {
+      int: () => {
+        return {int: '1'}
+      },
+      nat: () => {
+        return {int: '1'}
+      },
+      string: () => {
+        return {string: 'string'}
+      },
+      bytes: () => {
+        return {bytes: 'bytes'}
+      },
+      mutez: () => {
+        return {int: '1'}
+      },
+      bool: () => {
+        return {prim: 'True'}
+      },
+      key_hash: () => {
+        return {string: 'key_hash'}
+      },
+      timestamp: () => {
+        return {int: '0'}
+      },
+      address: () => {
+        return {string: 'address'}
+      },
+      key: () => {
+        return {bytes: '0x00'}
+      },
+      unit: () => {
+        return {prim: 'Unit'}
+      },
+      signature: () => {
+        return {bytes: '0x00'}
+      },
+      option: () => {
+        return {prim: 'None'}
+      },
+      list: () => {
+        return [this.mockMichelineData(t.args[0])]
+      },
+      set: () => {
+        return [this.mockMichelineData(t.args[0])]
+      },
+      contract: () => {
+        return {prim: 'Contract'}
+      },
+      pair: () => {
+        return {prim: 'Pair', args: [
+          this.mockMichelineData(t.args[0]),
+          this.mockMichelineData(t.args[1])
+        ]}
+      },
+      or: () => {
+        return {prim: 'Left', args: [this.mockMichelineData(t.args[0])]}
+      },
+      lambda: () => {
+        return {prim: 'Lambda', args: []}
+      },
+      map: () => {
+        return [{prim: 'Elt', args: [
+          this.mockMichelineData(t.args[0]),
+          this.mockMichelineData(t.args[1])
+        ]}]
+      },
+      big_map: () => {
+        return [{prim: 'Elt', args: [
+          this.mockMichelineData(t.args[0]),
+          this.mockMichelineData(t.args[1])
+        ]}]
+      },
+      chain_id() {
+        return {string: 'chain_id'}
+      }
+    }
+    
+    if (!mapping[t.prim])
+      throw `invalid prim: ${t.prim}`
+
+    return mapping[t.prim]()
+  }
+
   mockInsideElements(t : Object) {
-    if (!this.with_fake_elems) //TODO: remove this
-      return []
-      
     if (t.prim === 'list' || t.prim === 'set') {
-      return [this.mockElements(t.args[0], 'fake')]
+      return [this.mockElements(t.args[0], 'mock')]
     } else if (t.prim === 'map' || t.prim === 'big_map') {
-      return [this.mockElements({prim: 'elt', args: t.args}, 'fake')]
+      return [this.mockElements({prim: 'elt', args: t.args}, 'mock')]
     } else {
       return []
     }
   }
 
-  mockElements(t : Object, field : 'parameter' | 'storage' | 'generate' | 'fake' = 'generate') {
+  mockElements(t : Object, field : 'parameter' | 'storage' | 'generate' | 'mock' = 'generate') {
     return this.newElement({
       t: this.readType(t),
       annots: t.annots,

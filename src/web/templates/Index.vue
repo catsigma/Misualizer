@@ -18,12 +18,14 @@
     
     <transition name="fade">
       <div class="wrapper" v-if="state === 'checking'">
+        <contract-info :contract="contract_raw"></contract-info>
+
         <div class="tabs">
           <selector :data="renderers" v-model="renderer" class="renderer-selector"></selector>
         </div>
 
         <div class="content-wrapper" v-if="renderer === 'text'">
-          <text-renderer :contract="contract_raw"></text-renderer>
+          <text-renderer :contract="null"></text-renderer>
         </div>
         <div class="content-wrapper" v-if="renderer === 'michelson'">
           <michelson-renderer :contract="contract_raw"></michelson-renderer>
@@ -42,6 +44,7 @@ import TBN from 'tezbridge-network/PsBabyM1'
 import Selector from './Selector'
 import Loading from './Loading'
 
+import ContractInfo from './ContractInfo'
 import TextRenderer from './TextRenderer'
 import RawRenderer from './RawRenderer'
 import MichelsonRenderer from './MichelsonRenderer'
@@ -50,6 +53,7 @@ export default {
   components: {
     Loading,
     Selector,
+    ContractInfo,
     TextRenderer,
     RawRenderer,
     MichelsonRenderer
