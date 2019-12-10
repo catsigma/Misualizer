@@ -20,11 +20,16 @@ async function getContract(index : number) {
 }
 
 async function test_contract() {
-  for (let i = 0; i < 147; i++) {
-    const contract = await getContract(i)
-    const stacks = contract.walkToExit()
-    contract.logResult(stacks)
-  }
+  // for (let i = 0; i < 147; i++) {
+  //   const contract = await getContract(i)
+  //   const stacks = contract.walkToExit()
+  //   contract.logResult(stacks)
+  // }
+
+  
+  const contract = await getContract(1)
+  const stacks = contract.walkToExit()
+  contract.logResult(stacks)
 }
 
 test_contract()

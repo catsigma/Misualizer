@@ -80,12 +80,10 @@ export const reprs = {
   },
   LSL() {
     const [x, s] = this.getStackVals(0, 2)
-    // TODO: if parseInt(s.value) <= 256
     return `${x} << ${s}`
   },
   LSR() {
     const [x, s] = this.getStackVals(0, 2)
-    // TODO: if parseInt(s.value) <= 256
     return `${x} >> ${s}`
   },
   ADD() {
