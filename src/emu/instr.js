@@ -3,7 +3,9 @@
 import { Contract } from './contract'
 import { Element } from './elem'
 import { Stack } from './contract'
-import { createElementByType } from './micheline'
+import { readType, createElementByType } from './micheline'
+
+const json_clone = x => x === undefined ? x : JSON.parse(JSON.stringify(x))
 
 export const instrs = {
   STOP(contract : Contract, stack : Stack, instr : Object) {
@@ -32,190 +34,111 @@ export const instrs = {
     return stack
   },
   NEG(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['int'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(1))
-    }))
+    stack.replace(x => contract.newElement(['int'], instr.annots, instr.prim, null, [x]))
     return stack
   },
   ABS(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['nat'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(['nat'], instr.annots, instr.prim, null, [x]))
     return stack
   },
   LSL(contract : Contract, stack : Stack, instr : Object) {
-    const [x, s] = stack.drop(2)
-
-    stack.insert(contract.newElement({
-      t: ['nat'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x, s])
-    }))
-
+    stack.insert(contract.newElement(['nat'], instr.annots, instr.prim, null, stack.drop(2)))
     return stack
   },
   LSR(contract : Contract, stack : Stack, instr : Object) {
-    const [x, s] = stack.drop(2)
-
-    stack.insert(contract.newElement({
-      t: ['nat'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x, s])
-    }))
-
+    stack.insert(contract.newElement(['nat'], instr.annots, instr.prim, null, stack.drop(2)))
     return stack
   },
   EDIV(contract : Contract, stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
-    const t = a.t[0] === 'nat' && b.t[0] === 'nat' ? 'nat' : 'int'
+    let t1, t2
+    if (a.t[0] === 'mutez') {
+      t1 = b.t[0] === 'nat' ? 'mutez' : 'nat'
+      t2 = 'mutez'
+    } else {
+      t1 = a.t[0] === 'nat' && b.t[0] === 'nat' ? 'nat' : 'int'
+      t2 = 'nat'
+    }
 
-    // TODO: change for new IF_NONE
-    stack.insert(contract.newElement({
-      t: ['option', ['pair', t, 'nat']],
-      annots: instr.annots,
-      children: [contract.newElement({
-        t: ['pair', t, 'nat'],
-        children: [
-          contract.newElement({
-            t: [t],
-            continuation: new Continuation('DIV', [a, b])
-          }),
-          contract.newElement({
-            t: ['nat'],
-            continuation: new Continuation('MOD', [a, b])
-          })
-        ]
-      })]
-    }))
-
+    stack.insert(contract.newElement(
+      ['option', ['pair', t1, t2]], instr.annots, instr.prim, null, [a, b]))
     return stack
   },
   MUL(contract : Contract, stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
-    const kind_set = new Set([a, b].map(x => x.t[0]))
-    const kind = kind_set.has('int') ? 'int' : 'nat'
+    const t_set = new Set([a, b].map(x => x.t[0]))
+    const t = t_set.has('mutez') ? 'mutez' : t_set.has('int') ? 'int' : 'nat'
 
-    stack.insert(contract.newElement({
-      t: [kind],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [a, b])
-    }))
+    stack.insert(contract.newElement([t], instr.annots, instr.prim, null, [a, b]))
     return stack
   },
   ADD(contract : Contract, stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
-    const kind_set = new Set([a, b].map(x => x.t[0]))
-    const kind = 
-      kind_set.has('timestamp') ? 'timestamp' : 
-      kind_set.has('int') ? 'int' :
-      kind_set.has('mutez') ? 'mutez' : 'nat'
+    const t_set = new Set([a, b].map(x => x.t[0]))
+    const t =
+      t_set.has('timestamp') ? 'timestamp' : 
+      t_set.has('mutez') ? 'mutez' :
+      t_set.has('int') ? 'int' : 'nat'
 
-    stack.insert(contract.newElement({
-      t: [kind],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [a, b])
-    }))
+    stack.insert(contract.newElement([t], instr.annots, instr.prim, null, [a, b]))
     return stack
   },
   SUB(contract : Contract, stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
+    const t_set = new Set([a, b].map(x => x.t[0]))
+    const t =
+      t_set.has('mutez') ? 'mutez' :
+      a.t[0] === 'timestamp' ? (b.t[0] === 'timestamp' ? 'int' : 'timestamp') : 'int'
 
-    stack.insert(contract.newElement({
-      t: ['int'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [a, b])
-    }))
+    stack.insert(contract.newElement([t], instr.annots, instr.prim, null, [a, b]))
     return stack
   },
   XOR(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['bool'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(2))
-    }))
+    const [a, b] = stack.drop(2)
+    stack.insert(contract.newElement([a.t[0]], instr.annots, instr.prim, null, [a, b]))
     return stack
   },
   AND(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['bool'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(2))
-    }))
+    const [a, b] = stack.drop(2)
+    stack.insert(contract.newElement([b.t[0]], instr.annots, instr.prim, null, [a, b]))
     return stack
   },
   OR(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['bool'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(2))
-    }))
+    const [a, b] = stack.drop(2)
+    stack.insert(contract.newElement([a.t[0]], instr.annots, instr.prim, null, [a, b]))
     return stack
   },
   CONS(contract : Contract, stack : Stack, instr : Object) {
     const [item, lst] = stack.drop(2)
-    stack.insert(contract.newElement({
-      t: lst.t,
-      annots: instr.annots,
-      children: lst.children.concat(item)
-    }))
+    stack.insert(contract.newElement(json_clone(lst.t), instr.annots, instr.prim, null, [item, lst]))
     return stack
   },
   NIL(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['list', contract.readType(instr.args[0])],
-      annots: instr.annots
-    }))
+    stack.insert(contract.newElement(
+      ['list', readType(instr.args[0])], instr.annots, instr.prim, null, []))
+
     return stack
   },
   PAIR(contract : Contract, stack : Stack, instr : Object) {
-    const elems = stack.drop(2)
-    stack.insert(contract.newElement({
-      t: ['pair'].concat(elems.map(x => x.t)),
-      annots: instr.annots,
-      children: elems
-    }))
+    const [a, b] = stack.drop(2)
+    stack.insert(contract.newElement(
+      json_clone(['pair', a.t, b.t]), instr.annots, instr.prim, null, [a, b]))
 
     return stack
   },
   IF_CONS(contract : Contract, stack : Stack, instr : Object) {
     const [lst] = stack.drop(1)
 
-    if (lst.children.length) {
-      stack.pushCond(lst, 'non_empty')
-      stack.insert(lst)
-      stack.insert(lst.children.shift())
-      if (!lst.children.length)
-        lst.state = 'empty'
+    let stack1 = stack.clone()
+    let stack2 = stack.clone()
 
-      return contract.walkCode(instr.args[0], [stack])
-       
-    } else if (lst.state === 'default') {
-      const clone1 = stack.clone()
-      const clone2 = stack.clone()
-      clone1.pushCond(lst, 'default2non_empty')
-      clone2.pushCond(lst, 'default2empty')
+    stack1.insert(lst)
+    stack1.insert(contract.newElement([lst.t[1]], [], 'HEAD', null, [lst]))
+    stack1 = this.walkCode(instr.args[0], stack1)
+    stack2 = this.walkCode(instr.args[1], stack2)
 
-      clone1.insert(lst)
-      const mocked_elem = contract.mockElements(contract.fallbackType(lst.t[1]), 'generate')
-      mocked_elem.continuation = new Continuation(instr.prim, [mocked_elem.clone(), lst])
-      clone1.insert(mocked_elem)
-
-      const stacks1 = contract.walkCode(instr.args[0], [clone1])
-      const stacks2 = contract.walkCode(instr.args[1], [clone2])
-      return stacks1.concat(stacks2)
-
-    } else if (lst.state === 'empty') {
-      stack.pushCond(lst, 'empty')
-      return contract.walkCode(instr.args[1], [stack])
-       
-    } else {
-      debugger
-      throw `Invalid condition.state in IF_CONS: ${lst.state || ''}`
-    }
+    stack.stack = stack1.combine(stack2)
+    return stack
   },
   IF_LEFT(contract : Contract, stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
