@@ -282,62 +282,49 @@ export const instrs = {
     return stack
   },
   COMPARE(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['int'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(2))
-    }))
-    return stack
-  },
-  base_compare(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['bool'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(1))
-    }))
+    stack.insert(contract.newElement(['int'], instr.annots, instr.prim, null, stack.drop(2)))
     return stack
   },
   GT(contract : Contract, stack : Stack, instr : Object) {
-    return instrs.base_compare.call(this, stack, instr)
+    stack.replace(x => contract.newElement(['bool'], instr.annots, instr.prim, null, [x]))
+    return stack
   },
   EQ(contract : Contract, stack : Stack, instr : Object) {
-    return instrs.base_compare.call(this, stack, instr)
+    stack.replace(x => contract.newElement(['bool'], instr.annots, instr.prim, null, [x]))
+    return stack
   },
   GE(contract : Contract, stack : Stack, instr : Object) {
-    return instrs.base_compare.call(this, stack, instr)
+    stack.replace(x => contract.newElement(['bool'], instr.annots, instr.prim, null, [x]))
+    return stack
   },
   LE(contract : Contract, stack : Stack, instr : Object) {
-    return instrs.base_compare.call(this, stack, instr)
+    stack.replace(x => contract.newElement(['bool'], instr.annots, instr.prim, null, [x]))
+    return stack
   },
   LT(contract : Contract, stack : Stack, instr : Object) {
-    return instrs.base_compare.call(this, stack, instr)
+    stack.replace(x => contract.newElement(['bool'], instr.annots, instr.prim, null, [x]))
+    return stack
   },
   NEQ(contract : Contract, stack : Stack, instr : Object) {
-    return instrs.base_compare.call(this, stack, instr)
+    stack.replace(x => contract.newElement(['bool'], instr.annots, instr.prim, null, [x]))
+    return stack
   },
   AMOUNT(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['mutez'],
-      annots: instr.annots,
-      value: 'AMOUNT'
-    }))
+    stack.insert(contract.newElement(['mutez'], instr.annots, '', 'AMOUNT', []))
     return stack
   },
   BALANCE(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['mutez'],
-      annots: instr.annots,
-      value: 'BALANCE'
-    }))
+    stack.insert(contract.newElement(['mutez'], instr.annots, '', 'BALANCE', []))
     return stack
   },
   SELF(contract : Contract, stack : Stack, instr : Object) {
-    const parameter_t = contract.stack.top().t[1]
-    stack.insert(contract.newElement({
-      t: ['contract', parameter_t],
-      annots: instr.annots,
-      value: 'SELF'
-    }))
+    stack.insert(contract.newElement(
+      ['contract', readType(instr.args[0])],
+      instr.annots,
+      '',
+      'SELF',
+      []
+    ))
     return stack
   },
   SWAP(contract : Contract, stack : Stack, instr : Object) {
@@ -347,27 +334,15 @@ export const instrs = {
     return stack
   },
   CHAIN_ID(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['chain_id'],
-      annots: instr.annots,
-      value: 'CHAIN_ID'
-    }))
+    stack.insert(contract.newElement(['chain_id'], instr.annots, '', 'CHAIN_ID', []))
     return stack
   },
   UNIT(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['unit'],
-      annots: instr.annots,
-      value: 'UNIT'
-    }))
+    stack.insert(contract.newElement(['unit'], instr.annots, '', 'Unit', []))
     return stack
   },
   IMPLICIT_ACCOUNT(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['contract', 'unit'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(1))
-    }))
+    stack.insert(contract.newElement(['contract', 'unit'], instr.annots, instr.prim, null, stack.drop(1)))
     return stack
   },
   TRANSFER_TOKENS(contract : Contract, stack : Stack, instr : Object) {
