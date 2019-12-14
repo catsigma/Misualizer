@@ -3,7 +3,7 @@
 import { Contract } from './contract'
 import { Element } from './elem'
 import { Stack } from './contract'
-import { readType, createElementByType } from './micheline'
+import { readType, fallbackType, createElementByType, mockValueFromType } from './micheline'
 
 const json_clone = x => x === undefined ? x : JSON.parse(JSON.stringify(x))
 const get_t_lst = t => json_clone(t instanceof Array ? t : [t])
@@ -111,7 +111,7 @@ export const instrs = {
   },
   CONS(contract : Contract, stack : Stack, instr : Object) {
     const [item, lst] = stack.drop(2)
-    stack.insert(contract.newElement(json_clone(lst.t), instr.annots, instr.prim, null, [item, lst]))
+    stack.insert(contract.newElement(get_t_lst(lst.t), instr.annots, instr.prim, null, [item, lst]))
     return stack
   },
   NIL(contract : Contract, stack : Stack, instr : Object) {
@@ -346,118 +346,89 @@ export const instrs = {
     return stack
   },
   TRANSFER_TOKENS(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['operation'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(3))
-    }))
+    stack.insert(contract.newElement(['operation'], instr.annots, instr.prim, null, stack.drop(3)))
     return stack
   },
   PACK(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['bytes'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['bytes'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   UNPACK(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['option', contract.readType(instr.args[0])],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['option', readType(instr.args[0])], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   CHECK_SIGNATURE(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['bool'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, stack.drop(3))
-    }))
+    stack.insert(contract.newElement(
+      ['bool'], instr.annots, instr.prim, null, stack.drop(3)
+    ))
     return stack
   },
   APPLY(contract : Contract, stack : Stack, instr : Object) {
     const [param, lambda] = stack.drop(2)
 
-    if (lambda.t[1] instanceof Array)
-      lambda.t[1] = lambda.t[1][2]
-    else
-      throw `Invalid lambda in APPLY`
+    if (!(lambda.value instanceof Array))
+      throw `APPLY / invalid lambda value: ${lambda.value}`
 
-    if (lambda.instr) {
-      const code = lambda.instr.args[2] || []
-      code.unshift({prim: 'PAIR'})
-      code.unshift({
-        prim: 'PUSH',
-        args: [
-          contract.fallbackType(param.t),
-          param
-        ]
-      })
-    }
-
+    lambda.value.unshift({prim: 'PAIR'})
+    lambda.value.unshift({
+      prim: 'PUSH',
+      args: [
+        fallbackType(param.t),
+        param
+      ]
+    })
+    
     stack.insert(lambda)
     return stack
   },
   EXEC(contract : Contract, stack : Stack, instr : Object) {
     const [arg, lambda] = stack.drop(2)
-    const lambda_instr = lambda.instr || {args: []}
 
-    if (lambda_instr.args.length > 2) {
+    if (lambda.value.length) {
       stack.insert(arg)
-      return contract.walkCode(lambda_instr.args[2], [stack])
+      stack = contract.walkCode(lambda.value, stack)
+    } else {
+      stack.insert(contract.newElement(
+        get_t_lst(lambda.t[2]), instr.annots, instr.prim, null, [arg, lambda]))
     }
-
-    stack.insert(contract.newElement({
-      t: lambda.t[2],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [arg, lambda])
-    }))
     return stack
   },
   LAMBDA(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['lambda', contract.readType(instr.args[0]), contract.readType(instr.args[1])],
-      annots: instr.annots,
-      instr
-    }))
+    stack.insert(contract.newElement(
+      ['lambda', readType(instr.args[0]), readType(instr.args[1])], instr.annots, '', instr.args[2], []
+    ))
     return stack
   },
   CONCAT(contract : Contract, stack : Stack, instr : Object) {
     const [item] = stack.drop(1)
     if (item.t[0] === 'list') {
-      stack.insert(contract.newElement({
-        t: [item.t[1]],
-        annots: instr.annots,
-        continuation: new Continuation(instr.prim, [item])
-      }))
-      return stack
+      stack.insert(contract.newElement(
+        get_t_lst(item.t[1]), instr.annots, instr.prim, null, [item]
+      ))
     } else {
       const [item2] = stack.drop(1)
-      stack.insert(contract.newElement({
-        t: [item.t[0]],
-        annots: instr.annots,
-        continuation: new Continuation(instr.prim, [item, item2])
-      }))
-      return stack
+      stack.insert(contract.newElement(
+        get_t_lst(item.t[0]), instr.annots, instr.prim, null, [item, item2]
+      ))
     }
+
+    return stack
   },
   CONTRACT(contract : Contract, stack : Stack, instr : Object) {
     const [address] = stack.drop(1)
-    stack.insert(contract.newElement({
-      t: ['option', ['contract', contract.readType(instr.args[0])]],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [address]),
-      state: 'default'
-    }))
+
+    stack.insert(contract.newElement(
+      ['option', ['contract', readType(instr.args[0])]],
+      instr.annots, '', null, [address]
+    ))
     return stack
   },
   STEPS_TO_QUOTA(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['nat'],
-      value: 'STEPS_TO_QUOTA'
-    }))
+    stack.insert(contract.newElement(['nat'], instr.annots, '', 'STEPS_TO_QUOTA', []))
     return stack
   },
   CREATE_ACCOUNT(contract : Contract, stack : Stack, instr : Object) {

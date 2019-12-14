@@ -1,6 +1,7 @@
 // @flow
 
-import type { EType } from './elem'
+export type EType = Array<string | EType>
+
 import { Element } from './elem'
 
 type MichelineType = {prim: string, args?: Array<MichelineType>, annots?: Array<string>}
@@ -29,6 +30,21 @@ export function readType(t : MichelineType) : EType {
     return [t.prim].concat(t.args.map(x => readType(x)))
   } else {
     return [t.prim]
+  }
+}
+export function fallbackType(t : string | EType) : MichelineType {
+  if (typeof t === 'string')
+    return {prim: t}
+
+  const t0 = typeof t[0] === 'string' ? t[0] : ''
+
+  if (t.length > 1) {
+    return {
+      prim: t0,
+      args: t.slice(1).map((x : string | EType) => fallbackType(x))
+    }
+  } else {
+    return {prim: t0}
   }
 }
 
@@ -67,7 +83,8 @@ export function createElementByType(t : MichelineType, v : MichelineValue, id : 
         v.prim === 'Some' ? [createElementByType(targ0, v.args[0], id)] : [])
 
     } else if (t.prim === 'lambda') {
-      return new Element(id.val++, type_t, annots, '', v, [])
+      const codes = v instanceof Array ? v : v.args[2]
+      return new Element(id.val++, type_t, annots, '', codes, [])
     }
 
   } else {
