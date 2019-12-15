@@ -434,248 +434,156 @@ export const instrs = {
   CREATE_ACCOUNT(contract : Contract, stack : Stack, instr : Object) {
     const args = stack.drop(4)
     
-    const addr_el = contract.newElement({
-      t: ['address']
-    }, 'generate')
-    addr_el.continuation = new Continuation(instr.prim + '_ADDR', [addr_el.clone()].concat(args))
-    stack.insert(addr_el)
-
-    stack.insert(contract.newElement({
-      t: ['operation'],
-      continuation: new Continuation(instr.prim, args)
-    }))
-
+    stack.insert(contract.newElement(
+      ['address'], instr.annots, instr.prim + '_ADDR', null, args
+    ))
+    stack.insert(contract.newElement(
+      ['operation'], instr.annots, instr.prim, null, args
+    ))
     return stack
   },
   CREATE_CONTRACT(contract : Contract, stack : Stack, instr : Object) {
     const args = stack.top().t[0] === 'key_hash' ? stack.drop(5) : stack.drop(3)
-    const prim = args.length === 5 ? 'OLD_CREATE_CONTRACT' : 'CREATE_CONTRACT'
+    const prim = args.length === 5 ? 'LEGACY_CREATE_CONTRACT' : 'CREATE_CONTRACT'
 
-    const addr_el = contract.newElement({
-      t: ['address']
-    }, 'generate')
-    addr_el.continuation = new Continuation(prim + '_ADDR', [addr_el.clone()].concat(args))
-    stack.insert(addr_el)
-
-    stack.insert(contract.newElement({
-      t: ['operation'],
-      continuation: new Continuation(prim, args)
-    }))
-
+    stack.insert(contract.newElement(
+      ['address'], instr.annots, prim + '_ADDR', null, args
+    ))
+    stack.insert(contract.newElement(
+      ['operation'], instr.annots, prim, null, args
+    ))
     return stack
   },
   MEM(contract : Contract, stack : Stack, instr : Object) {
     const [item, group] = stack.drop(2)
 
-    const items = new Set(group.children.map(x => x.value))
-
-    if (items.has(item)) {
-      stack.insert(contract.newElement({
-        t: ['bool'],
-        annots: instr.annots,
-        value: 'True'
-      }))
-    } else {
-      stack.insert(contract.newElement({
-        t: ['bool'],
-        annots: instr.annots,
-        continuation: new Continuation(instr.prim, [item, group])
-      }))
-    }
-
+    stack.insert(contract.newElement(
+      ['bool'], instr.annots, instr.prim, null, [item, group]
+    ))
     return stack
   },
   GET(contract : Contract, stack : Stack, instr : Object) {
     const [key, group] = stack.drop(2)
 
-    const keys = group.children.map(x => x.children[0])
-    const index = keys.indexOf(key)
-
-    if (index > -1) {
-      stack.insert(group.children[index].children[1])
-    } else {
-      stack.insert(contract.newElement({
-        t: ['option', group.t[2]],
-        annots: instr.annots,
-        continuation: new Continuation(instr.prim, [key, group]),
-        state: 'default'
-      }))
-    }
+    stack.insert(contract.newElement(
+      ['option', group.t[2]], instr.annots, instr.prim, null, [key, group]
+    ))
     return stack
   },
   UPDATE(contract : Contract, stack : Stack, instr : Object) {
-    const args = stack.drop(3)
-    if (args[2].t[0] === 'set') {
-      const [item, is_insert, group] = args
-      const index = group.children.indexOf(item)
+    const [key, value, group] = stack.drop(3)
 
-      if (is_insert.value === 'True') {
-        if (index === -1)
-          group.children.push(item)
-      } else if (is_insert.value === 'False') {
-        if (index > -1)
-          group.children.splice(index, 1)
-      } else {
-        group.continuation = new Continuation(instr.prim, args)
-      }
-      stack.insert(group)
-      return stack
-
-    } else {
-      const [key, value, group] = args
-      const group_keys = group.children.map(x => x.children[0])
-      const index = group_keys.indexOf(key)
-
-      if (index > -1) {
-        group.children[index].children = [key, value]
-      } else {
-        group.children.push(contract.newElement({
-          t: ['elt'],
-          children: [key, value]
-        }))
-      }
-      stack.insert(group)
-      return stack
-
-    }
+    stack.insert(contract.newElement(
+      get_t_lst(group.t), instr.annots, instr.prim, null, [key, value, group]
+    ))
+    return stack
   },
   LEFT(contract : Contract, stack : Stack, instr : Object) {
     const [item] = stack.drop(1)
-    stack.insert(contract.newElement({
-      t: ['or', item.t, contract.readType(instr.args[0])],
-      annots: instr.annots,
-      children: [item],
-      state: 'left'
-    }))
+
+    stack.insert(contract.newElement(
+      ['or', item.t, readType(instr.args[0])], instr.annots, instr.prim, null, [item]
+    ))
     return stack
   },
   RIGHT(contract : Contract, stack : Stack, instr : Object) {
     const [item] = stack.drop(1)
-    stack.insert(contract.newElement({
-      t: ['or', contract.readType(instr.args[0]), item.t],
-      annots: instr.annots,
-      children: [,item],
-      state: 'right'
-    }))
+    
+    stack.insert(contract.newElement(
+      ['or', readType(instr.args[0]), item.t], instr.annots, instr.prim, null, [item]
+    ))
     return stack
   },
   EMPTY_SET(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['set', contract.readType(instr.args[0])],
-      annots: instr.annots
-    }))
+    stack.insert(contract.newElement(
+      ['set', readType(instr.args[0])], instr.annots, '', null, []
+    ))
     return stack
   },
   EMPTY_BIG_MAP(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['big_map', contract.readType(instr.args[0]), contract.readType(instr.args[1])],
-      annots: instr.annots
-    }))
+    stack.insert(contract.newElement(
+      ['big_map', readType(instr.args[0]), readType(instr.args[1])], instr.annots, '', null, []
+    ))
     return stack
   },
   EMPTY_MAP(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['map', contract.readType(instr.args[0]), contract.readType(instr.args[1])],
-      annots: instr.annots
-    }))
+    stack.insert(contract.newElement(
+      ['map', readType(instr.args[0]), readType(instr.args[1])], instr.annots, '', null, []
+    ))
     return stack
   },
   SHA256(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['bytes'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['bytes'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   SHA512(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['bytes'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['bytes'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   BLAKE2B(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['bytes'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['bytes'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   HASH_KEY(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['key_hash'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['key_hash'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   ADDRESS(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['address'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['address'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   SOURCE(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['address'],
-      annots: instr.annots,
-      value: 'SOURCE'
-    }))
+    stack.insert(contract.newElement(
+      ['address'], instr.annots, '', 'SOURCE', []
+    ))
     return stack
   },
   SENDER(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement({
-      t: ['address'],
-      annots: instr.annots,
-      value: 'SENDER'
-    }))
+    stack.insert(contract.newElement(
+      ['address'], instr.annots, '', 'SENDER', []
+    ))
     return stack
   },
   ISNAT(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['option', 'bool'],
-      state: 'default',
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['option', 'bool'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   SET_DELEGATE(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['operation'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['operation'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   SIZE(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['nat'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['nat'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   NOT(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement({
-      t: ['int'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [x])
-    }))
+    stack.replace(x => contract.newElement(
+      ['int'], instr.annots, instr.prim, null, [x]
+    ))
     return stack
   },
   SLICE(contract : Contract, stack : Stack, instr : Object) {
-    const [offset, length, str] = stack.drop(3)
-    stack.insert(contract.newElement({
-      t: ['option', 'string'],
-      annots: instr.annots,
-      continuation: new Continuation(instr.prim, [offset, length, str])
-    }))
+    const [offset, length, item] = stack.drop(3)
+
+    stack.insert(contract.newElement(
+      ['option', item.t], instr.annots, instr.prim, null, [offset, length, item]
+    ))
     return stack
   },
   RENAME(contract : Contract, stack : Stack, instr : Object) {
@@ -683,10 +591,7 @@ export const instrs = {
     return stack
   },
   CAST(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => {
-      x.t = [contract.readType(instr.args[0])]
-      return x
-    })
+    stack.top().t = readType(instr.args[0])
     return stack
   }
 }
