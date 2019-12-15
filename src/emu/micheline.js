@@ -69,10 +69,10 @@ export function createElementByType(t : MichelineType, v : MichelineValue, id : 
       
     } else if (t.prim === 'list' || t.prim === 'set') {
       return new Element(id.val++, type_t, annots, '', null, 
-        v.args.map(item => createElementByType(targ0, item, id)))
+        v.map(item => createElementByType(targ0, item, id)))
 
     } else if (t.prim === 'map' || t.prim === 'big_map') {
-      return new Element(id.val++, type_t, annots, '', null, v.args.map(item => 
+      return new Element(id.val++, type_t, annots, '', null, v.map(item => 
         new Element(id.val++, ['elt'], item.annots || annots, '', null, [
           createElementByType(targ0, item.args[0], id),
           createElementByType(targ1, item.args[1], id)

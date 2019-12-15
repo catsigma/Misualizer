@@ -3,6 +3,7 @@
 import type { EType } from './elem'
 import { Element } from './elem'
 import { instrs } from './instr'
+import { readType, fallbackType, createElementByType, mockValueFromType } from './micheline'
 
 export class Stack {
   stack : Array<Element>
@@ -28,9 +29,19 @@ export class Stack {
     return false
   }
 
+  get_fail_elem() {
+    if (this.top() && this.top().t[0] === 'fail') {
+      return this.top()
+    }   
+
+    return null;
+  }
+
   equal(target : Stack) : Array<bool> {
-    if (this.stack.length !== target.stack.length)
+    if (this.stack.length !== target.stack.length) {
+      debugger
       throw `equal / the length of two stacks are not equal`
+    }
 
     return this.stack.map((item, index) => {
       return item.id === target.stack[index].id
@@ -38,6 +49,15 @@ export class Stack {
   }
 
   combine(target : Stack, contract : Contract, instr : string, annots : Array<string> = []) : Array<Element> {
+    const fail1 = this.get_fail_elem()
+    const fail2 = target.get_fail_elem()
+
+    if (fail1)
+      return target.stack.map(item => contract.newElement(item.t, annots, instr, null, [fail1, item]))
+
+    if (fail2)
+      return this.stack.map(item => contract.newElement(item.t, annots, instr, null, [item, fail2]))
+
     return this.equal(target).map((result, index) => {
       const item = this.stack[index]
       if (result)
@@ -93,17 +113,27 @@ export class Contract {
   stack : Stack
   code : Array<Object>
   elem_id : {val: number}
+  contract : Object
 
   constructor(contract_raw : Array<Object>) {
-    const contract = {}
+    this.contract = {}
     contract_raw.forEach(item => {
       const key = item.prim
-      contract[key] = item.args[0]
+      this.contract[key] = item.args[0]
     })
     
     this.elem_id = {val: 1}
-    this.code = contract.code
-    this.stack = new Stack([])
+    this.code = this.contract.code
+
+    this.stack = new Stack([
+      this.newElement(
+        ['pair', readType(this.contract.parameter), readType(this.contract.storage)],
+        [], '', null, [
+          createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id)),
+          createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id))
+        ]
+      )
+    ])
   }
 
   newElement(
@@ -129,6 +159,10 @@ export class Contract {
       }
 
       stack = instrs[instr.prim](this, stack, instr)
+
+      if (stack.is_failed()) {
+        return;
+      }
     })
 
     return stack

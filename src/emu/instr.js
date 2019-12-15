@@ -14,11 +14,23 @@ export const instrs = {
     return stack
   },
   CAR(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(item => item.subs[0])
+    stack.replace(item => {
+      if (item.instr) {
+        return contract.newElement(get_t_lst(item.t[1]), instr.annots, 'PAIR.0', null, [item])
+      } else {
+        return item.subs[0]
+      }
+    })
     return stack
   },
   CDR(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(item => item.subs[1])
+    stack.replace(item => {
+      if (item.instr) {
+        return contract.newElement(get_t_lst(item.t[2]), instr.annots, 'PAIR.1', null, [item])
+      } else {
+        return item.subs[1]
+      }
+    })
     return stack
   },
   DROP(contract : Contract, stack : Stack, instr : Object) {
@@ -123,7 +135,7 @@ export const instrs = {
   PAIR(contract : Contract, stack : Stack, instr : Object) {
     const [a, b] = stack.drop(2)
     stack.insert(contract.newElement(
-      json_clone(['pair', a.t, b.t]), instr.annots, instr.prim, null, [a, b]))
+      json_clone(['pair', a.t, b.t]), instr.annots, '', null, [a, b]))
 
     return stack
   },
@@ -319,7 +331,7 @@ export const instrs = {
   },
   SELF(contract : Contract, stack : Stack, instr : Object) {
     stack.insert(contract.newElement(
-      ['contract', readType(instr.args[0])],
+      ['contract', readType(contract.contract.parameter)],
       instr.annots,
       '',
       'SELF',
@@ -388,7 +400,7 @@ export const instrs = {
   EXEC(contract : Contract, stack : Stack, instr : Object) {
     const [arg, lambda] = stack.drop(2)
 
-    if (lambda.value.length) {
+    if (lambda.value && lambda.value.length) {
       stack.insert(arg)
       stack = contract.walkCode(lambda.value, stack)
     } else {
