@@ -205,7 +205,6 @@ export const instrs = {
     stack2.insert(contract.newElement(get_t_lst(or_item.t[2]), instr.annots, 'OR.RIGHT', null, [or_item]))
 
     stack1 = contract.walkCode(instr.args[0], stack1)
-    stack2 = contract.walkCode(instr.args[1], stack2)
 
     stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
     return stack
@@ -217,8 +216,8 @@ export const instrs = {
     let stack2 = stack.clone()
 
     stack1 = contract.walkCode(instr.args[0], stack1)
-    stack2 = contract.walkCode(instr.args[1], stack2)
-
+    
+    stack1.drop(1)
     stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
     return stack
   },
@@ -234,14 +233,9 @@ export const instrs = {
     return stack
   },
   NONE(contract : Contract, stack : Stack, instr : Object) {
-    stack.replace(x => contract.newElement(
-      ['option', json_clone(x.t)],
-      instr.annots,
-      instr.prim,
-      null,
-      [x]
+    stack.insert(contract.newElement(
+      ['option', readType(instr.args[0])], instr.annots, '', null, []
     ))
-
     return stack
   },
   ITER(contract : Contract, stack : Stack, instr : Object) {

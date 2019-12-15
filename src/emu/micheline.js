@@ -21,7 +21,7 @@ type MichelineValue = Object
 
 const micheline_mapping = {
   int: new Set(['int', 'nat', 'mutez', 'timestamp']),
-  string: new Set(['string', 'contract', 'key_hash', 'address', 'chain_id']),
+  string: new Set(['string', 'key_hash', 'address', 'chain_id']),
   bytes: new Set(['bytes', 'key', 'signature'])
 }
 
@@ -82,6 +82,9 @@ export function createElementByType(t : MichelineType, v : MichelineValue, id : 
       return new Element(id.val++, type_t, annots, v.prim, null, 
         v.prim === 'Some' ? [createElementByType(targ0, v.args[0], id)] : [])
 
+    } else if (t.prim === 'contract') {
+      return new Element(id.val++, type_t, annots, '', v.string, [])
+      
     } else if (t.prim === 'lambda') {
       const codes = v instanceof Array ? v : v.args[2]
       return new Element(id.val++, type_t, annots, '', codes, [])
@@ -94,6 +97,7 @@ export function createElementByType(t : MichelineType, v : MichelineValue, id : 
       return new Element(id.val++, type_t, annots, '', Object.values(v)[0], [])
   }
 
+  debugger
   throw `createElementByType / invalid t: ${t.prim} v: ${v.prim}`
 }
 
@@ -123,6 +127,9 @@ export function mockValueFromType(t : MichelineType, id : {val : number} = {val:
     } else if (t.prim === 'option') {
       return {prim: 'Some', args: [mockValueFromType(t.args[0], id)]}
 
+    } else if (t.prim === 'contract') {
+      return {string: `${t.prim}${id.val++}`}
+
     } else if (t.prim === 'lambda') {
       return [{prim: 'RENAME', annots: ['']}]
     }
@@ -140,5 +147,6 @@ export function mockValueFromType(t : MichelineType, id : {val : number} = {val:
       return {prim: 'True'}
   }
 
+  debugger
   throw `mockValueFromType / invalid Micheline type: ${t.prim}`
 }
