@@ -151,7 +151,7 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
+    stack.stack = stack1.combine(stack2, contract, instr.prim, lst, instr.annots)
     return stack
   },
   IF_LEFT(contract : Contract, stack : Stack, instr : Object) {
@@ -166,7 +166,7 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
+    stack.stack = stack1.combine(stack2, contract, instr.prim, or_item, instr.annots)
     return stack
   },
   IF_NONE(contract : Contract, stack : Stack, instr : Object) {
@@ -180,7 +180,7 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
+    stack.stack = stack1.combine(stack2, contract, instr.prim, option_item, instr.annots)
     return stack
   },
   IF(contract : Contract, stack : Stack, instr : Object) {
@@ -192,7 +192,7 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
+    stack.stack = stack1.combine(stack2, contract, instr.prim, condition, instr.annots)
     return stack
   },
   LOOP_LEFT(contract : Contract, stack : Stack, instr : Object) {
@@ -206,7 +206,7 @@ export const instrs = {
 
     stack1 = contract.walkCode(instr.args[0], stack1)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
+    stack.stack = stack1.combine(stack2, contract, instr.prim, or_item, instr.annots)
     return stack
   },
   LOOP(contract : Contract, stack : Stack, instr : Object) {
@@ -218,7 +218,7 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     
     stack1.drop(1)
-    stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
+    stack.stack = stack1.combine(stack2, contract, instr.prim, condition, instr.annots)
     return stack
   },
   SOME(contract : Contract, stack : Stack, instr : Object) {
@@ -247,7 +247,7 @@ export const instrs = {
     stack1.insert(contract.newElement(get_t_lst(lst_item.t[1]), instr.annots, 'ITEM.0', null, [lst_item]))
     stack1 = contract.walkCode(instr.args[0], stack1)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, instr.annots)
+    stack.stack = stack1.combine(stack2, contract, instr.prim, lst_item, instr.annots)
     return stack
   },
   MAP(contract : Contract, stack : Stack, instr : Object) {

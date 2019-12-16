@@ -48,22 +48,22 @@ export class Stack {
     })
   }
 
-  combine(target : Stack, contract : Contract, instr : string, annots : Array<string> = []) : Array<Element> {
+  combine(target : Stack, contract : Contract, instr : string, condition : Element, annots : Array<string> = []) : Array<Element> {
     const fail1 = this.get_fail_elem()
     const fail2 = target.get_fail_elem()
 
     if (fail1)
-      return target.stack.map(item => contract.newElement(item.t, annots, instr, null, [fail1, item]))
+      return target.stack.map(item => contract.newElement(item.t, annots, instr, null, [condition, fail1, item]))
 
     if (fail2)
-      return this.stack.map(item => contract.newElement(item.t, annots, instr, null, [item, fail2]))
+      return this.stack.map(item => contract.newElement(item.t, annots, instr, null, [condition, item, fail2]))
 
     return this.equal(target).map((result, index) => {
       const item = this.stack[index]
       if (result)
         return item
       else {
-        return contract.newElement(item.t, annots, instr, null, [item, target.stack[index]])
+        return contract.newElement(item.t, annots, instr, null, [condition, item, target.stack[index]])
       }
     })
   }
