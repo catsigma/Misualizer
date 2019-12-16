@@ -100,7 +100,7 @@ export class Stack {
   }
 }
 
-export class Contract {
+export class LegacyContract {
   stack : Stack
   code : Array<Object>
   mem : {
@@ -132,8 +132,6 @@ export class Contract {
       ]
     })])
 
-    const x = this.mockMichelineData(contract.parameter)
-    debugger
   }
 
   getId(field? : 'parameter' | 'storage' | 'generate' | 'mock') {

@@ -1,6 +1,6 @@
 // @flow
 
-import type { Contract } from './contract'
+import type { LegacyContract } from './contract'
 import { Continuation, Element } from './elem'
 import { Stack } from './contract'
 

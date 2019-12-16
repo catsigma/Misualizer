@@ -151,8 +151,29 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, lst, instr.annots)
-    return stack
+    let fails = 1
+    if (stack1.is_failed()) fails += 2
+    if (stack2.is_failed()) fails *= 2
+
+    return ({
+      '1': () => {
+        stack.stack = stack1.combine(stack2, contract, instr.prim, lst, instr.annots)
+        return stack
+      },
+      '2': () => {
+        contract.fail_stacks.push(stack2)
+        return stack1
+      },
+      '3': () => {
+        contract.fail_stacks.push(stack1)
+        return stack2
+      },
+      '6': () => {
+        contract.fail_stacks.push(stack1)
+        contract.fail_stacks.push(stack2)
+        return stack1
+      }
+    })[fails]()
   },
   IF_LEFT(contract : Contract, stack : Stack, instr : Object) {
     const [or_item] = stack.drop(1)
@@ -166,8 +187,29 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, or_item, instr.annots)
-    return stack
+    let fails = 1
+    if (stack1.is_failed()) fails += 2
+    if (stack2.is_failed()) fails *= 2
+
+    return ({
+      '1': () => {
+        stack.stack = stack1.combine(stack2, contract, instr.prim, or_item, instr.annots)
+        return stack
+      },
+      '2': () => {
+        contract.fail_stacks.push(stack2)
+        return stack1
+      },
+      '3': () => {
+        contract.fail_stacks.push(stack1)
+        return stack2
+      },
+      '6': () => {
+        contract.fail_stacks.push(stack1)
+        contract.fail_stacks.push(stack2)
+        return stack1
+      }
+    })[fails]()
   },
   IF_NONE(contract : Contract, stack : Stack, instr : Object) {
     const [option_item] = stack.drop(1)
@@ -180,8 +222,29 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, option_item, instr.annots)
-    return stack
+    let fails = 1
+    if (stack1.is_failed()) fails += 2
+    if (stack2.is_failed()) fails *= 2
+
+    return ({
+      '1': () => {
+        stack.stack = stack1.combine(stack2, contract, instr.prim, option_item, instr.annots)
+        return stack
+      },
+      '2': () => {
+        contract.fail_stacks.push(stack2)
+        return stack1
+      },
+      '3': () => {
+        contract.fail_stacks.push(stack1)
+        return stack2
+      },
+      '6': () => {
+        contract.fail_stacks.push(stack1)
+        contract.fail_stacks.push(stack2)
+        return stack1
+      }
+    })[fails]()
   },
   IF(contract : Contract, stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
@@ -192,8 +255,30 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, condition, instr.annots)
-    return stack
+    
+    let fails = 1
+    if (stack1.is_failed()) fails += 2
+    if (stack2.is_failed()) fails *= 2
+
+    return ({
+      '1': () => {
+        stack.stack = stack1.combine(stack2, contract, instr.prim, condition, instr.annots)
+        return stack
+      },
+      '2': () => {
+        contract.fail_stacks.push(stack2)
+        return stack1
+      },
+      '3': () => {
+        contract.fail_stacks.push(stack1)
+        return stack2
+      },
+      '6': () => {
+        contract.fail_stacks.push(stack1)
+        contract.fail_stacks.push(stack2)
+        return stack1
+      }
+    })[fails]()
   },
   LOOP_LEFT(contract : Contract, stack : Stack, instr : Object) {
     const [or_item] = stack.drop(1)
@@ -205,9 +290,31 @@ export const instrs = {
     stack2.insert(contract.newElement(get_t_lst(or_item.t[2]), instr.annots, 'OR.RIGHT', null, [or_item]))
 
     stack1 = contract.walkCode(instr.args[0], stack1)
+    
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, or_item, instr.annots)
-    return stack
+    let fails = 1
+    if (stack1.is_failed()) fails += 2
+    if (stack2.is_failed()) fails *= 2
+
+    return ({
+      '1': () => {
+        stack.stack = stack1.combine(stack2, contract, instr.prim, or_item, instr.annots)
+        return stack
+      },
+      '2': () => {
+        contract.fail_stacks.push(stack2)
+        return stack1
+      },
+      '3': () => {
+        contract.fail_stacks.push(stack1)
+        return stack2
+      },
+      '6': () => {
+        contract.fail_stacks.push(stack1)
+        contract.fail_stacks.push(stack2)
+        return stack1
+      }
+    })[fails]()
   },
   LOOP(contract : Contract, stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
@@ -218,8 +325,30 @@ export const instrs = {
     stack1 = contract.walkCode(instr.args[0], stack1)
     
     stack1.drop(1)
-    stack.stack = stack1.combine(stack2, contract, instr.prim, condition, instr.annots)
-    return stack
+
+    let fails = 1
+    if (stack1.is_failed()) fails += 2
+    if (stack2.is_failed()) fails *= 2
+
+    return ({
+      '1': () => {
+        stack.stack = stack1.combine(stack2, contract, instr.prim, condition, instr.annots)
+        return stack
+      },
+      '2': () => {
+        contract.fail_stacks.push(stack2)
+        return stack1
+      },
+      '3': () => {
+        contract.fail_stacks.push(stack1)
+        return stack2
+      },
+      '6': () => {
+        contract.fail_stacks.push(stack1)
+        contract.fail_stacks.push(stack2)
+        return stack1
+      }
+    })[fails]()
   },
   SOME(contract : Contract, stack : Stack, instr : Object) {
     stack.replace(x => contract.newElement(
@@ -247,13 +376,35 @@ export const instrs = {
     stack1.insert(contract.newElement(get_t_lst(lst_item.t[1]), instr.annots, 'ITEM.0', null, [lst_item]))
     stack1 = contract.walkCode(instr.args[0], stack1)
 
-    stack.stack = stack1.combine(stack2, contract, instr.prim, lst_item, instr.annots)
-    return stack
+    
+    let fails = 1
+    if (stack1.is_failed()) fails += 2
+    if (stack2.is_failed()) fails *= 2
+
+    return ({
+      '1': () => {
+        stack.stack = stack1.combine(stack2, contract, instr.prim, lst_item, instr.annots)
+        return stack
+      },
+      '2': () => {
+        contract.fail_stacks.push(stack2)
+        return stack1
+      },
+      '3': () => {
+        contract.fail_stacks.push(stack1)
+        return stack2
+      },
+      '6': () => {
+        contract.fail_stacks.push(stack1)
+        contract.fail_stacks.push(stack2)
+        return stack1
+      }
+    })[fails]()
   },
   MAP(contract : Contract, stack : Stack, instr : Object) {
     const [iter_item] = stack.drop(1)
 
-    stack.insert(contract.newElement(get_t_lst(iter_item.t), instr.annots, 'ITEMS', null, [iter_item]))
+    stack.insert(contract.newElement(get_t_lst(iter_item.t), instr.annots, instr.prim, null, [iter_item]))
     return stack
   },
   FAILWITH(contract : Contract, stack : Stack, instr : Object) {

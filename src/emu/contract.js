@@ -29,14 +29,6 @@ export class Stack {
     return false
   }
 
-  get_fail_elem() {
-    if (this.top() && this.top().t[0] === 'fail') {
-      return this.top()
-    }   
-
-    return null;
-  }
-
   equal(target : Stack) : Array<bool> {
     if (this.stack.length !== target.stack.length) {
       debugger
@@ -49,15 +41,6 @@ export class Stack {
   }
 
   combine(target : Stack, contract : Contract, instr : string, condition : Element, annots : Array<string> = []) : Array<Element> {
-    const fail1 = this.get_fail_elem()
-    const fail2 = target.get_fail_elem()
-
-    if (fail1)
-      return target.stack.map(item => contract.newElement(item.t, annots, instr, null, [condition, fail1, item]))
-
-    if (fail2)
-      return this.stack.map(item => contract.newElement(item.t, annots, instr, null, [condition, item, fail2]))
-
     return this.equal(target).map((result, index) => {
       const item = this.stack[index]
       if (result)
@@ -111,10 +94,11 @@ export class Stack {
 
 export class Contract {
   stack : Stack
+  fail_stacks : Array<Stack>
   code : Array<Object>
   elem_id : {val: number}
   contract : Object
-
+  
   constructor(contract_raw : Array<Object>) {
     this.contract = {}
     contract_raw.forEach(item => {
@@ -134,6 +118,7 @@ export class Contract {
         ]
       )
     ])
+    this.fail_stacks = []
   }
 
   newElement(
@@ -169,6 +154,7 @@ export class Contract {
   }
 
   walkToExit() {
+    this.fail_stacks = []
     return this.walkCode(this.code, this.stack.clone())
   }
 }
