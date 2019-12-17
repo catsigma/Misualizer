@@ -113,8 +113,12 @@ export class Contract {
       this.newElement(
         ['pair', readType(this.contract.parameter), readType(this.contract.storage)],
         [], '', null, [
-          createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id)),
-          createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id))
+          this.newElement(['parameter'], [], 'Parameter', null, [
+            createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id))
+          ]),
+          this.newElement(['storage'], [], 'Storage', null, [
+            createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id))
+          ])
         ]
       )
     ])

@@ -23,6 +23,12 @@ export const t_reprs = {
 }
 
 export const instr_reprs = {
+  Parameter(elem : Element, render : renderFn) {
+    return `Parameter`
+  },
+  Storage(elem : Element, render : renderFn) {
+    return `Storage`
+  },
   GT(elem : Element, render : renderFn) {
     return `${render(elem.subs[0].subs[0])} > ${render(elem.subs[0].subs[1])}`
   },

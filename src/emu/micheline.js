@@ -64,7 +64,8 @@ export function createElementByType(t : MichelineType, v : MichelineValue, id : 
 
     } else if (t.prim === 'or') {
       return new Element(id.val++, type_t, annots, v.prim, null, [
-        createElementByType(targ0, v.args[0], id)
+        createElementByType(targ0, v.args[0], id),
+        createElementByType(targ1, v.args[1], id),
       ])
       
     } else if (t.prim === 'list' || t.prim === 'set') {
@@ -112,7 +113,7 @@ export function mockValueFromType(t : MichelineType, id : {val : number} = {val:
       ]}
 
     } else if (t.prim === 'or') {
-      return {prim: 'Left', args: [mockValueFromType(targ0, id)]}
+      return {prim: 'Left|Right', args: [mockValueFromType(targ0, id), mockValueFromType(targ1, id)]}
       
     } else if (t.prim === 'list' || t.prim === 'set') {
       return [mockValueFromType(targ0, id)]
@@ -144,7 +145,7 @@ export function mockValueFromType(t : MichelineType, id : {val : number} = {val:
     else if (t.prim === 'unit')
       return {prim: 'Unit'}
     else if (t.prim === 'bool')
-      return {prim: 'True'}
+      return {prim: 'True|False'}
   }
 
   debugger
