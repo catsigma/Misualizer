@@ -126,7 +126,7 @@ export function mockValueFromType(t : MichelineType, id : {val : number} = {val:
       return result
 
     } else if (t.prim === 'option') {
-      return {prim: 'Some', args: [mockValueFromType(t.args[0], id)]}
+      return {prim: 'Some|None', args: [mockValueFromType(t.args[0], id)]}
 
     } else if (t.prim === 'contract') {
       return {string: `${t.prim}${id.val++}`}

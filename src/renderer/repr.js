@@ -37,5 +37,15 @@ export const instr_reprs = {
   },
   IF_LEFT(elem : Element, render : renderFn) {
     return `\nIf ${render(elem.subs[0])} is Left\nthen ${render(elem.subs[1])}\nelse ${render(elem.subs[2])}`
+  },
+  'OR.LEFT': {
+    Parameter(elem : Element, render : renderFn) {
+      return render(elem.subs[0].subs[0].subs[0])
+    }
+  },
+  'OR.RIGHT': {
+    Parameter(elem : Element, render : renderFn) {
+      return render(elem.subs[0].subs[0].subs[1])
+    }
   }
 }
