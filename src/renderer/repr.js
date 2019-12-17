@@ -27,6 +27,9 @@ export const instr_reprs = {
     return `${render(elem.subs[0].subs[0])} > ${render(elem.subs[0].subs[1])}`
   },
   IF_NONE(elem : Element, render : renderFn) {
-    return `If ${render(elem.subs[0])} is None then ${render(elem.subs[1])} else ${render(elem.subs[2])}`
+    return `\n\tIf ${render(elem.subs[0])} is None\n\tthen ${render(elem.subs[1])}\n\telse ${render(elem.subs[2])}`
+  },
+  IF_LEFT(elem : Element, render : renderFn) {
+    return `\nIf ${render(elem.subs[0])} is Left\nthen ${render(elem.subs[1])}\nelse ${render(elem.subs[2])}`
   }
 }

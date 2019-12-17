@@ -34,6 +34,12 @@ async function testContract() {
   const text_renderer = new TextRenderer(stack)
   console.log('Result: \n' + text_renderer.render())
   console.log(stack)
+
+  contract.fail_stacks.forEach(stack => {
+    stack.stack = stack.stack.slice(0, 1)
+    const text_renderer = new TextRenderer(stack)
+    console.log('Fail: \n' + text_renderer.render())
+  })
   return;
 
   // for (let i = 0; i < 147; i++) {

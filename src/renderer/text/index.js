@@ -19,16 +19,16 @@ export class TextRenderer {
 
     if (elem.instr) {
       if (instr_reprs[elem.instr])
-        return `\n${'\t'.repeat(level)}${instr_reprs[elem.instr](elem, (elem) => this.renderElement(elem, level))}`
+        return `${instr_reprs[elem.instr](elem, (elem) => this.renderElement(elem, level))}`
 
-      return `\n${'\t'.repeat(level)}${elem.instr}(${elem.subs.map(x => this.renderElement(x, level)).join(', ')})` 
+      return `${elem.instr}(${elem.subs.map(x => this.renderElement(x, level)).join(', ')})` 
     } else {
       const t = elem.t[0].toString()
 
       if (t_reprs[t]) {
         return t_reprs[t](elem, (elem) => this.renderElement(elem, level))
       } else if (elem.annots.length) {
-        return elem.annots[0]
+        return elem.annots[0] + ':' + elem.t[0].toString()
       } else if (elem.value !== null) {
         return elem.value
       } else {
