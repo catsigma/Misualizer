@@ -37,23 +37,27 @@ export class TextRenderer {
     return `${this.stack.stack.map(elem => this.renderElement(elem)).join(', ')}`
   }
 
-  renderElement(elem : Element) : string {
+  renderElementWithIndent(elem : Element, level : number = 0) : string {
+    return  (level ? '\n' : '') + ' '.repeat(level) + this.renderElement(elem, level)
+  }
+
+  renderElement(elem : Element, level : number = 0) : string {
     if (elem.instr) {
       if (!this.is_raw) {
         // apply instr patterns
         for (let i = 0; i < this.patterns.length; i++) {
           const handler = getInstrRepr(elem, this.patterns[i])
           if (handler)
-            return `${handler(elem, (elem) => this.renderElement(elem))}`
+            return handler(elem, level, (elem, level) => this.renderElementWithIndent(elem, level))
         }
       }
 
-      return `${elem.instr}(${elem.subs.map(x => this.renderElement(x)).join(', ')})` 
+      return `${elem.instr}(${elem.subs.map(x => this.renderElementWithIndent(x)).join(', ')})` 
     } else {
       const t = elem.t[0].toString()
 
       if (t_reprs[t]) {
-        return t_reprs[t](elem, (elem) => this.renderElement(elem))
+        return t_reprs[t](elem, level, (elem, level) => this.renderElementWithIndent(elem, level))
       } else if (elem.annots.length) {
         return elem.annots[0] + ':' + elem.t[0].toString()
       } else if (elem.value !== null) {

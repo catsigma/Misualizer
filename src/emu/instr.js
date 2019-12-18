@@ -363,7 +363,7 @@ export const instrs = {
   },
   NONE(contract : Contract, stack : Stack, instr : Object) {
     stack.insert(contract.newElement(
-      ['option', readType(instr.args[0])], instr.annots, '', null, []
+      ['option', readType(instr.args[0])], instr.annots, instr.prim, null, []
     ))
     return stack
   },

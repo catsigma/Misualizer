@@ -167,13 +167,13 @@ export class Contract {
     const mergeObj = (a : Object, b : Object, path : Array<0 | 1>) => {
       for (const key in b) {
         if (b[key] === true) {
-          a[key] = (elem : Element, render : (elem : Element) => string) => {
+          a[key] = (elem : Element, level : number, render : (elem : Element, level : number) => string) => {
             let cursor = elem.subs[0]
             path.forEach(i => cursor = cursor.subs[0])
             for (let l = path.length; l--;) {
               cursor = cursor.subs[path[l]]
             }
-            return render(cursor)
+            return render(cursor, level)
           }
         } else {
           if (!(key in a))
