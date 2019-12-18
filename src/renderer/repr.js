@@ -32,20 +32,35 @@ export const instr_reprs = {
   GT(elem : Element, render : renderFn) {
     return `${render(elem.subs[0].subs[0])} > ${render(elem.subs[0].subs[1])}`
   },
+  IF(elem : Element, render : renderFn) {
+    return `If ${render(elem.subs[0])} then ${render(elem.subs[1])} else ${render(elem.subs[2])}`
+  },
   IF_NONE(elem : Element, render : renderFn) {
-    return `\n\tIf ${render(elem.subs[0])} is None\n\tthen ${render(elem.subs[1])}\n\telse ${render(elem.subs[2])}`
+    return `If ${render(elem.subs[0])} is None then ${render(elem.subs[1])} else ${render(elem.subs[2])}`
   },
   IF_LEFT(elem : Element, render : renderFn) {
-    return `\nIf ${render(elem.subs[0])} is Left\nthen ${render(elem.subs[1])}\nelse ${render(elem.subs[2])}`
+    return `If ${render(elem.subs[0])} is Left then ${render(elem.subs[1])} else ${render(elem.subs[2])}`
   },
-  'OR.LEFT': {
-    Parameter(elem : Element, render : renderFn) {
-      return render(elem.subs[0].subs[0].subs[0])
-    }
+  ADD(elem : Element, render : renderFn) {
+    return `${render(elem.subs[0])} + ${render(elem.subs[1])}`
   },
-  'OR.RIGHT': {
-    Parameter(elem : Element, render : renderFn) {
-      return render(elem.subs[0].subs[0].subs[1])
+  SUB(elem : Element, render : renderFn) {
+    return `${render(elem.subs[0])} - ${render(elem.subs[1])}`
+  },
+  EQ: {COMPARE(elem : Element, render : renderFn) {
+    const item = elem.subs[0]
+    return `(${render(item.subs[0])}) == (${render(item.subs[1])})`
+  }},
+  CONS(elem : Element, render : renderFn) {
+    if (elem.subs[1].instr === 'NIL')
+      return `[${render(elem.subs[0])}]`
+
+    return `[${render(elem.subs[0])}] + ${render(elem.subs[1])}`
+  },
+  'OPTION.0': {
+    GET(elem : Element, render : renderFn) {
+      const get = elem.subs[0]
+      return `${render(get.subs[1])}[${render(get.subs[0])}]`
     }
   }
 }

@@ -4,15 +4,18 @@ import { Element } from '../../emu/elem'
 import { Stack } from '../../emu/contract'
 import { t_reprs, instr_reprs } from '../repr'
 
-function getInstrRepr(elem : Element) {
+function getInstrRepr(elem : Element, pattern : Object) {
   let cursor = elem
-  let handler = instr_reprs[cursor.instr]
-
-  if (!handler)
-    return null
+  let handler = pattern[cursor.instr]
 
   while (!(handler instanceof Function)) {
-    cursor = elem.subs[0]
+    if (!handler)
+      return null
+
+    cursor = cursor.subs[0]
+    if (!cursor)
+      return null
+
     handler = handler[cursor.instr]
   }
 
@@ -22,28 +25,35 @@ function getInstrRepr(elem : Element) {
 
 export class TextRenderer {
   stack : Stack
-  constructor(stack : Stack) {
+  patterns : Array<Object>
+  is_raw : bool
+  constructor(stack : Stack, patterns : Array<Object> = []) {
     this.stack = stack
+    this.patterns = patterns.concat(instr_reprs)
+    this.is_raw = false
   }
 
   render() {
-    return `[${this.stack.stack.map(elem => this.renderElement(elem)).join(', ')}]`
+    return `${this.stack.stack.map(elem => this.renderElement(elem)).join(', ')}`
   }
 
-  renderElement(elem : Element, level : number = -1) : string {
-    level++
-
+  renderElement(elem : Element) : string {
     if (elem.instr) {
-      const handler = getInstrRepr(elem)
-      if (handler)
-        return `${handler(elem, (elem) => this.renderElement(elem, level))}`
+      if (!this.is_raw) {
+        // apply instr patterns
+        for (let i = 0; i < this.patterns.length; i++) {
+          const handler = getInstrRepr(elem, this.patterns[i])
+          if (handler)
+            return `${handler(elem, (elem) => this.renderElement(elem))}`
+        }
+      }
 
-      return `${elem.instr}(${elem.subs.map(x => this.renderElement(x, level)).join(', ')})` 
+      return `${elem.instr}(${elem.subs.map(x => this.renderElement(x)).join(', ')})` 
     } else {
       const t = elem.t[0].toString()
 
       if (t_reprs[t]) {
-        return t_reprs[t](elem, (elem) => this.renderElement(elem, level))
+        return t_reprs[t](elem, (elem) => this.renderElement(elem))
       } else if (elem.annots.length) {
         return elem.annots[0] + ':' + elem.t[0].toString()
       } else if (elem.value !== null) {

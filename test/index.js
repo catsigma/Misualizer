@@ -28,10 +28,12 @@ async function getContract(input : Object) {
 async function testContract() {
   const contract = await getContract(0)
   const init_stack_render = new TextRenderer(contract.stack)
+  init_stack_render.is_raw = true
   console.log('Init: \n' + init_stack_render.render())
 
   const stack = contract.walkToExit()
-  const text_renderer = new TextRenderer(stack)
+  const patterns = contract.genInstrPatterns()
+  const text_renderer = new TextRenderer(stack, patterns)
   console.log('Result: \n' + text_renderer.render())
   console.log(stack)
 

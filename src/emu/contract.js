@@ -161,4 +161,53 @@ export class Contract {
     this.fail_stacks = []
     return this.walkCode(this.code, this.stack.clone())
   }
+
+
+  genInstrPatterns() : Array<Object> {
+    const mergeObj = (a : Object, b : Object, path : Array<0 | 1>) => {
+      for (const key in b) {
+        if (b[key] === true) {
+          a[key] = (elem : Element, render : (elem : Element) => string) => {
+            let cursor = elem.subs[0]
+            path.forEach(i => cursor = cursor.subs[0])
+            for (let l = path.length; l--;) {
+              cursor = cursor.subs[path[l]]
+            }
+            return render(cursor)
+          }
+        } else {
+          if (!(key in a))
+            a[key] = {}
+
+          mergeObj(a[key], b[key], path.concat({
+            'PAIR.0': 0,
+            'PAIR.1': 1,
+            'OR.LEFT': 0,
+            'OR.RIGHT': 1
+          }[key]))
+        }
+      }
+    }
+
+    const walk = (elem : Element, root : Object, result : Object) : Object => {
+      if (elem.t[0] === 'pair') {
+        walk(elem.subs[0], {'PAIR.0': root}, result)
+        walk(elem.subs[1], {'PAIR.1': root}, result)
+
+      } else if (elem.t[0] === 'or') {
+        walk(elem.subs[0], {'OR.LEFT': root}, result)
+        walk(elem.subs[1], {'OR.RIGHT': root}, result)
+
+      } else {
+        mergeObj(result, root, [])
+      }
+    }
+    
+    const result = [{}, {}]
+
+    walk(this.stack.top().subs[0].subs[0], {Parameter: true}, result[0])
+    walk(this.stack.top().subs[1].subs[0], {Storage: true}, result[1])
+
+    return result.filter(item => !(Object.values(item)[0] instanceof Function))
+  }
 }
