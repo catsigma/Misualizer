@@ -38,11 +38,11 @@ export class TextRenderer {
   }
 
   renderElementWithIndent(elem : Element, level : number = 0) : string {
-    return  (level ? '\n' : '') + ' '.repeat(level) + this.renderElement(elem, level)
+    return (level ? '\n' : '') + ' '.repeat(level) + this.renderElement(elem, level)
   }
 
   renderElement(elem : Element, level : number = 0) : string {
-    if (elem.instr) {
+    if (elem.instr && elem.subs.length) {
       if (!this.is_raw) {
         // apply instr patterns
         for (let i = 0; i < this.patterns.length; i++) {

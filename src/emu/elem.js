@@ -29,6 +29,6 @@ export class Element {
   clone() {
     return new Element(
       this.id, json_clone(this.t), json_clone(this.annots), 
-      this.instr, json_clone(this.value), this.subs.map(x => x.clone()))
+      this.instr, json_clone(this.value), this.subs)
   }
 }

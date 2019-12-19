@@ -1,46 +1,25 @@
 <template>
   <div>
-    <div class="block start">
-      <h2>Start</h2>
-      <div class="stack">
-        <span class="mono">{{result.start}}</span>
-      </div>
+    <div class="block">
+      <pre class="mono">{{result.init}}</pre>
     </div>
-
-    <div class="block result" :key="`result-${i}`" v-for="(result, i) in result.results">
-      <h2>Result {{i}}</h2>
-      <div class="cond">
-        <span class="mono">{{result[0]}}</span>
-      </div>
-      <div class="stack">
-        <span class="mono">{{result[1]}}</span>
-      </div>
+    <div class="block">
+      <pre class="mono">{{result.body}}</pre>
     </div>
-
-    <div class="block fail" :key="`fail-${i}`" v-for="(fail, i) in result.fails">
-      <h2>Fail {{i}}</h2>
-      <div class="cond">
-        <span class="mono">{{fail[0]}}</span>
-      </div>
-      <div class="stack">
-        <span class="mono">{{fail[1]}}</span>
-      </div>
-    </div>
-
   </div>
 </template>
 
 <script>
 import { Contract } from '../../emu/contract'
+import { TextRenderer } from '../../renderer/text'
 
 export default {
   props: ['contract'],
   data() {
     return {
       result: {
-        start: '',
-        fails: [],
-        results: []
+        init: null,
+        body: null
       }
     }
   },
@@ -57,8 +36,17 @@ export default {
       if (!this.contract) return;
       
       const contract = new Contract(this.contract.script.code)
-      const stacks = contract.walkToExit()
-      this.result = contract.stacksToText(stacks)
+      const init_render = new TextRenderer(contract.stack)
+      init_render.is_raw = true
+
+      const stack = contract.walkToExit()
+      const patterns = contract.genInstrPatterns()
+      const text_renderer = new TextRenderer(stack, patterns)
+      this.result = {
+        init: init_render.render(),
+        body: text_renderer.render()
+      }
+      
     }
   }
 }
@@ -67,57 +55,11 @@ export default {
 <style scoped lang="scss">
 @import "../colors";
 
-th {
-  text-align: right;
-  vertical-align: top;
-}
-.mono {
-  font-size: 1.2rem;
-}
-
 .block {
   margin-bottom: 16px;
 
   .mono {
-    margin-left: 8px;
-  }
-}
-
-.start {
-  h2 {
-    color: $c2;
-  }
-}
-
-.result {
-  h2 {
-    color: $c8;
-  }
-}
-
-.fail {
-  h2 {
-    color: $c11;
-  }
-}
-
-.stack {
-  margin-left: 8px;
-
-  &::before {
-    display: block;
-    content: '/ Stack:';
-    color: $c15;
-  }
-}
-
-.cond {
-  margin-left: 8px;
-
-  &::before {
-    display: block;
-    content: '/ Condition flow:';
-    color: $c15;
+    font-size: 1.2rem;
   }
 }
 </style>

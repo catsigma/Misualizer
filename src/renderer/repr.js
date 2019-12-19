@@ -23,6 +23,9 @@ export const t_reprs = {
   },
   map(elem : Element, level: number, render : renderFn) {
     return `{${elem.subs.map(x => `${render(x.subs[0])}: ${render(x.subs[1])}`).join(', ')}}`
+  },
+  option(elem : Element, level: number, render : renderFn) {
+    return `option<${JSON.stringify(elem.t[1])}>`
   }
 }
 
@@ -37,14 +40,13 @@ export const instr_reprs = {
     return `${render(elem.subs[0].subs[0])} > ${render(elem.subs[0].subs[1])}`
   },
   IF(elem : Element, level: number, render : renderFn) {
-    return `If ${render(elem.subs[0])} then ${render(elem.subs[1], level + 2)} \n${indent(level)}else ${render(elem.subs[2], level + 2)}`
+    return `If ${render(elem.subs[0])} then ${render(elem.subs[1], level + 2)} \n${indent(level)}else \n${render(elem.subs[2], level + 2)}`
   },
   IF_NONE(elem : Element, level: number, render : renderFn) {
-    return `If ${render(elem.subs[0])} is None then ${render(elem.subs[1], level + 2)} \n${indent(level)}else ${render(elem.subs[2], level + 2)}`
+    return `If ${render(elem.subs[0])} is None then ${render(elem.subs[1], level + 2)} \n${indent(level)}else \n${render(elem.subs[2], level + 2)}`
   },
   IF_LEFT(elem : Element, level: number, render : renderFn) {
-    const left = elem.subs[0].instr === 'Parameter' ? elem.subs[0].subs[0].subs[0] : elem.subs[0].subs[0]
-    return `If ${render(elem.subs[0])} is ${render(left)} then ${render(elem.subs[1], level + 2)} \n${indent(level)}else ${render(elem.subs[2], level + 2)}`
+    return `If ${render(elem.subs[0])} is Left then ${render(elem.subs[1], level + 2)} \n${indent(level)}else \n${render(elem.subs[2], level + 2)}`
   },
   ADD(elem : Element, level: number, render : renderFn) {
     return `${render(elem.subs[0])} + ${render(elem.subs[1])}`
