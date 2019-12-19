@@ -8,10 +8,12 @@ import { readType, fallbackType, createElementByType, mockValueFromType } from '
 export class Stack {
   stack : Array<Element>
   dip_top : number
+  conditions : Array<Element>
 
   constructor(stack : Array<Element>) {
     this.stack = stack
     this.dip_top = 0
+    this.conditions = []
   }
 
   length() {
@@ -51,6 +53,11 @@ export class Stack {
     })
   }
 
+  pushCondition(cond : Element, cond_instr : string) {
+    this.conditions.push(
+      new Element(0, ['string'], [], cond_instr, null, [cond]))
+  }
+
   at(index : number) : Element {
     return this.stack[index]
   }
@@ -78,6 +85,11 @@ export class Stack {
     return result
   }
 
+  empty() {
+    this.stack = []
+    this.dip_top = 0
+  }
+
   insert(elem : Element) {
     this.stack.splice(this.dip_top, 0, elem)
   }
@@ -88,6 +100,7 @@ export class Stack {
   clone() {
     const result = new Stack(this.stack.map(item => item.clone()))
     result.dip_top = this.dip_top
+    result.conditions = this.conditions.map(x => x.clone())
     return result
   }
 }
@@ -98,7 +111,7 @@ export class Contract {
   code : Array<Object>
   elem_id : {val: number}
   contract : Object
-  
+
   constructor(contract_raw : Array<Object>) {
     this.contract = {}
     contract_raw.forEach(item => {
@@ -109,16 +122,14 @@ export class Contract {
     this.elem_id = {val: 1}
     this.code = this.contract.code
 
+    const parameter_elem = createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id))
+    const storage_elem = createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id))
     this.stack = new Stack([
       this.newElement(
         ['pair', readType(this.contract.parameter), readType(this.contract.storage)],
         [], '', null, [
-          this.newElement(['parameter'], [], 'Parameter', null, [
-            createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id))
-          ]),
-          this.newElement(['storage'], [], 'Storage', null, [
-            createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id))
-          ])
+          this.newElement(parameter_elem.t, [], 'Parameter', null, [parameter_elem]),
+          this.newElement(storage_elem.t, [], 'Storage', null, [storage_elem])
         ]
       )
     ])

@@ -10,7 +10,8 @@ function indent(num : number) {
 
 export const t_reprs = {
   fail(elem : Element, level: number, render : renderFn) {
-    return `fail(${render(elem.subs[0])})`
+    const reasons = elem.subs.slice(1)
+    return `Fail: ${render(elem.subs[0])}\nReason: ${reasons.map(reason => render(reason)).join(' -> ')}`
   },
   pair(elem : Element, level: number, render : renderFn) {
     return `(${render(elem.subs[0])}, ${render(elem.subs[1])})`
@@ -36,6 +37,31 @@ export const instr_reprs = {
   Storage(elem : Element, level: number, render : renderFn) {
     return `Storage`
   },
+  COND_TRUE(elem : Element, level: number, render : renderFn) {
+    return render(elem.subs[0])
+  },
+  COND_FALSE(elem : Element, level: number, render : renderFn) {
+    return `!${render(elem.subs[0])}`
+  },
+  COND_LEFT(elem : Element, level: number, render : renderFn) {
+    return render(elem.subs[0]) + ' is Left'
+  },
+  COND_RIGHT(elem : Element, level: number, render : renderFn) {
+    return render(elem.subs[0]) + ' is Right'
+  },
+  COND_ITEM(elem : Element, level: number, render : renderFn) {
+    return render(elem.subs[0]) + ' has item'
+  },
+  COND_EMPTY(elem : Element, level: number, render : renderFn) {
+    return render(elem.subs[0]) + ' is empty'
+  },
+  COND_NONE(elem : Element, level: number, render : renderFn) {
+    return render(elem.subs[0]) + ' is None'
+  },
+  COND_SOME(elem : Element, level: number, render : renderFn) {
+    return render(elem.subs[0]) + ' is Some'
+  },
+
   GT(elem : Element, level: number, render : renderFn) {
     return `${render(elem.subs[0].subs[0])} > ${render(elem.subs[0].subs[1])}`
   },
@@ -57,6 +83,10 @@ export const instr_reprs = {
   EQ: {COMPARE(elem : Element, level: number, render : renderFn) {
     const item = elem.subs[0]
     return `(${render(item.subs[0])}) == (${render(item.subs[1])})`
+  }},
+  NEQ: {COMPARE(elem : Element, level: number, render : renderFn) {
+    const item = elem.subs[0]
+    return `(${render(item.subs[0])}) != (${render(item.subs[1])})`
   }},
   CONS(elem : Element, level: number, render : renderFn) {
     if (elem.subs[1].instr === 'NIL')

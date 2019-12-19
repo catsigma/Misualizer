@@ -1,10 +1,20 @@
 <template>
   <div>
     <div class="block">
-      <pre class="mono">{{result.init}}</pre>
+      <h2>Parameter</h2>
+      <pre class="mono">{{result.parameter}}</pre>
     </div>
     <div class="block">
+      <h2>Storage</h2>
+      <pre class="mono">{{result.storage}}</pre>
+    </div>
+    <div class="block">
+      <h2>Success</h2>
       <pre class="mono">{{result.body}}</pre>
+    </div>
+    <div class="block" :key="i" v-for="(fail, i) in result.fails">
+      <h2>Failure</h2>
+      <pre class="mono">{{fail}}</pre>
     </div>
   </div>
 </template>
@@ -18,8 +28,10 @@ export default {
   data() {
     return {
       result: {
-        init: null,
-        body: null
+        parameter: '',
+        storage: '',
+        body: '',
+        fails: []
       }
     }
   },
@@ -42,11 +54,16 @@ export default {
       const stack = contract.walkToExit()
       const patterns = contract.genInstrPatterns()
       const text_renderer = new TextRenderer(stack, patterns)
+
       this.result = {
-        init: init_render.render(),
-        body: text_renderer.render()
+        parameter: init_render.renderElement(contract.stack.stack[0].subs[0]),
+        storage: init_render.renderElement(contract.stack.stack[0].subs[1]),
+        body: text_renderer.render(),
+        fails: contract.fail_stacks.map(stack => {
+          const text_renderer = new TextRenderer(stack)
+          return text_renderer.render()
+        })
       }
-      
     }
   }
 }

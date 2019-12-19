@@ -144,6 +144,8 @@ export const instrs = {
 
     let stack1 = stack.clone()
     let stack2 = stack.clone()
+    stack1.pushCondition(lst, 'COND_ITEM')
+    stack2.pushCondition(lst, 'COND_EMPTY')
 
     stack1.insert(lst)
     stack1.insert(contract.newElement(get_t_lst(lst.t[1]), [], 'ITEM.0', null, [lst]))
@@ -180,6 +182,8 @@ export const instrs = {
 
     let stack1 = stack.clone()
     let stack2 = stack.clone()
+    stack1.pushCondition(or_item, 'COND_LEFT')
+    stack2.pushCondition(or_item, 'COND_RIGHT')
 
     stack1.insert(contract.newElement(get_t_lst(or_item.t[1]), instr.annots, 'OR.LEFT', null, [or_item]))
     stack2.insert(contract.newElement(get_t_lst(or_item.t[2]), instr.annots, 'OR.RIGHT', null, [or_item]))
@@ -216,6 +220,8 @@ export const instrs = {
 
     let stack1 = stack.clone()
     let stack2 = stack.clone()
+    stack1.pushCondition(option_item, 'COND_NONE')
+    stack2.pushCondition(option_item, 'COND_SOME')
 
     stack2.insert(contract.newElement(get_t_lst(option_item.t[1]), instr.annots, 'OPTION.0', null, [option_item]))
 
@@ -248,9 +254,11 @@ export const instrs = {
   },
   IF(contract : Contract, stack : Stack, instr : Object) {
     const [condition] = stack.drop(1)
-    
+
     let stack1 = stack.clone()
     let stack2 = stack.clone()
+    stack1.pushCondition(condition, 'COND_TRUE')
+    stack2.pushCondition(condition, 'COND_FALSE')
 
     stack1 = contract.walkCode(instr.args[0], stack1)
     stack2 = contract.walkCode(instr.args[1], stack2)
@@ -282,9 +290,11 @@ export const instrs = {
   },
   LOOP_LEFT(contract : Contract, stack : Stack, instr : Object) {
     const [or_item] = stack.drop(1)
-
+    
     let stack1 = stack.clone()
     let stack2 = stack.clone()
+    stack1.pushCondition(or_item, 'COND_LEFT')
+    stack2.pushCondition(or_item, 'COND_RIGHT')
 
     stack1.insert(contract.newElement(get_t_lst(or_item.t[2]), instr.annots, 'OR.LEFT.RIGHT', null, [or_item]))
     stack2.insert(contract.newElement(get_t_lst(or_item.t[2]), instr.annots, 'OR.RIGHT', null, [or_item]))
@@ -321,6 +331,8 @@ export const instrs = {
 
     let stack1 = stack.clone()
     let stack2 = stack.clone()
+    stack1.pushCondition(condition, 'COND_TRUE')
+    stack2.pushCondition(condition, 'COND_FALSE')
 
     stack1 = contract.walkCode(instr.args[0], stack1)
     
@@ -408,7 +420,9 @@ export const instrs = {
     return stack
   },
   FAILWITH(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement(['fail'], instr.annots, '', null, stack.drop(1)))
+    const fail_elem = contract.newElement(['fail'], instr.annots, '', null, stack.drop(1).concat(stack.conditions))
+    stack.empty()
+    stack.insert(fail_elem)
     return stack
   },
   DUP(contract : Contract, stack : Stack, instr : Object) {
