@@ -29,7 +29,12 @@ Then the static page will be exported to the `docs` folder.
 - [ ] Svg renderer (50%)
 - [ ] Graph middle language (50%)
 - [ ] Web (30%)
-- [ ] Plugin for third party websites
 - [ ] Text render result optimization
 - [ ] SVG render result optimization
+- [ ] Plugin for third party websites
 
+## Sponsor
+[Tezos Foundation](https://tezos.foundation/)
+
+## License
+MIT
