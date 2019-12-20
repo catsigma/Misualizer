@@ -60,7 +60,7 @@ export default {
         storage: init_render.renderElement(contract.stack.stack[0].subs[1]),
         body: text_renderer.render(),
         fails: contract.fail_stacks.map(stack => {
-          const text_renderer = new TextRenderer(stack)
+          const text_renderer = new TextRenderer(stack, patterns)
           return text_renderer.render()
         })
       }

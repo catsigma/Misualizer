@@ -194,7 +194,9 @@ export class Contract {
             'PAIR.0': 0,
             'PAIR.1': 1,
             'OR.LEFT': 0,
-            'OR.RIGHT': 1
+            'OR.RIGHT': 1,
+            'ITEM.0': 0,
+            'OPTION.0': 0
           }[key]))
         }
       }
@@ -208,6 +210,12 @@ export class Contract {
       } else if (elem.t[0] === 'or') {
         walk(elem.subs[0], {'OR.LEFT': root}, result)
         walk(elem.subs[1], {'OR.RIGHT': root}, result)
+
+      } else if (elem.t[0] === 'list') {
+        walk(elem.subs[0], {'ITEM.0': root}, result)
+
+      } else if (elem.t[0] === 'option' && elem.subs.length) {
+        walk(elem.subs[0], {'OPTION.0': root}, result)
 
       } else {
         mergeObj(result, root, [])

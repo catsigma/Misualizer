@@ -5,21 +5,18 @@ import { Stack } from '../../emu/contract'
 import { t_reprs, instr_reprs } from '../repr'
 
 function getInstrRepr(elem : Element, pattern : Object) {
-  let cursor = elem
-  let handler = pattern[cursor.instr]
+  let cursor_left = elem
+  let cursor_right = pattern[cursor_left.instr]
 
-  while (!(handler instanceof Function)) {
-    if (!handler)
-      return null
+  while (cursor_left && cursor_right) {
+    if (cursor_right instanceof Function)
+      return cursor_right
 
-    cursor = cursor.subs[0]
-    if (!cursor)
-      return null
-
-    handler = handler[cursor.instr]
+    cursor_left = cursor_left.subs[0]
+    cursor_right = cursor_right[cursor_left.instr]
   }
 
-  return handler
+  return null
 }
 
 
