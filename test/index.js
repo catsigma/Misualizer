@@ -32,8 +32,8 @@ async function testContract() {
   console.log('Init: \n' + init_stack_render.render())
 
   const stack = contract.walkToExit()
-  const patterns = contract.genInstrPatterns()
-  const text_renderer = new TextRenderer(stack, patterns)
+  const pattern = contract.genInstrPattern()
+  const text_renderer = new TextRenderer(stack, pattern)
   console.log('Result: \n' + text_renderer.render())
   console.log(stack)
 

@@ -48,6 +48,23 @@ export function fallbackType(t : string | EType) : MichelineType {
   }
 }
 
+export function settingInstrID(elem : Element) {
+  const words = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+
+  const walk = (elem : Element) => {
+    if (elem.t[0] === 'pair') {
+      elem.annots.push(words.shift())
+    } else if (elem.t[0] === 'or') {
+      elem.annots.push(words.shift())
+    }
+
+    elem.subs.forEach(item => walk(item))
+  }
+  walk(elem)
+
+  return elem
+}
+
 export function createElementByType(t : MichelineType, v : MichelineValue, id : {val : number} = {val: 1}) : Element {
   const type_t = readType(t)
   const annots : Array<string> = v.annots ? v.annots : t.annots || []

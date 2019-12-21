@@ -52,15 +52,15 @@ export default {
       init_render.is_raw = true
 
       const stack = contract.walkToExit()
-      const patterns = contract.genInstrPatterns()
-      const text_renderer = new TextRenderer(stack, patterns)
+      const pattern = contract.genInstrPattern()
+      const text_renderer = new TextRenderer(stack, pattern)
 
       this.result = {
         parameter: init_render.renderElement(contract.stack.stack[0].subs[0]),
         storage: init_render.renderElement(contract.stack.stack[0].subs[1]),
         body: text_renderer.render(),
         fails: contract.fail_stacks.map(stack => {
-          const text_renderer = new TextRenderer(stack, patterns)
+          const text_renderer = new TextRenderer(stack, pattern)
           return text_renderer.render()
         })
       }

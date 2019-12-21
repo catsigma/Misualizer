@@ -3,7 +3,12 @@
 import type { EType } from './elem'
 import { Element } from './elem'
 import { instrs } from './instr'
-import { readType, fallbackType, createElementByType, mockValueFromType } from './micheline'
+import { 
+  readType, 
+  fallbackType, 
+  settingInstrID, 
+  createElementByType, 
+  mockValueFromType } from './micheline'
 
 export class Stack {
   stack : Array<Element>
@@ -122,15 +127,18 @@ export class Contract {
     this.elem_id = {val: 1}
     this.code = this.contract.code
 
-    const parameter_elem = createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id))
-    const storage_elem = createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id))
+    const parameter_raw_elem = createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id), this.elem_id)
+    const storage_raw_elem = createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id), this.elem_id)
+    settingInstrID(parameter_raw_elem)
+    settingInstrID(storage_raw_elem)
+
+    const parameter_elem = this.newElement(parameter_raw_elem.t, [], 'Parameter', null, [parameter_raw_elem])
+    const storage_elem = this.newElement(storage_raw_elem.t, [], 'Storage', null, [storage_raw_elem])
+
     this.stack = new Stack([
       this.newElement(
         ['pair', readType(this.contract.parameter), readType(this.contract.storage)],
-        [], '', null, [
-          this.newElement(parameter_elem.t, [], 'Parameter', null, [parameter_elem]),
-          this.newElement(storage_elem.t, [], 'Storage', null, [storage_elem])
-        ]
+        [], '', null, [parameter_elem, storage_elem]
       )
     ])
     this.fail_stacks = []
@@ -174,31 +182,27 @@ export class Contract {
   }
 
 
-  genInstrPatterns() : Array<Object> {
+  genInstrPattern() {
     const mergeObj = (a : Object, b : Object, path : Array<0 | 1>) => {
       for (const key in b) {
-        if (b[key] === true) {
+        if (!(key in a))
           a[key] = (elem : Element, level : number, render : (elem : Element, level : number) => string) => {
             let cursor = elem.subs[0]
             path.forEach(i => cursor = cursor.subs[0])
             for (let l = path.length; l--;) {
               cursor = cursor.subs[path[l]]
             }
-            return render(cursor, level)
+            return cursor.annots[0] || render(cursor, level)
           }
-        } else {
-          if (!(key in a))
-            a[key] = {}
 
-          mergeObj(a[key], b[key], path.concat({
-            'PAIR.0': 0,
-            'PAIR.1': 1,
-            'OR.LEFT': 0,
-            'OR.RIGHT': 1,
-            'ITEM.0': 0,
-            'OPTION.0': 0
-          }[key]))
-        }
+        mergeObj(a[key], b[key], path.concat({
+          'PAIR.0': 0,
+          'PAIR.1': 1,
+          'OR.LEFT': 0,
+          'OR.RIGHT': 1,
+          'ITEM.0': 0,
+          'OPTION.0': 0
+        }[key]))
       }
     }
 
@@ -206,10 +210,18 @@ export class Contract {
       if (elem.t[0] === 'pair') {
         walk(elem.subs[0], {'PAIR.0': root}, result)
         walk(elem.subs[1], {'PAIR.1': root}, result)
+        mergeObj(result, {
+          'PAIR.0': root,
+          'PAIR.1': root
+        }, [])
 
       } else if (elem.t[0] === 'or') {
         walk(elem.subs[0], {'OR.LEFT': root}, result)
         walk(elem.subs[1], {'OR.RIGHT': root}, result)
+        mergeObj(result, {
+          'OR.LEFT': root,
+          'OR.RIGHT': root
+        }, [])
 
       } else if (elem.t[0] === 'list') {
         walk(elem.subs[0], {'ITEM.0': root}, result)
@@ -222,11 +234,11 @@ export class Contract {
       }
     }
     
-    const result = [{}, {}]
+    const result = {}
 
-    walk(this.stack.top().subs[0].subs[0], {Parameter: true}, result[0])
-    walk(this.stack.top().subs[1].subs[0], {Storage: true}, result[1])
+    walk(this.stack.top().subs[0].subs[0], {Parameter: true}, result)
+    walk(this.stack.top().subs[1].subs[0], {Storage: true}, result)
 
-    return result.filter(item => !(Object.values(item)[0] instanceof Function))
+    return result
   }
 }

@@ -7,16 +7,17 @@ import { t_reprs, instr_reprs } from '../repr'
 function getInstrRepr(elem : Element, pattern : Object) {
   let cursor_left = elem
   let cursor_right = pattern[cursor_left.instr]
+  let last_handler = null
 
   while (cursor_left && cursor_right) {
     if (cursor_right instanceof Function)
-      return cursor_right
+      last_handler = cursor_right
 
     cursor_left = cursor_left.subs[0]
     cursor_right = cursor_right[cursor_left.instr]
   }
 
-  return null
+  return last_handler
 }
 
 
@@ -24,9 +25,9 @@ export class TextRenderer {
   stack : Stack
   patterns : Array<Object>
   is_raw : bool
-  constructor(stack : Stack, patterns : Array<Object> = []) {
+  constructor(stack : Stack, pattern? : Object) {
     this.stack = stack
-    this.patterns = patterns.concat(instr_reprs)
+    this.patterns = pattern ? [pattern, instr_reprs] : [instr_reprs]
     this.is_raw = false
   }
 
