@@ -58,7 +58,7 @@ export default {
     return {
       nets: {
         mainnet: 'mainnet',
-        // babylonnet: 'babylonnet',
+        babylonnet: 'babylonnet',
         // carthagenet: 'carthagenet'
       },
       net_type: 'mainnet',
@@ -77,8 +77,8 @@ export default {
     async checkContract() {
       const host = {
         mainnet: 'https://mainnet.tezrpc.me',
-        babylonnet: 'babylonnet',
-        carthagenet: 'carthagenet'
+        babylonnet: 'https://rpctest.tzbeta.net'
+        // carthagenet: 'carthagenet'
       }[this.net_type]
 
       const client = new TBN({

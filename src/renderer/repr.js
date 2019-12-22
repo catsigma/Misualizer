@@ -19,6 +19,9 @@ export const t_reprs = {
   list(elem : Element, level: number, render : renderFn) {
     return `[${elem.subs.map(x => render(x)).join(', ')}]`
   },
+  set(elem : Element, level: number, render : renderFn) {
+    return `set[${elem.subs.map(x => render(x)).join(', ')}]`
+  },
   string(elem : Element, level: number, render : renderFn) {
     return `"${elem.value}"`
   },
