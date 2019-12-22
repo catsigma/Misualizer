@@ -25,6 +25,9 @@ export const t_reprs = {
   map(elem : Element, level: number, render : renderFn) {
     return `{${elem.subs.map(x => `${render(x.subs[0])}: ${render(x.subs[1])}`).join(', ')}}`
   },
+  big_map(elem : Element, level: number, render : renderFn) {
+    return `{${elem.subs.map(x => `${render(x.subs[0])}: ${render(x.subs[1])}`).join(', ')}}`
+  },
   option(elem : Element, level: number, render : renderFn) {
     return `option<${JSON.stringify(elem.t[1])}>`
   }

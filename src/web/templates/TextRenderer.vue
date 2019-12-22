@@ -52,9 +52,9 @@ export default {
       init_render.is_raw = true
 
       const stack = contract.walkToExit()
+
       const pattern = contract.genInstrPattern()
       const text_renderer = new TextRenderer(stack, pattern)
-
       this.result = {
         parameter: init_render.renderElement(contract.stack.stack[0].subs[0]),
         storage: init_render.renderElement(contract.stack.stack[0].subs[1]),

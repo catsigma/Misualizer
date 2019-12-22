@@ -108,6 +108,20 @@ export class Stack {
     result.conditions = this.conditions.map(x => x.clone())
     return result
   }
+
+  countElements() {
+    let num = 0
+
+    const walk = (elem : Element) => {
+      num++
+      
+      if (elem.subs.length)
+        elem.subs.forEach(sub => walk(sub))
+    }
+    this.stack.forEach(elem => walk(elem))
+
+    return num
+  }
 }
 
 export class Contract {
@@ -162,10 +176,6 @@ export class Contract {
         throw `walkCode / unhandled instr: ${instr.prim}`
       }
 
-      if (stack.is_failed()) {
-        return;
-      }
-
       stack = instrs[instr.prim](this, stack, instr)
 
       if (stack.is_failed()) {
@@ -185,7 +195,7 @@ export class Contract {
   genInstrPattern() {
     const mergeObj = (a : Object, b : Object, path : Array<0 | 1>) => {
       for (const key in b) {
-        if (!(key in a))
+        if (b[key] === true) {
           a[key] = (elem : Element, level : number, render : (elem : Element, level : number) => string) => {
             let cursor = elem.subs[0]
             path.forEach(i => cursor = cursor.subs[0])
@@ -194,15 +204,19 @@ export class Contract {
             }
             return cursor.annots[0] || render(cursor, level)
           }
+        } else {
+          if (!(key in a))
+          a[key] = {}
 
-        mergeObj(a[key], b[key], path.concat({
-          'PAIR.0': 0,
-          'PAIR.1': 1,
-          'OR.LEFT': 0,
-          'OR.RIGHT': 1,
-          'ITEM.0': 0,
-          'OPTION.0': 0
-        }[key]))
+          mergeObj(a[key], b[key], path.concat({
+            'PAIR.0': 0,
+            'PAIR.1': 1,
+            'OR.LEFT': 0,
+            'OR.RIGHT': 1,
+            'ITEM.0': 0,
+            'OPTION.0': 0
+          }[key]))
+        }
       }
     }
 
