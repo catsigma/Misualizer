@@ -109,18 +109,12 @@ export class Stack {
     return result
   }
 
-  countElements() {
-    let num = 0
-
+  countElements() : Array<number> {
     const walk = (elem : Element) => {
-      num++
-      
-      if (elem.subs.length)
-        elem.subs.forEach(sub => walk(sub))
+      return 1 + (elem.subs.length ? elem.subs.reduce((acc, x) => acc + walk(x), 0) : 0)
     }
-    this.stack.forEach(elem => walk(elem))
-
-    return num
+    
+    return this.stack.map(elem => walk(elem))
   }
 }
 
@@ -165,10 +159,15 @@ export class Contract {
   }
 
   walkCode(code : Array<Object>, stack : Stack) : Stack {
-    code.forEach((instr, instr_index) => {
+    for (let i = 0; i < code.length; i++) {
+      const instr = code[i]
+      
       if (instr instanceof Array) {
         stack = this.walkCode(instr, stack)
-        return;
+        if (stack.is_failed())
+          return stack
+        else 
+          continue
       }
 
       if (!(instr.prim in instrs)) {
@@ -178,10 +177,9 @@ export class Contract {
 
       stack = instrs[instr.prim](this, stack, instr)
 
-      if (stack.is_failed()) {
-        return;
-      }
-    })
+      if (stack.is_failed())
+        return stack
+    }
 
     return stack
   }
