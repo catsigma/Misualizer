@@ -49,20 +49,25 @@ export default {
       
       const contract = new Contract(this.contract.script.code)
       const init_render = new TextRenderer(contract.stack)
-      init_render.is_raw = true
 
       const stack = contract.walkToExit()
 
       const pattern = contract.genInstrPattern()
       const text_renderer = new TextRenderer(stack, pattern)
+
+      const parameter = init_render.render(contract.stack.stack[0].subs[0])
+      const storage = init_render.render(contract.stack.stack[0].subs[1])
+      const body = text_renderer.render()
+      const fails = contract.fail_stacks.map(stack => {
+        const text_renderer = new TextRenderer(stack, pattern)
+        return text_renderer.render()
+      })
+
       this.result = {
-        parameter: init_render.renderElement(contract.stack.stack[0].subs[0]),
-        storage: init_render.renderElement(contract.stack.stack[0].subs[1]),
-        body: text_renderer.render(),
-        fails: contract.fail_stacks.map(stack => {
-          const text_renderer = new TextRenderer(stack, pattern)
-          return text_renderer.render()
-        })
+        parameter,
+        storage,
+        body,
+        fails 
       }
     }
   }

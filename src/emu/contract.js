@@ -10,6 +10,8 @@ import {
   createElementByType, 
   mockValueFromType } from './micheline'
 
+import type { rec_array } from '../renderer/repr'
+
 export class Stack {
   stack : Array<Element>
   dip_top : number
@@ -194,13 +196,13 @@ export class Contract {
     const mergeObj = (a : Object, b : Object, path : Array<0 | 1>) => {
       for (const key in b) {
         if (b[key] === true) {
-          a[key] = (elem : Element, level : number, render : (elem : Element, level : number) => string) => {
+          a[key] = (elem : Element, render : (elem : Element) => rec_array) => {
             let cursor = elem.subs[0]
             path.forEach(i => cursor = cursor.subs[0])
             for (let l = path.length; l--;) {
               cursor = cursor.subs[path[l]]
             }
-            return cursor.annots[0] || render(cursor, level)
+            return [cursor.annots[0]] || render(cursor)
           }
         } else {
           if (!(key in a))
@@ -246,7 +248,14 @@ export class Contract {
       }
     }
     
-    const result = {}
+    const result = {
+      Parameter(elem : Element, render : (elem : Element) => rec_array) {
+        return ['Parameter']
+      },
+      Storage(elem : Element, render : (elem : Element) => rec_array) {
+        return ['Storage']
+      }
+    }
 
     walk(this.stack.top().subs[0].subs[0], {Parameter: true}, result)
     walk(this.stack.top().subs[1].subs[0], {Storage: true}, result)

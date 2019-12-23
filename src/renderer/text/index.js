@@ -2,68 +2,42 @@
 
 import { Element } from '../../emu/elem'
 import { Stack } from '../../emu/contract'
-import { t_reprs, instr_reprs } from '../repr'
-
-function getInstrRepr(elem : Element, pattern : Object) {
-  let cursor_left = elem
-  let cursor_right = pattern[cursor_left.instr]
-  let last_handler = null
-
-  while (cursor_left && cursor_right) {
-    if (cursor_right instanceof Function)
-      last_handler = cursor_right
-
-    cursor_left = cursor_left.subs[0]
-    cursor_right = cursor_right[cursor_left.instr]
-  }
-
-  return last_handler
-}
+import { renderElement, t_reprs, instr_reprs } from '../repr'
+import type { rec_array } from '../repr'
 
 
 export class TextRenderer {
   stack : Stack
   patterns : Array<Object>
-  is_raw : bool
   constructor(stack : Stack, pattern? : Object) {
     this.stack = stack
     this.patterns = pattern ? [pattern, instr_reprs] : [instr_reprs]
-    this.is_raw = false
   }
 
-  render() {
-    return `${this.stack.stack.map(elem => this.renderElement(elem)).join(', ')}`
+  render(elem? : Element) : string {
+    const result = elem ? renderElement(elem, this.patterns) : 
+        this.stack.stack.map(elem => renderElement(elem, this.patterns))
+
+    console.log(result)
+    return this.stringify(result)
   }
 
-  renderElementWithIndent(elem : Element, level : number = 0) : string {
-    return (level ? '\n' : '') + ' '.repeat(level) + this.renderElement(elem, level)
-  }
 
-  renderElement(elem : Element, level : number = 0) : string {
-    if (elem.instr && elem.subs.length) {
-      if (!this.is_raw) {
-        // apply instr patterns
-        for (let i = 0; i < this.patterns.length; i++) {
-          const handler = getInstrRepr(elem, this.patterns[i])
-          if (handler)
-            return handler(elem, level, (elem, level) => this.renderElementWithIndent(elem, level))
-        }
+  stringify(item : rec_array | string, left : number = 0) : string {
+    if (item instanceof Array) {
+      if (item.length === 1)
+        return this.stringify(item[0])
+        
+      if (item[0] === 'pair') {
+        return `(${this.stringify(item[1][0])}, ${this.stringify(item[1][1])})`
+      } else if (item[0] === 'list') {
+        if (item[1] instanceof Array)
+          return `[${item[1].map(x => this.stringify(x)).join(', ')}]`
       }
 
-      return `${elem.instr}(${elem.subs.map(x => this.renderElementWithIndent(x)).join(', ')})` 
-    } else {
-      const t = elem.t[0].toString()
-
-      if (t_reprs[t]) {
-        return t_reprs[t](elem, level, (elem, level) => this.renderElementWithIndent(elem, level))
-      } else if (elem.annots.length) {
-        return elem.annots[0] + ':' + elem.t[0].toString()
-      } else if (elem.value !== null) {
-        return elem.value
-      } else {
-        debugger
-        throw `renderElement / unhandled type: ${t}`
-      }
+      return item.map(x => this.stringify(x)).join(' ')
     }
+    
+    return item
   }
 }
