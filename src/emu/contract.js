@@ -202,7 +202,7 @@ export class Contract {
             for (let l = path.length; l--;) {
               cursor = cursor.subs[path[l]]
             }
-            return [cursor.annots[0]] || render(cursor)
+            return cursor.annots.length ? [cursor.annots[0]] : render(cursor)
           }
         } else {
           if (!(key in a))

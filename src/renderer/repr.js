@@ -105,6 +105,21 @@ export const instr_reprs = {
   GT(elem : Element, render : renderFn) : rec_array {
     return [render(elem.subs[0].subs[0]), '>', render(elem.subs[0].subs[1])]
   },
+  LT(elem : Element, render : renderFn) : rec_array {
+    return [render(elem.subs[0].subs[0]), '<', render(elem.subs[0].subs[1])]
+  },
+  GE(elem : Element, render : renderFn) : rec_array {
+    return [render(elem.subs[0].subs[0]), '>=', render(elem.subs[0].subs[1])]
+  },
+  LE(elem : Element, render : renderFn) : rec_array {
+    return [render(elem.subs[0].subs[0]), '<=', render(elem.subs[0].subs[1])]
+  },
+  EQ(elem : Element, render : renderFn) : rec_array {
+    return [render(elem.subs[0].subs[0]), '==', render(elem.subs[0].subs[1])]
+  },
+  NEQ(elem : Element, render : renderFn) : rec_array {
+    return [render(elem.subs[0].subs[0]), '!=', render(elem.subs[0].subs[1])]
+  },
   IF(elem : Element, render : renderFn) : rec_array {
     return ['if', render(elem.subs[0]), render(elem.subs[1]), render(elem.subs[2])]
   },
@@ -120,14 +135,6 @@ export const instr_reprs = {
   SUB(elem : Element, render : renderFn) : rec_array {
     return [render(elem.subs[0]), '-', render(elem.subs[1])]
   },
-  EQ: {COMPARE(elem : Element, render : renderFn) : rec_array {
-    const item = elem.subs[0]
-    return [render(elem.subs[0]), '==', render(elem.subs[1])]
-  }},
-  NEQ: {COMPARE(elem : Element, render : renderFn) : rec_array {
-    const item = elem.subs[0]
-    return [render(elem.subs[0]), '!=', render(elem.subs[1])]
-  }},
   CONS(elem : Element, render : renderFn) : rec_array {
     if (elem.subs[1].instr === 'NIL')
       return ['list', render(elem.subs[0])]

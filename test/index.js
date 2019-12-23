@@ -28,7 +28,6 @@ async function getContract(input : Object) {
 async function testContract() {
   const contract = await getContract(0)
   const init_stack_render = new TextRenderer(contract.stack)
-  init_stack_render.is_raw = true
   console.log('Init: \n' + init_stack_render.render())
 
   const stack = contract.walkToExit()
