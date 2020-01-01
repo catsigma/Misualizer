@@ -25,8 +25,8 @@
         <div class="content-wrapper" v-if="renderer === 'text'">
           <text-renderer :contract="contract_raw"></text-renderer>
         </div>
-        <div class="content-wrapper" v-if="renderer === 'michelson'">
-          <michelson-renderer :contract="contract_raw"></michelson-renderer>
+        <div class="content-wrapper" v-if="renderer === 'graph'">
+          <graph-renderer :contract="contract_raw"></graph-renderer>
         </div>
         <div class="content-wrapper" v-if="renderer === 'raw'">
           <raw-renderer :contract="contract_raw"></raw-renderer>
@@ -44,7 +44,7 @@ import Loading from './Loading'
 
 import TextRenderer from './TextRenderer'
 import RawRenderer from './RawRenderer'
-import MichelsonRenderer from './MichelsonRenderer'
+import GraphRenderer from './GraphRenderer'
 
 export default {
   components: {
@@ -52,14 +52,13 @@ export default {
     Selector,
     TextRenderer,
     RawRenderer,
-    MichelsonRenderer
+    GraphRenderer
   },
   data() {
     return {
       nets: {
         mainnet: 'mainnet',
-        babylonnet: 'babylonnet',
-        // carthagenet: 'carthagenet'
+        babylonnet: 'babylonnet'
       },
       net_type: 'mainnet',
       renderers: {
@@ -76,9 +75,8 @@ export default {
   methods: {
     async checkContract() {
       const host = {
-        mainnet: 'https://mainnet.tezrpc.me',
+        mainnet: 'https://rpc.tzbeta.net',
         babylonnet: 'https://rpctest.tzbeta.net'
-        // carthagenet: 'carthagenet'
       }[this.net_type]
 
       const client = new TBN({
