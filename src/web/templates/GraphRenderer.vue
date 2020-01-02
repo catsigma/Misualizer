@@ -55,8 +55,8 @@ export default {
       const init_renderer = new SVGRenderer(contract.stack, pattern)
       const body_renderer = new SVGRenderer(stack, pattern)
 
-      this.setSVG('parameter', init_renderer.renderData(contract.stack.stack[0].subs[0], [100, 50]))
-      this.setSVG('storage', init_renderer.renderData(contract.stack.stack[0].subs[1], [100, 50]))
+      this.setSVG('parameter', init_renderer.renderData(contract.stack.stack[0].subs[0], [1000, 800]))
+      this.setSVG('storage', init_renderer.renderData(contract.stack.stack[0].subs[1], [1000, 800]))
       this.setSVG('success', body_renderer.render(null, [100, 50]))
     }
   }
@@ -68,9 +68,5 @@ export default {
 
 .block {
   margin-bottom: 16px;
-
-  .mono {
-    font-size: 1.2rem;
-  }
 }
 </style>

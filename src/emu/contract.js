@@ -139,8 +139,9 @@ export class Contract {
 
     const parameter_raw_elem = createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id), this.elem_id)
     const storage_raw_elem = createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id), this.elem_id)
-    settingInstrID(parameter_raw_elem)
-    settingInstrID(storage_raw_elem)
+    const words = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
+    settingInstrID(parameter_raw_elem, words)
+    settingInstrID(storage_raw_elem, words)
 
     const parameter_elem = this.newElement(parameter_raw_elem.t, [], 'Parameter', null, [parameter_raw_elem])
     const storage_elem = this.newElement(storage_raw_elem.t, [], 'Storage', null, [storage_raw_elem])

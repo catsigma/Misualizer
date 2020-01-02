@@ -124,6 +124,12 @@ export class Component {
     }
   }
 
+  setStyles(style_mapping : Object) {
+    for (let key in style_mapping) {
+      this.el.style[key] = style_mapping[key]
+    }
+  }
+
   getAttr(name : string) {
     return this.el.getAttribute(name)
   }
@@ -267,7 +273,7 @@ export const AutoCurve = (component1 : Component,
   const start_direction = direction[shortest.index1]
   const end_direction = direction[shortest.index2]
 
-  let curve = Curve(start_point, end_point, start_direction, end_direction, 25, attrs)
+  let curve = Curve(start_point, end_point, start_direction, end_direction, 16, attrs)
   const k = Math.atan((end_point[1] - start_point[1]) / (end_point[0] - start_point[0])) * 175 / Math.PI
   if (desc) {
     const mid_point = getMidPoint(start_point, end_point)
@@ -295,9 +301,10 @@ export const Text = (point : point, content : string, size : number = 1) => {
   const text = new Component('text')
   text.setAttrs({
     x: point[0],
-    y: point[1],
-    'font-family': 'Consolas, Menlo, monospace',
-    'font-size': `${size}rem`
+    y: point[1]
+  })
+  text.setStyles({
+    fontSize: size + 'rem'
   })
   text.append(document.createTextNode(content))
   text.key_points = getKeyPoints(text.el)
@@ -307,7 +314,7 @@ export const Text = (point : point, content : string, size : number = 1) => {
 
 export const TextBlock = (point : point, contents : Array<string>, font_size : number = 1, with_border : boolean = true) => {
   const text_lst = contents.map((content, index) => {
-    return Text([point[0], point[1] + index * font_size * 16], content, font_size)
+    return Text([point[0], point[1] + index * font_size * 10], content, font_size)
   })
 
   const text_block = new Component(text_lst)
