@@ -202,7 +202,7 @@ export const Rect = (start : point, width: number, height: number) => {
   return rect
 }
 
-export const Arrow = (start : point, direction : direction, factor : number = 10, narrow_factor : number = 0.6) => {
+export const Arrow = (start : point, direction : direction, factor : number = 4, narrow_factor : number = 0.6) => {
   const arrow = new Component('path')
 
   const narrowed_factor = factor * narrow_factor
