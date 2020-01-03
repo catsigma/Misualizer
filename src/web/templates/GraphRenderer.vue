@@ -55,9 +55,10 @@ export default {
       const init_renderer = new SVGRenderer(contract.stack, pattern)
       const body_renderer = new SVGRenderer(stack, pattern)
 
-      this.setSVG('parameter', init_renderer.renderData(contract.stack.stack[0].subs[0], [1000, 800]))
-      this.setSVG('storage', init_renderer.renderData(contract.stack.stack[0].subs[1], [1000, 800]))
-      this.setSVG('success', body_renderer.render(null, [100, 50]))
+      const width = this.$refs.parameter.clientWidth - 100
+      this.setSVG('parameter', init_renderer.renderData(contract.stack.stack[0].subs[0], [width, 800]))
+      this.setSVG('storage', init_renderer.renderData(contract.stack.stack[0].subs[1], [width, 800]))
+      this.setSVG('success', body_renderer.render(null, [width, 50]))
     }
   }
 }

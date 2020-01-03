@@ -65,8 +65,8 @@ export class SVGRenderer {
     })
 
     const svg : Object = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.style.border = '1px solid red'
-    svg.style.width = size[0]
+    svg.style.border = '1px solid #d79b7d'
+    svg.style.width = '100%'
     svg.style.height = size[1]
 
     svg.setAttribute('viewBox', `0 0 ${size[0]} ${size[1]}`)
@@ -79,8 +79,8 @@ export class SVGRenderer {
         this.stack.stack.map(elem => renderElement(elem, this.patterns))
 
     const svg : Object = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.style.border = '1px solid red'
-    svg.style.width = size[0]
+    svg.style.border = '1px solid #d79b7d'
+    svg.style.width = '100%'
     svg.style.height = size[1]
 
     svg.setAttribute('viewBox', `0 0 ${size[0]} ${size[1]}`)
