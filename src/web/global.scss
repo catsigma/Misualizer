@@ -62,6 +62,36 @@ button:active {
   }
 }
 
+.svg-wrapper {
+  position: relative;
+
+  .zoom-in {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    cursor: pointer;
+  }
+  .zoom-in::before, .zoom-out::before {
+    display: inline-block;
+    content: '+';
+    padding: 0 4px;
+    vertical-align: baseline;
+    font-family: FireCode, monospace;
+    border: 1px solid $c16;
+  }
+
+  .zoom-out {
+    position: absolute;
+    top: 10px;
+    left: 30px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  .zoom-out::before {
+    content: '-';
+  }
+}
+
 .bounce-enter-active {
   animation: bounce-in .2s;
 }
