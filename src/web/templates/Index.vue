@@ -62,11 +62,11 @@ export default {
       },
       net_type: 'mainnet',
       renderers: {
-        text: 'text',
         graph: 'graph',
+        text: 'text',
         raw: 'raw'
       },
-      renderer: 'text',
+      renderer: 'graph',
       address: '',
       state: 'initial',
       contract_raw: null
