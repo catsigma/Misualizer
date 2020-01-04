@@ -5,8 +5,8 @@ import { throttle } from '../../utils'
 import { Element } from '../../emu/elem'
 import type { EType } from '../../emu/elem'
 import { Stack } from '../../emu/contract'
-import { renderElement, t_reprs, instr_reprs } from '../repr'
-import type { rec_array } from '../repr'
+import { genGraphNode } from './repr'
+import type { GraphNode } from './repr'
 
 import { Component, Rect, Arrow, Curve, AutoCurve, Text, TextBlock } from './components'
 
@@ -58,11 +58,9 @@ function bindMouseControl(svg : Object, view_box: [number, number, number, numbe
 
 export class SVGRenderer {
   stack : Stack
-  patterns : Array<Object>
 
-  constructor(stack : Stack, pattern? : Object) {
+  constructor(stack : Stack) {
     this.stack = stack
-    this.patterns = pattern ? [pattern, instr_reprs] : [instr_reprs]
   }
 
   createSVG(size : [number, number], elem : Object) {
@@ -183,11 +181,15 @@ export class SVGRenderer {
   render() {
     const size = [-1, -1]
     const elem = this.stack.stack[0]
+
     const levels = {}
     const links = {}
-    const walk = (el : Element, level : number) => {
-      const content = el.annots.length ? `${el.annots[0]}:${el.t[0].toString()}` : (el.instr || el.t[0].toString())
-      const graph = Text([0, 0], content, 1.2)
+    const walk = (node : GraphNode, level : number) => {
+      const graph = Text([0, 0], node.title, 1.2)
+      if (node.title === 'RESULT')
+        graph.setStyles({
+          fill: 'red'
+        })
 
       if (!(level in levels)) {
         levels[level] = []
@@ -196,17 +198,16 @@ export class SVGRenderer {
 
       levels[level].push(graph)
 
-      if (el.instr in instr_reprs || el.t[0].toString() in t_reprs)
-        el.subs.forEach(x => {
-          links[level].push({
-            from: graph,
-            to: walk(x, level + 1)
-          })
+      node.children.forEach(x => {
+        links[level].push({
+          from: graph,
+          to: walk(x, level + 1)
         })
+      })
 
       return graph
     }
-    walk(elem, 1)
+    walk(genGraphNode(elem), 1)
 
     const graphs_relocated = []
     for (const level in levels) {
