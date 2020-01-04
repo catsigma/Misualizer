@@ -22,6 +22,36 @@ function getInstrRepr(elem : Element, pattern : Object) {
   return last_handler
 }
 
+
+function findReplacement(elem : Element, pattern : Object) {
+  let cursor_left = elem
+  let cursor_right = pattern[cursor_left.instr]
+
+  while (cursor_left && cursor_right) {
+    if (cursor_right instanceof Element) {
+      return cursor_right
+    }
+
+    cursor_left = cursor_left.subs[0]
+    cursor_right = cursor_right[cursor_left.instr]
+  }
+
+  return null
+}
+
+export function replaceElement(elem : Element, pattern : Object) : Element {
+  if (elem.subs.length) {
+    const replacement = findReplacement(elem, pattern)
+    if (replacement)
+      return replacement
+    else {
+      elem.subs = elem.subs.map(x => replaceElement(x, pattern))
+      return elem
+    }
+  } else
+    return elem
+}
+
 export function renderElement(elem : Element, patterns : Array<Object>) : rec_array {
   if (elem.instr && elem.subs.length) {
     // apply instr patterns

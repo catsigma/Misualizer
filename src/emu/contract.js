@@ -191,6 +191,54 @@ export class Contract {
     return this.walkCode(this.code, this.stack.clone())
   }
 
+  genReplaceMap() {
+    const paths = []
+    const walk = (elem : Element, path : Array<Element | string>) => {
+      const p0 = path.slice()
+      p0.unshift(elem)
+      paths.push(p0)
+
+      if (elem.t[0] === 'pair') {
+        const p1 = path.slice()
+        p1.unshift('PAIR.0')
+        const p2 = path.slice()
+        p2.unshift('PAIR.1')
+
+        walk(elem.subs[0], p1)
+        walk(elem.subs[1], p2)
+      } else if (elem.t[0] === 'or') {
+        const p1 = path.slice()
+        p1.unshift('OR.LEFT')
+        const p2 = path.slice()
+        p2.unshift('OR.RIGHT')
+
+        walk(elem.subs[0], p1)
+        walk(elem.subs[1], p2)
+      }
+    }
+    walk(this.stack.top().subs[0].subs[0], ['Parameter'])
+    walk(this.stack.top().subs[1].subs[0], ['Storage'])
+
+    const replace_mapping = {}
+    paths.forEach(path => {
+      let cursor : Object = replace_mapping
+      path.forEach((item, index) => {
+        if (!index) return;
+        if (item instanceof Element) return;
+
+        if (index === path.length - 1)
+          cursor[item] = path[0]
+        else {
+          if (!(item in cursor))
+            cursor[item] = {}
+
+          cursor = cursor[item]
+        }
+      })
+    })
+
+    return replace_mapping
+  }
 
   genInstrPattern() {
     const mergeObj = (a : Object, b : Object, path : Array<0 | 1>) => {

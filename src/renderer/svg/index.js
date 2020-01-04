@@ -196,12 +196,14 @@ export class SVGRenderer {
 
       levels[level].push(graph)
 
-      el.subs.forEach(x => {
-        links[level].push({
-          from: graph,
-          to: walk(x, level + 1)
+      if (el.instr in instr_reprs || el.t[0].toString() in t_reprs)
+        el.subs.forEach(x => {
+          links[level].push({
+            from: graph,
+            to: walk(x, level + 1)
+          })
         })
-      })
+
       return graph
     }
     walk(elem, 1)

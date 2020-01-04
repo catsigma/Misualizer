@@ -18,6 +18,7 @@
 <script>
 import { Contract } from '../../emu/contract'
 import { SVGRenderer } from '../../renderer/svg'
+import { replaceElement } from '../../renderer/repr'
 
 export default {
   props: ['contract'],
@@ -51,7 +52,9 @@ export default {
       const contract = new Contract(this.contract.script.code)
       const stack = contract.walkToExit()
       const pattern = contract.genInstrPattern()
-
+      const replace_pattern = contract.genReplaceMap()
+      stack.stack[0] = replaceElement(stack.stack[0], replace_pattern)
+      
       const init_renderer = new SVGRenderer(contract.stack, pattern)
       const body_renderer = new SVGRenderer(stack, pattern)
 
