@@ -52,6 +52,42 @@ export function replaceElement(elem : Element, pattern : Object) : Element {
     return elem
 }
 
+export function reduceElement(elem : Element) : Element {
+  const instr_mapping = {
+    'PAIR.0'(elem : Element) {
+      elem.t = elem.t[1] instanceof Array ? elem.t[1] : [elem.t[1]]
+      if (elem.annots.length)
+        elem.annots[0] += '.left'
+      
+      return elem
+    },
+    'PAIR.1'(elem : Element) {
+      elem.t = elem.t[2] instanceof Array ? elem.t[2] : [elem.t[2]]
+      if (elem.annots.length)
+        elem.annots[0] += '.right'
+      
+      return elem
+    },
+    'OPTION.0'(elem : Element) {
+      elem.t = elem.t[1] instanceof Array ? elem.t[1] : [elem.t[1]]
+      return elem
+    }
+  }
+
+  if (elem.subs.length) {
+    if (elem.instr in instr_mapping) {
+      const inside = reduceElement(elem.subs[0].clone())
+      return instr_mapping[elem.instr](inside)
+      
+    } else {
+      elem.subs = elem.subs.map(x => reduceElement(x))
+      return elem
+
+    }
+  } else
+    return elem
+}
+
 export function renderElement(elem : Element, patterns : Array<Object>) : rec_array {
   if (elem.instr && elem.subs.length) {
     // apply instr patterns

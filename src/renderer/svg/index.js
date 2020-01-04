@@ -103,7 +103,7 @@ export class SVGRenderer {
     if (elem.annots.length) {
       return elem.annots[0] + ':' + readT(elem.t)
     } else {
-      return elem.instr || readT(elem.t)
+      return elem.instr || elem.value || readT(elem.t)
     }
   }
 
@@ -186,7 +186,7 @@ export class SVGRenderer {
     const links = {}
     const walk = (node : GraphNode, level : number) => {
       const graph = Text([0, 0], node.title, 1.2)
-      if (node.title === 'RESULT')
+      if (node.title.slice(0, 6) === 'RESULT')
         graph.setStyles({
           fill: 'red'
         })
@@ -240,7 +240,7 @@ export class SVGRenderer {
       }
 
       elems.forEach((x, index) => {
-        x.relocate([lefts[index] - offset, parseInt(level) * 50])
+        x.relocate([lefts[index] - offset, parseInt(level) * 100])
         graphs_relocated.push(x)
       })
     }

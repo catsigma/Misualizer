@@ -9,14 +9,28 @@ export type GraphNode = {
   children: Array<GraphNode>
 }
 
+function graphNodeMix(subs : Array<Element>, children : Array<GraphNode>) {
+  return subs.map<string>((x, i) => {
+    const node = genGraphNode(x)
+    if (node.children.length) {
+      children.push(node)
+      return `#${i}`
+    } else
+      return node.title
+  })
+}
+
 const t2GraphNode = {
   pair(elem : Element) {
-    const title = readT(elem.subs[0].t, true) === 'list<operation>' ? 'RESULT' : '()'
-      
+    const children : Array<GraphNode> = []
+    const mixed_children = graphNodeMix(elem.subs, children)
+
+    const title = readT(elem.subs[0].t, true) === 'list<operation>' ? `RESULT(${mixed_children.join(', ')})` : `(${mixed_children.join(', ')})`
+
     return {
       title,
       elem,
-      children: elem.subs.map<GraphNode>(x => genGraphNode(x))
+      children
     }
   }
 }
@@ -31,6 +45,13 @@ const instr2GraphNode = {
   IF(elem : Element) {
     return {
       title: `if {${genText(elem.subs[0])}}`,
+      elem,
+      children: elem.subs.slice(1).map<GraphNode>(x => genGraphNode(x))
+    }
+  },
+  IF_NONE(elem : Element) {
+    return {
+      title: `if {${genText(elem.subs[0])}} is None`,
       elem,
       children: elem.subs.slice(1).map<GraphNode>(x => genGraphNode(x))
     }
@@ -63,6 +84,36 @@ const instr2GraphNode = {
       elem,
       children: [left, right]
     }
+  },
+  ADD(elem : Element) {
+    const children : Array<GraphNode> = []
+    const mixed_children = graphNodeMix(elem.subs, children)
+
+    return {
+      title: `(${mixed_children[0]} + ${mixed_children[1]})`,
+      elem,
+      children
+    }
+  },
+  EDIV(elem : Element) {
+    const children : Array<GraphNode> = []
+    const mixed_children = graphNodeMix(elem.subs, children)
+
+    return {
+      title: `${mixed_children[0]} / ${mixed_children[1]}`,
+      elem,
+      children
+    }
+  },
+  MUL(elem : Element) {
+    const children : Array<GraphNode> = []
+    const mixed_children = graphNodeMix(elem.subs, children)
+
+    return {
+      title: `${mixed_children[0]} * ${mixed_children[1]}`,
+      elem,
+      children
+    }
   }
 }
 
@@ -72,6 +123,30 @@ const t2Text = {
 const instr2Text = {
   LT(elem : Element) {
     return `${genText(elem.subs[0].subs[0])} < ${genText(elem.subs[0].subs[1])}`
+  },
+  GT(elem : Element) {
+    return `${genText(elem.subs[0].subs[0])} > ${genText(elem.subs[0].subs[1])}`
+  },
+  LE(elem : Element) {
+    return `${genText(elem.subs[0].subs[0])} <= ${genText(elem.subs[0].subs[1])}`
+  },
+  GE(elem : Element) {
+    return `${genText(elem.subs[0].subs[0])} >= ${genText(elem.subs[0].subs[1])}`
+  },
+  EQ(elem : Element) {
+    return `${genText(elem.subs[0].subs[0])} == ${genText(elem.subs[0].subs[1])}`
+  },
+  NEQ(elem : Element) {
+    return `${genText(elem.subs[0].subs[0])} != ${genText(elem.subs[0].subs[1])}`
+  },
+  MUL(elem : Element) {
+    return `${genText(elem.subs[0])} * ${genText(elem.subs[1])}`
+  },
+  ADD(elem : Element) {
+    return `(${genText(elem.subs[0])} + ${genText(elem.subs[1])})`
+  },
+  EDIV(elem : Element) {
+    return `${genText(elem.subs[0])} / ${genText(elem.subs[1])}`
   }
 }
 
@@ -84,10 +159,18 @@ export function genText(elem : Element) : string {
   if (t in t2Text)
     return t2Text[t](elem)
 
-  // if (elem.subs.length)
-  //   return `${elem.instr}(${elem.subs.map(x => genText(x)).join(', ')})`
-  // else
+  if (elem.subs.length && !elem.annots.length)
+    return `${elem.instr}(${elem.subs.map(x => genText(x)).join(', ')})`
+  else
     return readElem(elem)
+}
+
+function graphNode2Text(node : GraphNode) : string {
+  let result = node.title
+  node.children.forEach((child, i) => {
+    result = result.replace(`#${i}`, graphNode2Text(child))
+  })
+  return result
 }
 
 export function genGraphNode(elem : Element) : GraphNode {
@@ -96,15 +179,19 @@ export function genGraphNode(elem : Element) : GraphNode {
   if (elem.instr in instr2GraphNode)
     return instr2GraphNode[elem.instr](elem)
 
-  if (t in t2GraphNode)
+  if (!elem.instr && t in t2GraphNode)
     return t2GraphNode[t](elem)
 
-  if (elem.subs.length)
+  if (elem.subs.length) {
+    const children : Array<GraphNode> = []
+    const mixed_children = graphNodeMix(elem.subs, children)
+
     return {
-      title: elem.instr,
+      title: `${elem.instr}(${mixed_children.join(', ')})`,
       elem,
-      children:  elem.subs.map<GraphNode>(x => genGraphNode(x))
+      children
     }
+  }
   else
     return {
       title: readElem(elem),
@@ -125,10 +212,10 @@ function readT(t : EType | string, deep : boolean = false) {
     return t
 }
 
-function readElem(elem : Element) {
+function readElem(elem : Element, deep : boolean = false) {
   if (elem.annots.length) {
-    return elem.annots[0] + ':' + readT(elem.t)
+    return elem.annots[0] + ':' + readT(elem.t, deep)
   } else {
-    return elem.instr || readT(elem.t)
+    return elem.instr || elem.value || readT(elem.t, deep)
   }
 }
