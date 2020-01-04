@@ -48,15 +48,12 @@ export function fallbackType(t : string | EType) : MichelineType {
   }
 }
 
-export function settingInstrID(elem : Element, word_lst? : Array<string>) {
-  const words = word_lst || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+export function settingInstrID(elem : Element, prefix : string = 'G') {
+  let id = 1
 
   const walk = (elem : Element) => {
-    if (elem.t[0] === 'pair') {
-      elem.annots.push(words.shift())
-    } else if (elem.t[0] === 'or') {
-      elem.annots.push(words.shift())
-    }
+    if (!elem.annots.length)
+      elem.annots.push(prefix + id++)
 
     elem.subs.forEach(item => walk(item))
   }

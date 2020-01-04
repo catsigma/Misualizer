@@ -3,6 +3,7 @@
 import { throttle } from '../../utils'
 
 import { Element } from '../../emu/elem'
+import type { EType } from '../../emu/elem'
 import { Stack } from '../../emu/contract'
 import { renderElement, t_reprs, instr_reprs } from '../repr'
 import type { rec_array } from '../repr'
@@ -88,13 +89,33 @@ export class SVGRenderer {
     return wrapper
   }
 
+  readElem(elem : Element) {
+    const deep_set = new Set(['option', 'contract'])
+    const readT = (t : EType | string, deep : boolean = false) => {
+      if (t instanceof Array) {
+        if (deep_set.has(t[0]) || deep) {
+          return t[0].toString() + 
+             (t.length === 1 ? '' : `<${t.slice(1).map(x => readT(x, true)).join(', ')}>`)
+        } else 
+          return t[0].toString()
+      } else 
+        return t
+    }
+
+    if (elem.annots.length) {
+      return elem.annots[0] + ':' + readT(elem.t)
+    } else {
+      return elem.instr || readT(elem.t)
+    }
+  }
+
   renderData(elem : Element) {
     const size = [-1, -1]
 
     const levels = {}
     const links = {}
     const walk = (el : Element, level : number) => {
-      const content = el.annots.length ? `${el.annots[0]}:${el.t[0].toString()}` : (el.instr || el.t[0].toString())
+      const content = this.readElem(el)
       const graph = Text([0, 0], content, 1.2)
 
       if (!(level in levels)) {

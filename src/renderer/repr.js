@@ -1,6 +1,7 @@
 // @flow
 
 import { Element } from '../emu/elem'
+import type { EType } from '../emu/elem'
 
 export type rec_array = Array<string | rec_array>
 type renderFn = (elem : Element) => rec_array
