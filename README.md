@@ -26,11 +26,11 @@ Then the static page will be exported to the `docs` folder.
 ## Components
 - [x] Michelson behavior emulator
 - [x] Text renderer
-- [ ] Svg renderer (50%)
+- [x] Svg rendere
 - [ ] Graph middle language (50%)
-- [ ] Web (30%)
+- [ ] Web (70%)
 - [ ] Text render result optimization
-- [ ] SVG render result optimization
+- [ ] SVG render result optimization (30%)
 - [ ] Plugin for third party websites
 
 ## Sponsor
