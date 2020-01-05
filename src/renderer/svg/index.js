@@ -11,8 +11,9 @@ import type { GraphNode } from './repr'
 import { Component, Rect, Arrow, Curve, AutoCurve, Text, TextBlock } from './components'
 
 
-function bindMouseControl(svg : Object, view_box: [number, number, number, number], zoom_in : Object, zoom_out : Object) {
-  let [x, y, width, height] = view_box
+function bindMouseControl(svg : Object, zoom_in : Object, zoom_out : Object) {
+  const getViewBox = () => svg.getAttribute('viewBox').split(' ').map(x => parseInt(x))
+  let [x, y, width, height] = getViewBox()
 
   let start_moving = false
   let cursor = [0, 0]
@@ -40,9 +41,14 @@ function bindMouseControl(svg : Object, view_box: [number, number, number, numbe
     e.preventDefault()
 
     const offset = -100
+    if (width <= 100 || height <= 100)
+      return;
+      
     width += offset
-    x -= offset / 2
     height += offset
+
+    x -= offset / 2
+    y -= offset / 2
     svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`)
   })
   zoom_out.addEventListener('click', (e) => {
@@ -50,8 +56,10 @@ function bindMouseControl(svg : Object, view_box: [number, number, number, numbe
     
     const offset = 100
     width += offset
-    x -= offset / 2
     height += offset
+
+    x -= offset / 2
+    y -= offset / 2
     svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`)
   })
 }
@@ -75,7 +83,7 @@ export class SVGRenderer {
 
     const view_box = [-size[0] / 2, 40, size[0], size[1]]
     svg.setAttribute('viewBox', view_box.join(' '))
-    bindMouseControl(svg, view_box, zoom_in, zoom_out)
+    bindMouseControl(svg, zoom_in, zoom_out)
     svg.appendChild(elem)
 
     wrapper.appendChild(zoom_in)
@@ -172,7 +180,7 @@ export class SVGRenderer {
       })
     }
 
-    return this.createSVG([1000, size[1]], new Component(graphs_relocated).el)
+    return this.createSVG([screen.width, size[1]], new Component(graphs_relocated).el)
   }
 
   render(stack : Stack) {
@@ -276,6 +284,6 @@ export class SVGRenderer {
       })
     }
 
-    return this.createSVG([1000, size[1] * 2], new Component(graphs_relocated).el)
+    return this.createSVG([screen.width, size[1] * 2], new Component(graphs_relocated).el)
   }
 }

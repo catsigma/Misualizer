@@ -9,12 +9,12 @@
       <div ref="storage"></div>
     </div>
     <div class="block">
-      <h2>Success</h2>
+      <h2>Success graph</h2>
       <div ref="success"></div>
     </div>
     <div class="block">
-      <h2>Failures</h2>
-      <div ref="failures"></div>
+      <h2>Failure graph</h2>
+      <div ref="failure"></div>
     </div>
   </div>
 </template>
@@ -28,9 +28,6 @@ export default {
   props: ['contract'],
   data() {
     return {
-      parameter: null,
-      storage: null,
-      success: null
     }
   },
   watch: {
@@ -85,13 +82,13 @@ export default {
         })
       })
       
-      const fails = document.createElement('div')
-      fails.appendChild(renderer.renderTree(fail_tree, cond_mapping))
+      const failure_wrapper = document.createElement('div')
+      failure_wrapper.appendChild(renderer.renderTree(fail_tree, cond_mapping))
 
       this.setSVG('parameter', renderer.renderData(contract.stack.stack[0].subs[0]))
       this.setSVG('storage', renderer.renderData(contract.stack.stack[0].subs[1]))
       this.setSVG('success', renderer.render(stack))
-      this.setSVG('failures', fails)
+      this.setSVG('failure', failure_wrapper)
     }
   }
 }

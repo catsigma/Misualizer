@@ -25,7 +25,7 @@ const t2GraphNode = {
     const children : Array<GraphNode> = []
     const mixed_children = graphNodeMix(elem.subs, children)
 
-    const title = readT(elem.subs[0].t, true) === 'list<operation>' ? `RESULT(${mixed_children.join(', ')})` : `(${mixed_children.join(', ')})`
+    const title = readT(elem.subs[0].t, true) === 'list<operation>' ? `RESULT -> (${mixed_children.join(', ')})` : `(${mixed_children.join(', ')})`
 
     return {
       title,
