@@ -182,10 +182,10 @@ export const instr_reprs = {
     return [render(elem.subs[0].subs[0]), '<=', render(elem.subs[0].subs[1])]
   },
   EQ(elem : Element, render : renderFn) : rec_array {
-    return [render(elem.subs[0].subs[0]), '==', render(elem.subs[0].subs[1])]
+    return [render(elem.subs[0].subs[0]), '==', '0']
   },
   NEQ(elem : Element, render : renderFn) : rec_array {
-    return [render(elem.subs[0].subs[0]), '!=', render(elem.subs[0].subs[1])]
+    return [render(elem.subs[0].subs[0]), '!=', '0']
   },
   IF(elem : Element, render : renderFn) : rec_array {
     return ['if', render(elem.subs[0]), render(elem.subs[1]), render(elem.subs[2])]
