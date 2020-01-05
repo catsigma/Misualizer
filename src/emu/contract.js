@@ -60,9 +60,9 @@ export class Stack {
     })
   }
 
-  pushCondition(cond : Element, cond_instr : string) {
+  pushCondition(cond : Element, cond_instr : string, contract : Contract) {
     this.conditions.push(
-      new Element(0, ['string'], [], cond_instr, null, [cond]))
+      contract.newElement( ['string'], [], cond_instr, null, [cond]))
   }
 
   at(index : number) : Element {

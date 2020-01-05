@@ -57,10 +57,7 @@ function bindMouseControl(svg : Object, view_box: [number, number, number, numbe
 }
 
 export class SVGRenderer {
-  stack : Stack
-
-  constructor(stack : Stack) {
-    this.stack = stack
+  constructor() {
   }
 
   createSVG(size : [number, number], elem : Object) {
@@ -175,12 +172,40 @@ export class SVGRenderer {
       })
     }
 
-    return this.createSVG(size, new Component(graphs_relocated).el)
+    return this.createSVG([1000, size[1]], new Component(graphs_relocated).el)
   }
 
-  render() {
+  render(stack : Stack) {
+    return this.renderGraphNode(genGraphNode(stack.stack[0]))
+  }
+
+  renderTree(tree : Object, mapping : {number: Element}) {
+    const walk = (node : Object, graph_node : GraphNode) => {
+      for (const key in node) {
+        const graph = genGraphNode(mapping[key])
+        graph_node.children.push(graph)
+
+        if (node[key] instanceof Element) {
+          const result_graph = genGraphNode(node[key])
+          result_graph.title = 'RESULT -> ' + result_graph.title
+          graph.children.push(result_graph)
+        } else {
+          walk(node[key], graph)
+        }
+      }
+    }
+    const result = {
+      title: '',
+      elem: new Element(0, []),
+      children: []
+    }
+    walk(tree, result)
+
+    return this.renderGraphNode(result.children[0])
+  }
+
+  renderGraphNode(graph_node : GraphNode) {
     const size = [-1, -1]
-    const elem = this.stack.stack[0]
 
     const levels = {}
     const links = {}
@@ -207,7 +232,7 @@ export class SVGRenderer {
 
       return graph
     }
-    walk(genGraphNode(elem), 1)
+    walk(graph_node, 1)
 
     const graphs_relocated = []
     for (const level in levels) {
@@ -251,6 +276,6 @@ export class SVGRenderer {
       })
     }
 
-    return this.createSVG([1000, 1200], new Component(graphs_relocated).el)
+    return this.createSVG([1000, size[1] * 2], new Component(graphs_relocated).el)
   }
 }

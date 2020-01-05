@@ -35,6 +35,62 @@ const t2GraphNode = {
   }
 }
 const instr2GraphNode = {
+  COND_TRUE(elem : Element) {
+    return {
+      title: `{${genText(elem.subs[0])}} is True`,
+      elem,
+      children: []
+    }
+  },
+  COND_FALSE(elem : Element) {
+    return {
+      title: `{${genText(elem.subs[0])}} is False`,
+      elem,
+      children: []
+    }
+  },
+  COND_LEFT(elem : Element) {
+    return {
+      title: `{${genText(elem.subs[0])}} is Left`,
+      elem,
+      children: []
+    }
+  },
+  COND_RIGHT(elem : Element) {
+    return {
+      title: `{${genText(elem.subs[0])}} is Right`,
+      elem,
+      children: []
+    }
+  },
+  COND_ITEM(elem : Element) {
+    return {
+      title: `{${genText(elem.subs[0])}} has item`,
+      elem,
+      children: []
+    }
+  },
+  COND_EMPTY(elem : Element) {
+    return {
+      title: `{${genText(elem.subs[0])}} is empty`,
+      elem,
+      children: []
+    }
+  },
+  COND_NONE(elem : Element) {
+    return {
+      title: `{${genText(elem.subs[0])}} is None`,
+      elem,
+      children: []
+    }
+  },
+  COND_SOME(elem : Element) {
+    return {
+      title: `{${genText(elem.subs[0])}} is Some`,
+      elem,
+      children: []
+    }
+  },
   IF_LEFT(elem : Element) {
     return {
       title: `if {${genText(elem.subs[0])}} is Left`,
