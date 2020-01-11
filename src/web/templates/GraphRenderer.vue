@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div class="tip" v-if="selected.graph_node">
+      <div class="content mono">{{selected.graph_node.title}}</div>
+    </div>
     <div class="block">
       <h2>Parameter</h2>
       <div ref="parameter"></div>
@@ -28,6 +31,7 @@ export default {
   props: ['contract'],
   data() {
     return {
+      selected: {}
     }
   },
   watch: {
@@ -57,6 +61,7 @@ export default {
       stack.stack[0] = reduceElement(stack.stack[0])
       
       const renderer = new SVGRenderer()
+      this.selected = renderer.selected
 
       const fail_tree = {}
       const cond_mapping = {}
@@ -99,5 +104,19 @@ export default {
 
 .block {
   margin-bottom: 16px;
+}
+
+.tip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: $c3;
+  color: $c6;
+  z-index: 9;
+
+  .content {
+    padding: 4px 8px;
+  }
 }
 </style>

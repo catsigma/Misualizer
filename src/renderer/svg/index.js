@@ -65,7 +65,16 @@ function bindMouseControl(svg : Object, zoom_in : Object, zoom_out : Object) {
 }
 
 export class SVGRenderer {
+  selected : {
+    graph_node : GraphNode | null,
+    svg_elem : Component | null
+  }
+
   constructor() {
+    this.selected = {
+      graph_node: null,
+      svg_elem: null
+    }
   }
 
   createSVG(size : [number, number], elem : Object) {
@@ -218,8 +227,22 @@ export class SVGRenderer {
     const levels = {}
     const links = {}
     const walk = (node : GraphNode, level : number) => {
-      const graph = Text([0, 0], node.title, 1.2)
-      if (node.title.slice(0, 6) === 'RESULT')
+      const len_limit = 40
+      const title = node.title.length > len_limit ? node.title.slice(0, len_limit) + '...' : node.title
+      const graph = Text([0, 0], title, 1.2)
+      if (node.title.length > len_limit) {
+        graph.setStyles({
+          cursor: 'pointer',
+          textDecoration: 'underline'
+        })
+  
+        graph.on('click', () => {
+          this.selected.graph_node = node
+          this.selected.svg_elem = graph
+        })
+      }
+
+      if (title.slice(0, 6) === 'RESULT')
         graph.setStyles({
           fill: 'red'
         })
