@@ -9,7 +9,10 @@
 
     <transition name="bounce">
       <div class="index-center" v-if="state === 'initial'">
-        <div class="logo">Misualizer</div>
+        <div class="logo">
+          <span>Misualizer</span>
+          <span class="version">v{{version}}</span>
+        </div>
         <input class="mono" placeholder="Enter the KT1 address here" v-model="address" />
         <selector :data="nets" v-model="net_type" class="net-selector"></selector>
         <button @click="checkContract">Check contract</button>
@@ -38,6 +41,7 @@
 </template>
 
 <script>
+import { version } from '../../../package.json'
 import TBN from 'tezbridge-network/PsBabyM1'
 import Selector from './Selector'
 import Loading from './Loading'
@@ -56,6 +60,7 @@ export default {
   },
   data() {
     return {
+      version,
       nets: {
         mainnet: 'mainnet',
         babylonnet: 'babylonnet'
@@ -172,9 +177,19 @@ export default {
 
   .logo {
     font-weight: 800;
-    font-size: 4rem;
     color: $c15; 
     margin-bottom: 32px;
+    
+    span {
+      font-size: 4rem;
+      vertical-align: baseline ;
+    }
+
+    .version {
+      font-weight: 400;
+      font-size: 1.2rem;
+      color: $c2;
+    }
   }
 
   input {
