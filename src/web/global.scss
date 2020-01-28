@@ -50,6 +50,23 @@ button:active {
   padding: 8px 12px;
 }
 
+button.sm {
+  display: inline-block;
+  padding: 4px 8px;
+  background: $c10;
+  border-radius: 2px;
+  color: $c6;
+  border: 0;
+  cursor: pointer;
+  font-size: 1.6rem;
+}
+button.sm:hover {
+  background: $c11;
+}
+button.sm:active {
+  background: $c5;
+}
+
 .fade-enter-active {
   animation: fade-in 1.2s;
 }

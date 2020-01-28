@@ -6,10 +6,18 @@
     <div class="block">
       <h2>Parameter</h2>
       <div ref="parameter"></div>
+      <div class="custom">
+        <textarea placeholder="custom parameter value in JSON" class="mono"></textarea>
+        <button class="sm">Set</button>
+      </div>
     </div>
     <div class="block">
       <h2>Storage</h2>
       <div ref="storage"></div>
+      <div class="custom">
+        <textarea placeholder="custom storage value in JSON" class="mono"></textarea>
+        <button class="sm">Set</button>
+      </div>
     </div>
     <div class="block">
       <h2>Success graph</h2>
@@ -118,5 +126,18 @@ export default {
   .content {
     padding: 4px 8px;
   }
+}
+
+.custom {
+  margin-top: 8px;
+
+  textarea {
+    width: 100%;
+    height: 100px;
+    padding: 4px;
+    font-size: 1.2rem;
+  }
+
+  button {margin-top: 4px; font-size: 1.4rem;}
 }
 </style>
