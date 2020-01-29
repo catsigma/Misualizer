@@ -50,6 +50,8 @@ import TextRenderer from './TextRenderer'
 import RawRenderer from './RawRenderer'
 import GraphRenderer from './GraphRenderer'
 
+import { getQuery } from '../../utils'
+
 export default {
   components: {
     Loading,
@@ -93,6 +95,15 @@ export default {
         this.state = 'checking'
       } catch {}
 
+    }
+  },
+  async mounted() {
+    const contract = getQuery('contract')
+    const net_type = getQuery('net_type')
+    if (contract && net_type) {
+      this.address = contract
+      this.net_type = net_type
+      await this.checkContract(contract, net_type)
     }
   }
 }
