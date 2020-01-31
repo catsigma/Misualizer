@@ -93,6 +93,7 @@ export default {
       try {
         this.contract_raw = await client.fetch.contract(this.address)
         this.state = 'checking'
+        location.hash = `contract=${this.address}&net_type=${this.net_type}`
       } catch {}
 
     }

@@ -12,7 +12,7 @@ export function throttle(fn : Function) {
 }
 
 export function getQuery(name : string) {
-  const search_arr = location.search.slice(1).split('&').map(x => x.split('='))
+  const search_arr = location.hash.slice(1).split('&').map(x => x.split('='))
 
   const mapping = {}
   search_arr.forEach(x => mapping[x[0]] = x[1])

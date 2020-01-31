@@ -127,7 +127,7 @@ export class Contract {
   elem_id : {val: number}
   contract : Object
 
-  constructor(contract_raw : Array<Object>) {
+  constructor(contract_raw : Array<Object>, custom_param? : Object, custom_storage? : Object) {
     this.contract = {}
     contract_raw.forEach(item => {
       const key = item.prim
@@ -137,8 +137,10 @@ export class Contract {
     this.elem_id = {val: 1}
     this.code = this.contract.code
 
-    const parameter_raw_elem = createElementByType(this.contract.parameter, mockValueFromType(this.contract.parameter, this.elem_id), this.elem_id)
-    const storage_raw_elem = createElementByType(this.contract.storage, mockValueFromType(this.contract.storage, this.elem_id), this.elem_id)
+    const parameter_raw_elem = createElementByType(
+      this.contract.parameter, custom_param || mockValueFromType(this.contract.parameter, this.elem_id), this.elem_id)
+    const storage_raw_elem = createElementByType(
+      this.contract.storage, custom_storage || mockValueFromType(this.contract.storage, this.elem_id), this.elem_id)
     settingInstrID(parameter_raw_elem, 'P')
     settingInstrID(storage_raw_elem, 'S')
 

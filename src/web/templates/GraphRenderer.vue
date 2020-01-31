@@ -6,18 +6,23 @@
     <div class="block">
       <h2>Parameter</h2>
       <div ref="parameter"></div>
-      <div class="custom">
-        <textarea placeholder="custom parameter value in JSON" class="mono"></textarea>
-        <button class="sm">Set</button>
-      </div>
     </div>
     <div class="block">
       <h2>Storage</h2>
       <div ref="storage"></div>
+    </div>
+    <div class="block">
       <div class="custom">
-        <textarea placeholder="custom storage value in JSON" class="mono"></textarea>
-        <button class="sm">Set</button>
+        <div>
+          <h2>Custom parameter</h2>
+          <textarea placeholder="custom parameter value in JSON" class="mono" v-model="custom.param"></textarea>
+        </div>
+        <div>
+          <h2>Custom storage</h2>
+          <textarea placeholder="custom storage value in JSON" class="mono" v-model="custom.storage"></textarea>
+        </div>
       </div>
+      <button class="sm custom-set-btn" @click="setCustom">Set</button>
     </div>
     <div class="block">
       <h2>Success graph</h2>
@@ -39,7 +44,11 @@ export default {
   props: ['contract'],
   data() {
     return {
-      selected: {}
+      selected: {},
+      custom: {
+        param: '',
+        storage: ''
+      }
     }
   },
   watch: {
@@ -59,10 +68,17 @@ export default {
 
       el.appendChild(svg)
     },
-    renderGraph() {
+    setCustom() {
+      const custom_param = this.custom.param ? JSON.parse(this.custom.param) : null
+      const custom_storage = this.custom.storage ? JSON.parse(this.custom.storage) : null
+      this.renderGraph(custom_param, custom_storage)
+    },
+    renderGraph(custom_param, custom_storage) {
       if (!this.contract) return;
       
-      const contract = new Contract(this.contract.script.code)
+      this.custom.param = ''
+      this.custom.storage = JSON.stringify(this.contract.script.storage, null, 2)
+      const contract = new Contract(this.contract.script.code, custom_param, custom_storage)
       const stack = contract.walkToExit()
       const replace_pattern = contract.genReplaceMap()
       stack.stack[0] = replaceElement(stack.stack[0], replace_pattern)
@@ -130,14 +146,24 @@ export default {
 
 .custom {
   margin-top: 8px;
+  display: flex;
+  flex-grow: 1;
+
+  & > div {
+    width: 100%;
+    margin: 0 4px;
+  }
 
   textarea {
+    margin-top: 8px;
     width: 100%;
-    height: 100px;
+    height: 200px;
     padding: 4px;
     font-size: 1.2rem;
   }
 
-  button {margin-top: 4px; font-size: 1.4rem;}
+}
+.custom-set-btn {
+  margin: 4px; font-size: 1.4rem;
 }
 </style>
