@@ -53,13 +53,19 @@ export default {
   },
   watch: {
     contract() {
+      this.initCustom()
       this.renderGraph()
     }
   },
   mounted() {
+    this.initCustom()
     this.renderGraph()
   },
   methods: {
+    initCustom() {
+      this.custom.param = ''
+      this.custom.storage = JSON.stringify(this.contract.script.storage, null, 2)
+    },
     setSVG(ref_name, svg) {
       const el = this.$refs[ref_name]
       while (el.firstChild) {
@@ -76,8 +82,6 @@ export default {
     renderGraph(custom_param, custom_storage) {
       if (!this.contract) return;
       
-      this.custom.param = ''
-      this.custom.storage = JSON.stringify(this.contract.script.storage, null, 2)
       const contract = new Contract(this.contract.script.code, custom_param, custom_storage)
       const stack = contract.walkToExit()
       const replace_pattern = contract.genReplaceMap()

@@ -209,13 +209,25 @@ export class Contract {
         walk(elem.subs[0], p1)
         walk(elem.subs[1], p2)
       } else if (elem.t[0] === 'or') {
-        const p1 = path.slice()
-        p1.unshift('OR.LEFT')
-        const p2 = path.slice()
-        p2.unshift('OR.RIGHT')
+        if (elem.instr === 'Left') {
+          const p1 = path.slice()
+          p1.unshift('OR.LEFT')
+          walk(elem.subs[0], p1)
 
-        walk(elem.subs[0], p1)
-        walk(elem.subs[1], p2)
+        } else if (elem.instr === 'Right') {
+          const p2 = path.slice()
+          p2.unshift('OR.RIGHT')
+          walk(elem.subs[0], p2)
+
+        } else {
+          const p1 = path.slice()
+          p1.unshift('OR.LEFT')
+          walk(elem.subs[0], p1)
+  
+          const p2 = path.slice()
+          p2.unshift('OR.RIGHT')
+          walk(elem.subs[1], p2)
+        }
       }
     }
     walk(this.stack.top().subs[0].subs[0], ['Parameter'])

@@ -268,10 +268,13 @@ function readT(t : EType | string, deep : boolean = false) {
     return t
 }
 
-function readElem(elem : Element, deep : boolean = false) {
+export function readElem(elem : Element, deep : boolean = false) {
+  if (typeof elem.value === 'string' && elem.value.length)
+  return elem.value
+
   if (elem.annots.length) {
-    return elem.annots[0] + ':' + readT(elem.t, deep)
+    return elem.annots[0] + ':' + readT(elem.t)
   } else {
-    return elem.instr || elem.value || readT(elem.t, deep)
+    return elem.instr || readT(elem.t)
   }
 }

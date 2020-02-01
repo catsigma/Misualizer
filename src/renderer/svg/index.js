@@ -5,11 +5,10 @@ import { throttle } from '../../utils'
 import { Element } from '../../emu/elem'
 import type { EType } from '../../emu/elem'
 import { Stack } from '../../emu/contract'
-import { genGraphNode } from './repr'
+import { genGraphNode, readElem } from './repr'
 import type { GraphNode } from './repr'
 
 import { Component, Rect, Arrow, Curve, AutoCurve, Text, TextBlock } from './components'
-
 
 function bindMouseControl(svg : Object, zoom_in : Object, zoom_out : Object) {
   const getViewBox = () => svg.getAttribute('viewBox').split(' ').map(x => parseInt(x))
@@ -101,33 +100,13 @@ export class SVGRenderer {
     return wrapper
   }
 
-  readElem(elem : Element) {
-    const deep_set = new Set(['option', 'contract'])
-    const readT = (t : EType | string, deep : boolean = false) => {
-      if (t instanceof Array) {
-        if (deep_set.has(t[0]) || deep) {
-          return t[0].toString() + 
-             (t.length === 1 ? '' : `<${t.slice(1).map(x => readT(x, true)).join(', ')}>`)
-        } else 
-          return t[0].toString()
-      } else 
-        return t
-    }
-
-    if (elem.annots.length) {
-      return elem.annots[0] + ':' + readT(elem.t)
-    } else {
-      return elem.instr || elem.value || readT(elem.t)
-    }
-  }
-
   renderData(elem : Element) {
     const size = [-1, -1]
 
     const levels = {}
     const links = {}
     const walk = (el : Element, level : number) => {
-      const content = this.readElem(el)
+      const content = readElem(el)
       const graph = Text([0, 0], content, 1.2)
 
       if (!(level in levels)) {

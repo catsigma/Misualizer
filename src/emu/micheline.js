@@ -77,9 +77,11 @@ export function createElementByType(t : MichelineType, v : MichelineValue, id : 
       ])
 
     } else if (t.prim === 'or') {
-      return new Element(id.val++, type_t, annots, v.prim, null, [
+      return new Element(id.val++, type_t, annots, v.prim, null, v.prim === 'Left' ? [
+        createElementByType(targ0, v.args[0], id)
+      ] : v.prim === 'Right' ? [createElementByType(targ1, v.args[0], id)] : [
         createElementByType(targ0, v.args[0], id),
-        createElementByType(targ1, v.args[1], id),
+        createElementByType(targ1, v.args[1], id)
       ])
       
     } else if (t.prim === 'list' || t.prim === 'set') {
@@ -143,7 +145,7 @@ export function mockValueFromType(t : MichelineType, id : {val : number} = {val:
       return {prim: 'Some|None', args: [mockValueFromType(t.args[0], id)]}
 
     } else if (t.prim === 'contract') {
-      return {string: `${t.prim}${id.val++}`}
+      return {string: ``}
 
     } else if (t.prim === 'lambda') {
       return [{prim: 'RENAME', annots: ['']}]
@@ -151,11 +153,11 @@ export function mockValueFromType(t : MichelineType, id : {val : number} = {val:
 
   } else {
     if (micheline_mapping.int.has(t.prim))
-      return {int: `${t.prim}${id.val++}`}
+      return {int: ``}
     else if (micheline_mapping.string.has(t.prim))
-      return {string: `${t.prim}${id.val++}`}
+      return {string: ``}
     else if (micheline_mapping.bytes.has(t.prim))
-      return {bytes: `${t.prim}${id.val++}`}
+      return {bytes: ``}
     else if (t.prim === 'unit')
       return {prim: 'Unit'}
     else if (t.prim === 'bool')
