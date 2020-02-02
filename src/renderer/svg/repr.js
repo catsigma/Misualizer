@@ -92,8 +92,10 @@ const instr2GraphNode = {
     }
   },
   IF_LEFT(elem : Element) {
+    const cond = elem.subs[0]
+    const confirmed = new Set(['Left', 'Right']).has(cond.instr)
     return {
-      title: `if {${genText(elem.subs[0])}} is Left`,
+      title: confirmed ? `Go ${cond.instr}` : `if {${genText(cond)}} is Left`,
       elem,
       children: elem.subs.slice(1).map<GraphNode>(x => genGraphNode(x))
     }
@@ -270,11 +272,11 @@ function readT(t : EType | string, deep : boolean = false) {
 
 export function readElem(elem : Element, deep : boolean = false) {
   if (typeof elem.value === 'string' && elem.value.length)
-  return elem.value
+    return elem.value
 
   if (elem.annots.length) {
-    return elem.annots[0] + ':' + readT(elem.t)
+    return elem.annots[0] + ':' + readT(elem.t, deep)
   } else {
-    return elem.instr || readT(elem.t)
+    return elem.instr || readT(elem.t, deep)
   }
 }
