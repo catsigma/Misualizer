@@ -6,6 +6,7 @@ import type { EType } from '../../emu/elem'
 export type GraphNode = {
   title: string,
   elem: Element,
+  direction?: 'left' | 'right',
   children: Array<GraphNode>
 }
 
@@ -94,9 +95,12 @@ const instr2GraphNode = {
   IF_LEFT(elem : Element) {
     const cond = elem.subs[0]
     const confirmed = new Set(['Left', 'Right']).has(cond.instr)
+    const direction = confirmed ? cond.instr.toLowerCase() : undefined
+
     return {
-      title: confirmed ? `Go ${cond.instr}` : `if {${genText(cond)}} is Left`,
+      title: confirmed ? `{${genText(cond)}} is ${cond.instr}` : `if {${genText(cond)}} is Left`,
       elem,
+      direction,
       children: elem.subs.slice(1).map<GraphNode>(x => genGraphNode(x))
     }
   },

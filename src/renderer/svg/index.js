@@ -205,7 +205,7 @@ export class SVGRenderer {
 
     const levels = {}
     const links = {}
-    const walk = (node : GraphNode, level : number) => {
+    const walk = (node : GraphNode, level : number, in_flow : bool = true) => {
       const len_limit = 40
       const title = node.title.length > len_limit ? node.title.slice(0, len_limit) + '...' : node.title
       const graph = Text([0, 0], title, 1.2)
@@ -231,12 +231,22 @@ export class SVGRenderer {
         links[level] = []
       }
 
+      graph.setStyles({
+        opacity: in_flow ? '1' : '0.1'
+      })
+        
       levels[level].push(graph)
 
-      node.children.forEach(x => {
+      node.children.forEach((x, index) => {
+        const next_in_flow = 
+          node.direction ? 
+          ((node.direction === 'left' && index === 0) || (node.direction === 'right' && index === 1)) : 
+          in_flow
+
         links[level].push({
           from: graph,
-          to: walk(x, level + 1)
+          in_flow: next_in_flow,
+          to: walk(x, level + 1, next_in_flow)
         })
       })
 
@@ -282,7 +292,9 @@ export class SVGRenderer {
 
     for (const level in links) {
       links[level].forEach(link => {
-        graphs_relocated.push(AutoCurve(link.from, link.to, true))
+        const ac = AutoCurve(link.from, link.to, true)
+        ac.setStyles({opacity: link.in_flow ? '1' : '0.1'})
+        graphs_relocated.push(ac)
       })
     }
 
