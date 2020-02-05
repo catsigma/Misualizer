@@ -196,8 +196,8 @@ export class SVGRenderer {
       children: []
     }
     walk(tree, result)
-
-    return this.renderGraphNode(result.children[0])
+    
+    return this.renderGraphNode(result)
   }
 
   renderGraphNode(graph_node : GraphNode) {
