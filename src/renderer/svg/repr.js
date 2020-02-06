@@ -6,8 +6,9 @@ import type { EType } from '../../emu/elem'
 export type GraphNode = {
   title: string,
   elem: Element,
+  children: Array<GraphNode>,
   direction?: 'left' | 'right',
-  children: Array<GraphNode>
+  style?: Object
 }
 
 function graphNodeMix(subs : Array<Element>, children : Array<GraphNode>) {
@@ -26,7 +27,8 @@ const t2GraphNode = {
     const children : Array<GraphNode> = []
     const mixed_children = graphNodeMix(elem.subs, children)
 
-    const title = readT(elem.subs[0].t, true) === 'list<operation>' ? `RESULT -> (${mixed_children.join(', ')})` : `(${mixed_children.join(', ')})`
+    // const title = readT(elem.subs[0].t, true) === 'list<operation>' ? `RESULT -> (${mixed_children.join(', ')})` : `(${mixed_children.join(', ')})`
+    const title = `(${mixed_children.join(', ')})`
 
     return {
       title,
@@ -263,7 +265,7 @@ export function genGraphNode(elem : Element) : GraphNode {
 }
 
 const deep_set = new Set(['option', 'contract'])
-function readT(t : EType | string, deep : boolean = false) {
+export function readT(t : EType | string, deep : boolean = false) {
   if (t instanceof Array) {
     if (deep_set.has(t[0]) || deep) {
       return t[0].toString() + 

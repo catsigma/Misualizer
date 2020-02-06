@@ -5,7 +5,7 @@ import { throttle } from '../../utils'
 import { Element } from '../../emu/elem'
 import type { EType } from '../../emu/elem'
 import { Stack } from '../../emu/contract'
-import { genGraphNode, readElem } from './repr'
+import { genGraphNode, readT, readElem } from './repr'
 import type { GraphNode } from './repr'
 
 import { Component, Rect, Arrow, Curve, AutoCurve, Text, TextBlock } from './components'
@@ -172,7 +172,8 @@ export class SVGRenderer {
   }
 
   render(stack : Stack) {
-    return this.renderGraphNode(genGraphNode(stack.stack[0]))
+    const result_t = readT(stack.stack[0].t, true)
+    return this.renderGraphNode(genGraphNode(stack.stack[0]), result_t)
   }
 
   renderTree(tree : Object, mapping : {number: Element}) {
@@ -184,6 +185,7 @@ export class SVGRenderer {
         if (node[key] instanceof Element) {
           const result_graph = genGraphNode(node[key])
           result_graph.title = 'RESULT -> ' + result_graph.title
+          result_graph.style = {fill: 'red'}
           graph.children.push(result_graph)
         } else {
           walk(node[key], graph)
@@ -200,7 +202,7 @@ export class SVGRenderer {
     return this.renderGraphNode(result)
   }
 
-  renderGraphNode(graph_node : GraphNode) {
+  renderGraphNode(graph_node : GraphNode, result_t? : string) {
     const size = [-1, -1]
 
     const levels = {}
@@ -221,7 +223,7 @@ export class SVGRenderer {
         })
       }
 
-      if (title.slice(0, 6) === 'RESULT')
+      if (result_t && readT(node.elem.t, true) === result_t)
         graph.setStyles({
           fill: 'red'
         })
@@ -235,6 +237,9 @@ export class SVGRenderer {
         opacity: in_flow ? '1' : '0.1'
       })
         
+      if (node.style)
+        graph.setStyles(node.style)
+
       levels[level].push(graph)
 
       node.children.forEach((x, index) => {
