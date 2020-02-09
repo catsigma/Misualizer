@@ -22,6 +22,16 @@
           <textarea placeholder="custom storage value in JSON" class="mono" v-model="custom.storage"></textarea>
         </div>
       </div>
+      <div class="custom">
+        <div>
+          <h2>Custom amount</h2>
+          <textarea placeholder="custom amount value in number" class="mono custom-amount" v-model.number="custom.amount"></textarea>
+        </div>
+        <div>
+          <h2>Custom balance</h2>
+          <textarea placeholder="custom balance value in number" class="mono custom-balance" v-model.number="custom.balance"></textarea>
+        </div>
+      </div>
       <button class="sm custom-set-btn" @click="setCustom">Set</button>
     </div>
     <div class="block">
@@ -47,7 +57,9 @@ export default {
       selected: {},
       custom: {
         param: '',
-        storage: ''
+        storage: '',
+        amount: '0',
+        balance: '0'
       }
     }
   },
@@ -166,6 +178,11 @@ export default {
     font-size: 1.2rem;
   }
 
+}
+textarea.custom-amount, textarea.custom-balance {
+  height: 24px;
+  overflow: hidden;
+  margin-bottom: 8px;
 }
 .custom-set-btn {
   margin: 4px; font-size: 1.4rem;

@@ -198,10 +198,10 @@ const instr2Text = {
     return `${genText(elem.subs[0].subs[0])} >= ${genText(elem.subs[0].subs[1])}`
   },
   EQ(elem : Element) {
-    return `${genText(elem.subs[0].subs[0])} == 0`
+    return `${genText(elem.subs[0].subs[0])} == ${genText(elem.subs[0].subs[1])}`
   },
   NEQ(elem : Element) {
-    return `${genText(elem.subs[0].subs[0])} != 0`
+    return `${genText(elem.subs[0].subs[0])} != ${genText(elem.subs[0].subs[1])}`
   },
   MUL(elem : Element) {
     return `${genText(elem.subs[0])} * ${genText(elem.subs[1])}`
