@@ -1,6 +1,10 @@
 <template>
   <div>
-    <div :class="{header: true, 'header-expand': state === 'checking'}">
+    <div :class="{header: true, 'header-expand': state !== 'initial'}">
+      <div class="nav">
+        <a href="javascript:;" @click="state = 'diff'">Diff</a>
+        <a href="https://github.com/catsigma/Misualizer" target="_blank">Github</a>
+      </div>
       <div class="logo">Misualizer</div>
       <input class="mono" placeholder="Enter the KT1 address here" v-model="address" />
       <selector :data="nets" v-model="net_type" class="net-selector"></selector>
@@ -37,6 +41,11 @@
       </div>
     </transition>
 
+    <transition name="fade">
+      <div class="wrapper" v-if="state === 'diff'">
+        <diff></diff>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -49,6 +58,7 @@ import Loading from './Loading'
 import TextRenderer from './TextRenderer'
 import RawRenderer from './RawRenderer'
 import GraphRenderer from './GraphRenderer'
+import Diff from './Diff'
 
 import { getQuery } from '../../utils'
 
@@ -58,7 +68,8 @@ export default {
     Selector,
     TextRenderer,
     RawRenderer,
-    GraphRenderer
+    GraphRenderer,
+    Diff
   },
   data() {
     return {
@@ -80,6 +91,9 @@ export default {
     }
   },
   methods: {
+    diff() {
+
+    },
     async checkContract() {
       const host = {
         mainnet: 'https://rpc.tzbeta.net',
@@ -221,6 +235,18 @@ export default {
 
   button {
     margin: 16px auto;
+  }
+}
+
+.nav {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  a {
+    color: $c2;
+    margin: 0 2px;
+    text-decoration: none;
   }
 }
 </style>
