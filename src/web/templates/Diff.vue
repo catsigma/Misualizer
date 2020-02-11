@@ -3,7 +3,7 @@
     <div class="input-wrapper">
       <div>
         <h2>Type</h2>
-        <textarea placeholder="data value in JSON" class="mono" v-model="t"></textarea>
+        <textarea placeholder="type value in JSON" class="mono" v-model="t"></textarea>
       </div>
       <div>
         <h2>Left</h2>
@@ -15,11 +15,11 @@
       </div>
     </div>
     <div class="panel-center">
-      <button class="sm" @click="diff">Diff</button>
+      <button class="sm" @click="diff">Check diff</button>
     </div>
-    <div class="result" v-if="result">
-      <h2>Result</h2>
-      <div ref="storage"></div>
+    <div class="result">
+      <h2 v-if="result">Result</h2>
+      <div ref="result"></div>
     </div>
   </div>
 </template>
@@ -54,11 +54,16 @@ export default {
       el.appendChild(svg)
     },
     diff() {
-      this.result = 1
-      const parameter_raw_elem = createElementByType(
-        this.contract.parameter, custom_param || mockValueFromType(this.contract.parameter, this.elem_id), this.elem_id)
+      const t = JSON.parse(this.t)
+      const left = JSON.parse(this.left)
+      const right = JSON.parse(this.right)
 
-      this.setSVG('parameter', renderer.renderData(contract.stack.stack[0].subs[0]))
+      this.result = createElementByType(t, left)
+
+      const renderer = new SVGRenderer()
+      const render_result = renderer.renderData(this.result)
+
+      this.setSVG('result', render_result)
     }
   }
 }

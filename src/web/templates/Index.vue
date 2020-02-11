@@ -240,11 +240,11 @@ export default {
 
 .nav {
   position: absolute;
-  top: 8px;
+  top: 12px;
   right: 8px;
 
   a {
-    color: $c2;
+    color: $c5;
     margin: 0 2px;
     text-decoration: none;
   }
