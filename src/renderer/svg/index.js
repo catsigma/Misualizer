@@ -2,7 +2,7 @@
 
 import { throttle } from '../../utils'
 
-import { Element } from '../../emu/elem'
+import { Element, DiffValue } from '../../emu/elem'
 import type { EType } from '../../emu/elem'
 import { Stack } from '../../emu/contract'
 import { genGraphNode, readT, readElem } from './repr'
@@ -98,6 +98,87 @@ export class SVGRenderer {
     wrapper.appendChild(zoom_out)
     wrapper.appendChild(svg)
     return wrapper
+  }
+
+  renderDiff(elem : Element) {
+    const size = [-1, -1]
+    const color_mapping = {'left': 'red','right': 'green','both': '#8B7400'}
+
+    const levels = {}
+    const links = {}
+    const walk = (el : Element, level : number) => {
+      const content = el.value instanceof DiffValue && el.value.hasValue() ? el.value.read(readElem) : readElem(el)
+      const graph = Text([0, 0], content, 1.2)
+
+      if (el.value instanceof DiffValue)
+        graph.setStyles({
+          fill: color_mapping[el.value.direction]
+        })
+
+      if (!(level in levels)) {
+        levels[level] = []
+        links[level] = []
+      }
+
+      levels[level].push(graph)
+
+      el.subs.forEach(x => {
+        links[level].push({
+          from: graph,
+          direction: x.value instanceof DiffValue ? x.value.direction : '',
+          to: walk(x, level + 1)
+        })
+      })
+      return graph
+    }
+    walk(elem, 1)
+
+    const graphs_relocated = []
+    for (const level in levels) {
+      const elems = levels[level]
+      
+      const lefts = []
+      const mids = []
+      let width_sum = 0
+      elems.forEach((x, index) => {
+        const width = x.key_points[1][0] - x.key_points[3][0]
+        lefts.push(width_sum)
+        mids.push(width_sum + width / 2)
+        width_sum += width + 20
+      })
+
+      if (width_sum > size[0])
+        size[0] = width_sum
+      if (parseInt(level) * 50 > size[1])
+        size[1] = parseInt(level) * 50
+
+      let offset = 0
+      if (level === '1') {
+        offset = 0
+      } else {
+        links[parseInt(level) - 1].forEach((link, index) => {
+          const from_mid = link.from.key_points[0][0]
+          offset += mids[index] - from_mid
+        })
+        offset /= elems.length
+      }
+
+      elems.forEach((x, index) => {
+        x.relocate([lefts[index] - offset, parseInt(level) * 50])
+        graphs_relocated.push(x)
+      })
+    }
+
+    for (const level in links) {
+      links[level].forEach(link => {
+        const curve = AutoCurve(link.from, link.to, true, '', 
+          link.direction ? {stroke: color_mapping[link.direction]} : {})
+        
+        graphs_relocated.push(curve)
+      })
+    }
+
+    return this.createSVG([screen.width, size[1]], new Component(graphs_relocated).el)
   }
 
   renderData(elem : Element) {

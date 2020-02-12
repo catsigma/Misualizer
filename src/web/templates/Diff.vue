@@ -17,8 +17,8 @@
     <div class="panel-center">
       <button class="sm" @click="diff">Check diff</button>
     </div>
-    <div class="result">
-      <h2 v-if="result">Result</h2>
+    <div class="result" v-show="state === 'display'">
+      <h2>Result</h2>
       <div ref="result"></div>
     </div>
   </div>
@@ -26,6 +26,7 @@
 
 <script>
 import { Contract } from '../../emu/contract'
+import { diffElement } from '../../emu/elem'
 import { SVGRenderer } from '../../renderer/svg'
 import { replaceElement, reduceElement } from '../../renderer/repr'
 import { 
@@ -41,7 +42,7 @@ export default {
       left: '',
       right: '',
       t: '',
-      result: null
+      state: 'idle'
     }
   },
   methods: {
@@ -50,7 +51,7 @@ export default {
       while (el.firstChild) {
         el.removeChild(el.firstChild)
       }
-
+      
       el.appendChild(svg)
     },
     diff() {
@@ -58,12 +59,15 @@ export default {
       const left = JSON.parse(this.left)
       const right = JSON.parse(this.right)
 
-      this.result = createElementByType(t, left)
-
+      const mock_elem = createElementByType(t, mockValueFromType(t))
+      const left_elem = createElementByType(t, left)
+      const right_elem = createElementByType(t, right)
+      
+      diffElement(mock_elem, left_elem, right_elem)
+      
       const renderer = new SVGRenderer()
-      const render_result = renderer.renderData(this.result)
-
-      this.setSVG('result', render_result)
+      this.setSVG('result', renderer.renderDiff(mock_elem))
+      this.state = 'display'
     }
   }
 }
