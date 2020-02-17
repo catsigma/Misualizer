@@ -120,14 +120,25 @@ export class Stack {
   }
 }
 
+type initArgs = {
+  self: string,
+  amount: string,
+  balance: string,
+  chain_id: string,
+  source: string,
+  sender: string,
+  now: string
+}
+
 export class Contract {
   stack : Stack
   fail_stacks : Array<Stack>
   code : Array<Object>
   elem_id : {val: number}
   contract : Object
-
-  constructor(contract_raw : Array<Object>, custom_param? : Object, custom_storage? : Object) {
+  init_args : initArgs
+  
+  constructor(contract_raw : Array<Object>, custom_param? : Object, custom_storage? : Object, custom_args? : initArgs) {
     this.contract = {}
     contract_raw.forEach(item => {
       const key = item.prim
@@ -154,6 +165,16 @@ export class Contract {
       )
     ])
     this.fail_stacks = []
+
+    this.init_args = custom_args || {
+      self: 'SELF',
+      now: 'NOW',
+      source: 'SOURCE',
+      sender: 'SENDER',
+      chain_id: 'CHAIN_ID',
+      amount: 'AMOUNT',
+      balance: 'BALANCE'
+    }
   }
 
   newElement(

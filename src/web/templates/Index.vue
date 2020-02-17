@@ -30,13 +30,13 @@
         </div>
 
         <div class="content-wrapper" v-if="renderer === 'text'">
-          <text-renderer :contract="contract_raw"></text-renderer>
+          <text-renderer :contract="contract_raw" :address="address"></text-renderer>
         </div>
         <div class="content-wrapper" v-if="renderer === 'graph'">
-          <graph-renderer :contract="contract_raw"></graph-renderer>
+          <graph-renderer :contract="contract_raw" :address="address"></graph-renderer>
         </div>
         <div class="content-wrapper" v-if="renderer === 'raw'">
-          <raw-renderer :contract="contract_raw"></raw-renderer>
+          <raw-renderer :contract="contract_raw" :address="address"></raw-renderer>
         </div>
       </div>
     </transition>

@@ -24,12 +24,8 @@
       </div>
       <div class="custom">
         <div>
-          <h2>Custom amount</h2>
-          <textarea placeholder="custom amount value in number" class="mono custom-amount" v-model.number="custom.amount"></textarea>
-        </div>
-        <div>
-          <h2>Custom balance</h2>
-          <textarea placeholder="custom balance value in number" class="mono custom-balance" v-model.number="custom.balance"></textarea>
+          <h2>Custom arguments</h2>
+          <textarea placeholder="custom arguments in JSON" class="mono custom-arguments" @input="argsChange" :value="JSON.stringify(custom.args, null, 2)"></textarea>
         </div>
       </div>
       <button class="sm custom-set-btn" @click="setCustom">Set</button>
@@ -51,15 +47,22 @@ import { SVGRenderer } from '../../renderer/svg'
 import { replaceElement, reduceElement } from '../../renderer/repr'
 
 export default {
-  props: ['contract'],
+  props: ['contract', 'address'],
   data() {
     return {
       selected: {},
       custom: {
         param: '',
         storage: '',
-        amount: '0',
-        balance: '0'
+        args: {
+          self: 'SELF',
+          now: 'NOW',
+          source: 'SOURCE',
+          sender: 'SENDER',
+          chain_id: 'CHAIN_ID',
+          amount: 'AMOUNT',
+          balance: 'BALANCE'
+        }
       }
     }
   },
@@ -77,6 +80,7 @@ export default {
     initCustom() {
       this.custom.param = ''
       this.custom.storage = JSON.stringify(this.contract.script.storage, null, 2)
+      this.custom.args.self = this.address
     },
     setSVG(ref_name, svg) {
       const el = this.$refs[ref_name]
@@ -86,6 +90,9 @@ export default {
 
       el.appendChild(svg)
     },
+    argsChange(e) {
+      this.custom.args = JSON.parse(e.target.value)
+    },
     setCustom() {
       const custom_param = this.custom.param ? JSON.parse(this.custom.param) : null
       const custom_storage = this.custom.storage ? JSON.parse(this.custom.storage) : null
@@ -94,7 +101,7 @@ export default {
     renderGraph(custom_param, custom_storage) {
       if (!this.contract) return;
       
-      const contract = new Contract(this.contract.script.code, custom_param, custom_storage)
+      const contract = new Contract(this.contract.script.code, custom_param, custom_storage, this.custom.args)
       const stack = contract.walkToExit()
       const replace_pattern = contract.genReplaceMap()
       stack.stack[0] = replaceElement(stack.stack[0], replace_pattern)
@@ -179,9 +186,9 @@ export default {
   }
 
 }
-textarea.custom-amount, textarea.custom-balance {
-  height: 24px;
-  overflow: hidden;
+textarea.custom-arguments {
+  height: 150px;
+  width: 400px;
   margin-bottom: 8px;
 }
 .custom-set-btn {

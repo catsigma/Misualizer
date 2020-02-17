@@ -449,7 +449,7 @@ export const instrs = {
     return stack
   },
   NOW(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement(['timestamp'], instr.annots, '', 'NOW', []))
+    stack.insert(contract.newElement(['timestamp'], instr.annots, '', contract.init_args.now, []))
     return stack
   },
   COMPARE(contract : Contract, stack : Stack, instr : Object) {
@@ -481,11 +481,11 @@ export const instrs = {
     return stack
   },
   AMOUNT(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement(['mutez'], instr.annots, '', 'AMOUNT', []))
+    stack.insert(contract.newElement(['mutez'], instr.annots, '', contract.init_args.amount, []))
     return stack
   },
   BALANCE(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement(['mutez'], instr.annots, '', 'BALANCE', []))
+    stack.insert(contract.newElement(['mutez'], instr.annots, '', contract.init_args.balance, []))
     return stack
   },
   SELF(contract : Contract, stack : Stack, instr : Object) {
@@ -493,7 +493,7 @@ export const instrs = {
       ['contract', readType(contract.contract.parameter)],
       instr.annots,
       '',
-      'SELF',
+      contract.init_args.self,
       []
     ))
     return stack
@@ -505,7 +505,7 @@ export const instrs = {
     return stack
   },
   CHAIN_ID(contract : Contract, stack : Stack, instr : Object) {
-    stack.insert(contract.newElement(['chain_id'], instr.annots, '', 'CHAIN_ID', []))
+    stack.insert(contract.newElement(['chain_id'], instr.annots, '', contract.init_args.chain_id, []))
     return stack
   },
   UNIT(contract : Contract, stack : Stack, instr : Object) {
@@ -715,13 +715,13 @@ export const instrs = {
   },
   SOURCE(contract : Contract, stack : Stack, instr : Object) {
     stack.insert(contract.newElement(
-      ['address'], instr.annots, '', 'SOURCE', []
+      ['address'], instr.annots, '', contract.init_args.source, []
     ))
     return stack
   },
   SENDER(contract : Contract, stack : Stack, instr : Object) {
     stack.insert(contract.newElement(
-      ['address'], instr.annots, '', 'SENDER', []
+      ['address'], instr.annots, '', contract.init_args.sender, []
     ))
     return stack
   },
