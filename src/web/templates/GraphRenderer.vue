@@ -133,7 +133,6 @@ export default {
           }
         })
       })
-      console.log(contract.fail_stacks, fail_tree)
       const failure_wrapper = document.createElement('div')
       failure_wrapper.appendChild(renderer.renderTree(fail_tree, cond_mapping))
 
