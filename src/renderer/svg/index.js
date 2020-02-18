@@ -260,15 +260,14 @@ export class SVGRenderer {
   renderTree(tree : Object, mapping : {number: Element}) {
     const walk = (node : Object, graph_node : GraphNode) => {
       for (const key in node) {
-        const graph = genGraphNode(mapping[key])
-        graph_node.children.push(graph)
-
-        if (node[key] instanceof Element) {
+        if (key === 'reason') {
           const result_graph = genGraphNode(node[key])
           result_graph.title = 'RESULT -> ' + result_graph.title
           result_graph.style = {fill: 'red'}
-          graph.children.push(result_graph)
+          graph_node.children.push(result_graph)
         } else {
+          const graph = genGraphNode(mapping[key])
+          graph_node.children.push(graph)
           walk(node[key], graph)
         }
       }

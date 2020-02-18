@@ -37,32 +37,93 @@ const t2GraphNode = {
     }
   }
 }
+
+const getDirectionByOptionType = (elem : Element) => {
+  if (elem.subs.length)
+    return elem.subs[0].instr === 'None' 
+
+  return undefined
+}
+const getDirectionByOrType = (elem : Element) => {
+  const confirmed = new Set(['Left', 'Right']).has(elem.instr)
+  return confirmed ? elem.instr.toLowerCase() : undefined
+}
+const getDirectionByCompare = (elem : Element) => {
+  const default_set = new Set(['SELF', 'NOW', 'SOURCE', 'SENDER', 'CHAIN_ID', 'AMOUNT', 'BALANCE'])
+  const ignore_wrapper_set = new Set(['ADDRESS', 'IMPLICIT_ACCOUNT'])
+  
+  const getInsideSub = (el : Element) => {
+    if (ignore_wrapper_set.has(el.instr))
+      return getInsideSub(el.subs[0])
+
+    return el
+  }
+  const safeFloat = (a, b) => {
+    a = parseFloat(a)
+    b = parseFloat(b)
+    return isNaN(a) || isNaN(b) ? [] : [a, b]
+  }
+  const mapping = {
+    numBase: (l, r, fn) => {
+      const nums = safeFloat(l, r)
+      return nums.length ? fn(nums[0], nums[1]) : undefined
+    },
+    EQ: (l, r) => l === r,
+    NEQ: (l, r) => l !== r,
+    LE: (l, r) => mapping.numBase(l, r, (a, b) => a <= b),
+    LT: (l, r) => mapping.numBase(l, r, (a, b) => a < b),
+    GE: (l, r) => mapping.numBase(l, r, (a, b) => a >= b),
+    GT: (l, r) => mapping.numBase(l, r, (a, b) => a > b)
+  }
+  const left = genText(getInsideSub(elem.subs[0].subs[0]))
+  const right = genText(getInsideSub(elem.subs[0].subs[1]))
+
+  if (default_set.has(left) || default_set.has(right))
+    return undefined
+
+  if (elem.instr in mapping) {
+    const result = mapping[elem.instr](left, right)
+    return result === undefined ? result : result ? 'left' : 'right'
+  } else {
+    debugger
+    throw `invalid comparing method: ${elem.instr}`
+  }
+}
+
 const instr2GraphNode = {
   COND_TRUE(elem : Element) {
+    const direction = getDirectionByCompare(elem.subs[0])
     return {
       title: `{${genText(elem.subs[0])}} is True`,
       elem,
+      direction,
       children: []
     }
   },
   COND_FALSE(elem : Element) {
+    const direction = getDirectionByCompare(elem.subs[0])
     return {
       title: `{${genText(elem.subs[0])}} is False`,
       elem,
+      direction,
       children: []
     }
   },
   COND_LEFT(elem : Element) {
+    const direction = getDirectionByOrType(elem.subs[0])
     return {
       title: `{${genText(elem.subs[0])}} is Left`,
       elem,
+      direction,
       children: []
     }
   },
   COND_RIGHT(elem : Element) {
+    const direction = getDirectionByOrType(elem.subs[0])
     return {
       title: `{${genText(elem.subs[0])}} is Right`,
       elem,
+      direction,
       children: []
     }
   },
@@ -81,42 +142,60 @@ const instr2GraphNode = {
     }
   },
   COND_NONE(elem : Element) {
+    const direction = getDirectionByOptionType(elem.subs[0])
     return {
       title: `{${genText(elem.subs[0])}} is None`,
       elem,
+      direction,
       children: []
     }
   },
   COND_SOME(elem : Element) {
+    const direction = getDirectionByOptionType(elem.subs[0])
     return {
       title: `{${genText(elem.subs[0])}} is Some`,
       elem,
+      direction,
       children: []
     }
   },
   IF_LEFT(elem : Element) {
     const cond = elem.subs[0]
-    const confirmed = new Set(['Left', 'Right']).has(cond.instr)
-    const direction = confirmed ? cond.instr.toLowerCase() : undefined
+    const cond_txt = genText(cond)
+    const direction = getDirectionByOrType(cond)
 
     return {
-      title: confirmed ? `{${genText(cond)}} is ${cond.instr}` : `if {${genText(cond)}} is Left`,
+      title: direction ? `{${cond_txt}} is ${cond.instr}` : `if {${cond_txt}} is Left`,
       elem,
       direction,
       children: elem.subs.slice(1).map<GraphNode>(x => genGraphNode(x))
     }
   },
   IF(elem : Element) {
+    const cond = elem.subs[0]
+    const cond_txt = genText(cond)
+    const direction = getDirectionByCompare(cond)
+
     return {
-      title: `if {${genText(elem.subs[0])}}`,
+      title: direction ? 
+        `${cond_txt} is ${direction === 'left' ? 'True' : 'False'}` : 
+        `if {${cond_txt}}`,
       elem,
+      direction,
       children: elem.subs.slice(1).map<GraphNode>(x => genGraphNode(x))
     }
   },
   IF_NONE(elem : Element) {
+    const cond = elem.subs[0]
+    const cond_txt = genText(cond)
+    const direction = getDirectionByOptionType(cond)
+
     return {
-      title: `if {${genText(elem.subs[0])}} is None`,
+      title: direction !== undefined ? 
+        `{${cond_txt}} is ${direction ? 'None' : 'Some'}` :
+        `if {${cond_txt}} is None`,
       elem,
+      direction,
       children: elem.subs.slice(1).map<GraphNode>(x => genGraphNode(x))
     }
   },

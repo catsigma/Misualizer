@@ -123,17 +123,17 @@ export default {
 
           cond_mapping[item.id] = item
 
-          if (index === subs.length - 1)
-            cursor[item.id] = subs[0]
-          else {
-            if (!(item.id in cursor))
-              cursor[item.id] = {}
-
+          if (!(item.id in cursor))
+            cursor[item.id] = {}
+            
+          if (index === subs.length - 1) {
+            cursor[item.id].reason = subs[0]
+          } else {
             cursor = cursor[item.id]
           }
         })
       })
-      
+      console.log(contract.fail_stacks, fail_tree)
       const failure_wrapper = document.createElement('div')
       failure_wrapper.appendChild(renderer.renderTree(fail_tree, cond_mapping))
 
