@@ -325,7 +325,7 @@ export class SVGRenderer {
       node.children.forEach((x, index) => {
         const next_in_flow = 
           node.direction ? 
-          ((node.direction === 'left' && index === 0) || (node.direction === 'right' && index === 1)) : 
+          in_flow && ((node.direction === 'left' && index === 0) || (node.direction === 'right' && index === 1)) : 
           in_flow
 
         links[level].push({
