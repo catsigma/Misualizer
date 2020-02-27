@@ -1,11 +1,22 @@
 // @flow
 
-import { Element } from '../emu/elem'
+import { Element, diffElement } from '../emu/elem'
 import { Contract } from '../emu/contract'
 import { SVGRenderer } from '../renderer/svg'
 import { replaceElement, reduceElement } from '../renderer/repr'
+import { createElementByType, mockValueFromType } from '../emu/micheline'
 
 const Misualizer = {
+  diff(t : Object, left : Object, right : Object) {
+    const mock_elem = createElementByType(t, mockValueFromType(t))
+    const left_elem = createElementByType(t, left)
+    const right_elem = createElementByType(t, right)
+    
+    diffElement(mock_elem, left_elem, right_elem)
+    
+    const renderer = new SVGRenderer()
+    return renderer.renderDiff(mock_elem)
+  },
   contract(code : Object[], custom_param : Object, custom_storage : Object, custom_args : Object) {
     const contract = new Contract(code, custom_param, custom_storage, custom_args)
     const stack = contract.walkToExit()
