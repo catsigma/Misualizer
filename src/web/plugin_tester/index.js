@@ -1,5 +1,7 @@
 // @flow
 
+const Misualizer = window.Misualizer
+
 import TBN from 'tezbridge-network/PsBabyM1'
 
 const mainnet_host = 'https://rpc.tzbeta.net'
@@ -13,7 +15,19 @@ const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
 
 async function main() {
   const contract = await client.fetch.contract(address)
-  console.log(contract)
+  const svgs = Misualizer.contract(contract.script.code, null, contract.script.storage, {
+    "self": "KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo",
+    "now": "NOW",
+    "source": "SOURCE",
+    "sender": "SENDER",
+    "chain_id": "CHAIN_ID",
+    "amount": "AMOUNT",
+    "balance": "BALANCE"
+  })
+
+  for (const key in svgs) {
+    document.body && document.body.appendChild(svgs[key])
+  }
 }
 
 main()

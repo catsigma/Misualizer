@@ -7,7 +7,7 @@ import { replaceElement, reduceElement } from '../renderer/repr'
 
 const Misualizer = {
   contract(code : Object[], custom_param : Object, custom_storage : Object, custom_args : Object) {
-    const contract = new Contract(this.contract.script.code, custom_param, custom_storage, this.custom.args)
+    const contract = new Contract(code, custom_param, custom_storage, custom_args)
     const stack = contract.walkToExit()
     const replace_pattern = contract.genReplaceMap()
     stack.stack[0] = replaceElement(stack.stack[0], replace_pattern)

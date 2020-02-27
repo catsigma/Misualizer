@@ -80,12 +80,22 @@ export class SVGRenderer {
     const wrapper = document.createElement('div')
     wrapper.className = 'svg-wrapper'
     const zoom_in = document.createElement('div')
-    zoom_in.className = 'zoom-in'
+    zoom_in.innerHTML = '+'
     const zoom_out = document.createElement('div')
-    zoom_out.className = 'zoom-out'
+    zoom_out.innerHTML = '-'
+    ;[zoom_in, zoom_out].forEach(x => {
+      x.style.display = 'inline-flex'
+      x.style.margin = '4px 0 0 4px'
+      x.style.width = '16px'
+      x.style.height = '16px'
+      x.style.justifyContent = 'center'
+      x.style.alignItems = 'center'
+      x.style.cursor = 'pointer'
+      x.style.fontFamily = 'monospace'
+      x.style.border = '1px solid black'
+    })
 
     const svg : Object = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.style.border = '1px solid #d79b7d'
     svg.style.width = '100%'
     svg.style.height = size[1]
 
