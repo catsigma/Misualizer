@@ -49,6 +49,9 @@ button:active {
   background: $c5;
   padding: 8px 12px;
 }
+button:disabled {
+  opacity: 0.5; 
+}
 
 button.sm {
   display: inline-block;

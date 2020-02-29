@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div :class="{header: true, 'header-expand': state !== 'initial'}">
+    <div :class="{header: true, 'header-expand': state === 'loaded' || state === 'reloading' || state === 'diff'}">
       <div class="nav">
         <a href="javascript:;" @click="state = 'diff'">Diff</a>
         <a href="https://github.com/catsigma/Misualizer" target="_blank">Github</a>
@@ -8,27 +8,32 @@
       <div class="logo">Misualizer</div>
       <input class="mono" placeholder="Enter the KT1 address here" v-model="address" />
       <selector :data="nets" v-model="net_type" class="net-selector"></selector>
-      <button @click="checkContract">Check</button>
+      <button @click="checkContract" :disabled="state === 'reloading'">
+        <span v-if="state !== 'reloading'">Check</span>
+        <loading v-if="state === 'reloading'"></loading>
+      </button>
     </div>
 
     <transition name="bounce">
-      <div class="index-center" v-if="state === 'initial'">
+      <div class="index-center" v-if="state === 'initial' || state === 'loading'">
         <div class="logo">
           <span>Misualizer</span>
           <span class="version">v{{version}}</span>
         </div>
         <input class="mono" placeholder="Enter the KT1 address here" v-model="address" />
         <selector :data="nets" v-model="net_type" class="net-selector"></selector>
-        <button @click="checkContract">Check contract</button>
+        <button @click="checkContract" :disabled="state === 'loading'">
+          <span v-if="state !== 'loading'">Check contract</span>
+          <loading v-if="state === 'loading'"></loading>
+        </button>
       </div>
     </transition>
     
     <transition name="fade">
-      <div class="wrapper" v-if="state === 'checking'">
+      <div class="wrapper" v-if="state === 'loaded' || state === 'reloading'">
         <div class="tabs">
           <selector :data="renderers" v-model="renderer" class="renderer-selector"></selector>
         </div>
-
         <div class="content-wrapper" v-if="renderer === 'text'">
           <text-renderer :contract="contract_raw" :address="address"></text-renderer>
         </div>
@@ -91,9 +96,6 @@ export default {
     }
   },
   methods: {
-    diff() {
-
-    },
     async checkContract() {
       const host = {
         mainnet: 'https://rpc.tzbeta.net',
@@ -104,11 +106,15 @@ export default {
         host
       })
 
+      const prev_state = this.state
       try {
+        this.state = this.state === 'initial' ? 'loading' : 'reloading'
         this.contract_raw = await client.fetch.contract(this.address)
-        this.state = 'checking'
+        this.state = 'loaded'
         location.hash = `contract=${this.address}&net_type=${this.net_type}`
-      } catch {}
+      } catch (e){
+        this.state = prev_state
+      }
 
     }
   },

@@ -20,8 +20,8 @@ div.loading-block {
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid $c1;
-  border-top: 2px solid $c2;
+  border: 2px solid $c6;
+  border-top: 2px solid $c5;
   border-radius: 8px;
   animation: loading 2.4s infinite;
 }
