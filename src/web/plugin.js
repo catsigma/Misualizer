@@ -15,7 +15,10 @@ const Misualizer = {
     diffElement(mock_elem, left_elem, right_elem)
     
     const renderer = new SVGRenderer()
-    return renderer.renderDiff(mock_elem)
+    return {
+      renderer,
+      graph: renderer.renderDiff(mock_elem)
+    }
   },
   contract(code : Object[], custom_param : Object, custom_storage : Object, custom_args : Object) {
     const contract = new Contract(code, custom_param, custom_storage, custom_args)
@@ -51,10 +54,14 @@ const Misualizer = {
     })
 
     return {
-      failure: renderer.renderTree(fail_tree, cond_mapping),
-      parameter: renderer.renderData(contract.stack.stack[0].subs[0]),
-      storage: renderer.renderData(contract.stack.stack[0].subs[1]),
-      success: renderer.render(stack)
+      renderer,
+      contract,
+      graphs: {
+        failure: renderer.renderTree(fail_tree, cond_mapping),
+        parameter: renderer.renderData(contract.stack.stack[0].subs[0]),
+        storage: renderer.renderData(contract.stack.stack[0].subs[1]),
+        success: renderer.render(stack)
+      }
     }
   }
 }

@@ -42,9 +42,6 @@
 </template>
 
 <script>
-import { Contract } from '../../emu/contract'
-import { SVGRenderer } from '../../renderer/svg'
-import { replaceElement, reduceElement } from '../../renderer/repr'
 
 export default {
   props: ['contract', 'address'],
@@ -100,45 +97,16 @@ export default {
     },
     renderGraph(custom_param, custom_storage) {
       if (!this.contract) return;
-      
-      const contract = new Contract(this.contract.script.code, custom_param, custom_storage, this.custom.args)
-      const stack = contract.walkToExit()
-      const replace_pattern = contract.genReplaceMap()
-      stack.stack[0] = replaceElement(stack.stack[0], replace_pattern)
-      stack.stack[0] = reduceElement(stack.stack[0])
-      
-      const renderer = new SVGRenderer()
+
+      const { renderer, graphs } = Misualizer.contract(this.contract.script.code, custom_param, custom_storage, this.custom.args)
       this.selected = renderer.selected
 
-      const fail_tree = {}
-      const cond_mapping = {}
-      contract.fail_stacks.forEach(stack => {
-        stack.stack[0] = replaceElement(stack.stack[0], replace_pattern)
-        stack.stack[0] = reduceElement(stack.stack[0])
-
-        let cursor = fail_tree
-        const subs = stack.stack[0].subs
-        subs.forEach((item, index) => {
-          if (!index) return;
-
-          cond_mapping[item.id] = item
-
-          if (!(item.id in cursor))
-            cursor[item.id] = {}
-            
-          if (index === subs.length - 1) {
-            cursor[item.id].reason = subs[0]
-          } else {
-            cursor = cursor[item.id]
-          }
-        })
-      })
       const failure_wrapper = document.createElement('div')
-      failure_wrapper.appendChild(renderer.renderTree(fail_tree, cond_mapping))
+      failure_wrapper.appendChild(graphs.failure)
 
-      this.setSVG('parameter', renderer.renderData(contract.stack.stack[0].subs[0]))
-      this.setSVG('storage', renderer.renderData(contract.stack.stack[0].subs[1]))
-      this.setSVG('success', renderer.render(stack))
+      this.setSVG('parameter', graphs.parameter)
+      this.setSVG('storage', graphs.storage)
+      this.setSVG('success', graphs.success)
       this.setSVG('failure', failure_wrapper)
     }
   }

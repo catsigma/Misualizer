@@ -25,8 +25,8 @@ async function testContract() {
     "balance": "BALANCE"
   })
 
-  for (const key in svgs) {
-    document.body && document.body.appendChild(svgs[key])
+  for (const key in svgs.graphs) {
+    document.body && document.body.appendChild(svgs.graphs[key])
   }
 }
 
@@ -86,8 +86,8 @@ async function testDiff() {
 
   const diff_svg1 = Misualizer.diff(t, v1, v2)
   const diff_svg2 = Misualizer.diff(t, v2, v3)
-  document.body && document.body.appendChild(diff_svg1)
-  document.body && document.body.appendChild(diff_svg2)
+  document.body && document.body.appendChild(diff_svg1.graph)
+  document.body && document.body.appendChild(diff_svg2.graph)
 }
 
 

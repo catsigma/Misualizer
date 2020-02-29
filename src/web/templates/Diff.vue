@@ -26,15 +26,6 @@
 
 <script>
 import { Contract } from '../../emu/contract'
-import { diffElement } from '../../emu/elem'
-import { SVGRenderer } from '../../renderer/svg'
-import { replaceElement, reduceElement } from '../../renderer/repr'
-import { 
-  readType, 
-  fallbackType, 
-  settingInstrID, 
-  createElementByType, 
-  mockValueFromType } from '../../emu/micheline'
 
 export default {
   data() {
@@ -59,14 +50,8 @@ export default {
       const left = JSON.parse(this.left)
       const right = JSON.parse(this.right)
 
-      const mock_elem = createElementByType(t, mockValueFromType(t))
-      const left_elem = createElementByType(t, left)
-      const right_elem = createElementByType(t, right)
-      
-      diffElement(mock_elem, left_elem, right_elem)
-      
-      const renderer = new SVGRenderer()
-      this.setSVG('result', renderer.renderDiff(mock_elem))
+      const diff_svg = Misualizer.diff(t, left, right)
+      this.setSVG('result', diff_svg)
       this.state = 'display'
     }
   }
