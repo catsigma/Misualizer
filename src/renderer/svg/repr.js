@@ -48,6 +48,15 @@ const getDirectionByOrType = (elem : Element) => {
   const confirmed = new Set(['Left', 'Right']).has(elem.instr)
   return confirmed ? elem.instr.toLowerCase() : undefined
 }
+
+const getDirectionByBoolType = (elem : Element) => {
+  if (elem.subs.length && elem.subs[0].instr === 'COMPARE') {
+    return getDirectionByCompare(elem)
+  }
+  else
+    return undefined
+}
+
 const getDirectionByCompare = (elem : Element) => {
   const default_set = new Set(['SELF', 'NOW', 'SOURCE', 'SENDER', 'CHAIN_ID', 'AMOUNT', 'BALANCE'])
   const ignore_wrapper_set = new Set(['ADDRESS', 'IMPLICIT_ACCOUNT'])
@@ -92,7 +101,7 @@ const getDirectionByCompare = (elem : Element) => {
 
 const instr2GraphNode = {
   COND_TRUE(elem : Element) {
-    const direction = getDirectionByCompare(elem.subs[0])
+    const direction = getDirectionByBoolType(elem.subs[0])
     return {
       title: `{${genText(elem.subs[0])}} is True`,
       elem,
@@ -101,7 +110,7 @@ const instr2GraphNode = {
     }
   },
   COND_FALSE(elem : Element) {
-    const direction = getDirectionByCompare(elem.subs[0])
+    const direction = getDirectionByBoolType(elem.subs[0])
     return {
       title: `{${genText(elem.subs[0])}} is False`,
       elem,
@@ -174,7 +183,7 @@ const instr2GraphNode = {
   IF(elem : Element) {
     const cond = elem.subs[0]
     const cond_txt = genText(cond)
-    const direction = getDirectionByCompare(cond)
+    const direction = getDirectionByBoolType(cond)
 
     return {
       title: direction ? 

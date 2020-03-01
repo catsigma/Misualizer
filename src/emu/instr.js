@@ -196,7 +196,7 @@ export const instrs = {
     let fails = 1
     if (stack1.is_failed()) fails += 2
     if (stack2.is_failed()) fails *= 2
-
+    
     return ({
       '1': () => {
         stack.stack = stack1.combine(stack2, contract, instr.prim, or_item, instr.annots)
@@ -387,7 +387,8 @@ export const instrs = {
   },
   ITER(contract : Contract, stack : Stack, instr : Object) {
     const [lst_item] = stack.drop(1)
-
+    stack.pushCondition(lst_item, 'COND_ITEM', contract)
+    
     let stack1 = stack.clone()
     let stack2 = stack.clone()
     
