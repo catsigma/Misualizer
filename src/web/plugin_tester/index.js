@@ -120,6 +120,10 @@ async function testTube() {
   valve.flowOnce()
   valve.flowOnce()
   valve.flowOnce()
+
   console.log(valve)
 
+  const renderer = Misualizer.getGraphRenderer()
+  const g = renderer.renderValve(valve)
+  document.body && document.body.appendChild(g)
 }

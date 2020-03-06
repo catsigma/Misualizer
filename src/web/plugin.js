@@ -2,16 +2,20 @@
 
 import { Element, diffElement } from '../emu/elem'
 // import { Contract, Stack } from '../emu/contract'
-import { SVGRenderer } from '../renderer/svg'
+// import { SVGRenderer } from '../renderer/svg'
 import { replaceElement, reduceElement } from '../renderer/repr'
 import { createElementByType, mockValueFromType } from '../emu/micheline'
 
 import { createStackItem, mockData, toVType, settingInstrID } from '../emu/tube/micheline'
 import { codeConvert, Valve } from '../emu/tube/tube'
 import { Stack, StackItem } from '../emu/tube/stack'
+import { SVGRenderer } from '../renderer/tube'
 
 
 const Misualizer = {
+  getGraphRenderer() {
+    return new SVGRenderer()
+  },
   createStack(parameter : {t: Object, val?: Object}, storage: {t: Object, val?: Object}) {
     const p = createStackItem(parameter.t, parameter.val || mockData(parameter.t))
     const s = createStackItem(storage.t, storage.val || mockData(storage.t))
@@ -26,20 +30,20 @@ const Misualizer = {
   createValve(code : Object, stack : Stack) {
     const tube = codeConvert(code)
     return new Valve(tube, stack)
-  },
-  diff(t : Object, left : Object, right : Object) {
-    const mock_elem = createElementByType(t, mockValueFromType(t))
-    const left_elem = createElementByType(t, left)
-    const right_elem = createElementByType(t, right)
+  }
+  // diff(t : Object, left : Object, right : Object) {
+  //   const mock_elem = createElementByType(t, mockValueFromType(t))
+  //   const left_elem = createElementByType(t, left)
+  //   const right_elem = createElementByType(t, right)
     
-    diffElement(mock_elem, left_elem, right_elem)
+  //   diffElement(mock_elem, left_elem, right_elem)
     
-    const renderer = new SVGRenderer()
-    return {
-      renderer,
-      graph: renderer.renderDiff(mock_elem)
-    }
-  },
+  //   const renderer = new SVGRenderer()
+  //   return {
+  //     renderer,
+  //     graph: renderer.renderDiff(mock_elem)
+  //   }
+  // },
   // contract(code : Object[], custom_param : Object, custom_storage : Object, custom_args : Object) {
   //   const contract = new Contract(code, custom_param, custom_storage, custom_args)
   //   const stack = contract.walkToExit()

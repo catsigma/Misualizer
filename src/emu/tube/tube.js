@@ -9,10 +9,12 @@ type NodeWithStack = {
 }
 
 export class Valve {
+  start : NodeWithStack
   cursors : NodeWithStack[]
   mem : {number: Stack[]}
 
   constructor(node : Tube | Joint, stack : Stack) {
+    this.start = {stack, node}
     this.cursors = [{stack, node}]
     this.mem = {}
   }
@@ -136,7 +138,7 @@ export function codeConvert(code : Object[]) : Tube {
 
   code = makePlainCode(code)
 
-  const walk = (code : Object[], last? : Tube) => {
+  const walk = (code : Object[], last? : Tube) : Tube => {
     const passing_code = []
 
     for (let i = 0; i < code.length; i++) {
@@ -153,7 +155,10 @@ export function codeConvert(code : Object[]) : Tube {
       passing_code.push(code[i])
     }
 
-    return new Tube(id++, passing_code, last)
+    if (!passing_code.length && !last)
+      return new Tube(0, [])
+    else
+      return new Tube(id++, passing_code, last)
   }
 
   
