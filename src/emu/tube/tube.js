@@ -39,7 +39,7 @@ export class Valve {
       next_cursors = next_cursors.concat(result)
     })
 
-    this.cursors = next_cursors
+    this.cursors = next_cursors.filter(x => !x.stack.is_failed())
   }
 }
 

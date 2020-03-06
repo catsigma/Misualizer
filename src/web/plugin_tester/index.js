@@ -111,6 +111,15 @@ async function testTube() {
   const valve = Misualizer.createValve(contract.script.code[2].args, stack)
   valve.flowOnce()
   valve.flowOnce()
+  valve.flowOnce()
+  valve.flowOnce()
+  valve.flowOnce()
+  valve.flowOnce()
+  valve.flowOnce()
+  valve.flowOnce()
+  valve.flowOnce()
+  valve.flowOnce()
+  valve.flowOnce()
   console.log(valve)
 
 }

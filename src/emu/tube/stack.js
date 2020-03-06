@@ -4,15 +4,35 @@ type VType = Array<string | VType>
 
 const json_clone = x => JSON.parse(JSON.stringify(x))
 
+type Env = {
+  self: string,
+  amount: string,
+  balance: string,
+  chain_id: string,
+  source: string,
+  sender: string,
+  now: string
+}
+
 export class Stack {
   cursor : number
   items : StackItem[]
   path : number[]
+  env : Env
 
-  constructor(cursor : number = 0, items : StackItem[] = [], path : number[] = []) {
+  constructor(cursor : number = 0, items : StackItem[] = [], path : number[] = [], env : Env = {
+    self: 'SELF',
+    now: 'NOW',
+    source: 'SOURCE',
+    sender: 'SENDER',
+    chain_id: 'CHAIN_ID',
+    amount: 'AMOUNT',
+    balance: 'BALANCE'
+  }) {
     this.cursor = cursor
     this.items = items
     this.path = path
+    this.env = env
   }
 
   at(index : number) : StackItem {
@@ -43,10 +63,20 @@ export class Stack {
   insertAt(index : number, item : StackItem) {
     this.items.splice(this.cursor + index, 0, item)
   }
+  empty() {
+    this.cursor = 0
+    this.items = []
+  }
 
+  is_failed() {
+    if (this.items[0] && this.items[0].t[0] === 'fail')
+      return true
+    else
+      return false
+  }
 
   clone() {
-    return new Stack(this.cursor, this.items.map(x => x.clone()), this.path.slice())
+    return new Stack(this.cursor, this.items.map(x => x.clone()), this.path.slice(), this.env)
   }
 }
 
