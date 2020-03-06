@@ -24,6 +24,20 @@ export function toVType(t : MichelineType) : VType {
   }
 }
 
+export function settingInstrID(item : StackItem, prefix : string = 'G') {
+  let id = 1
+
+  const walk = (item : StackItem) => {
+    if (!item.annots.length)
+      item.annots.push(prefix + id++)
+
+    item.subs.forEach(item => walk(item))
+  }
+  walk(item)
+
+  return item
+}
+
 export function createStackItem(t : MichelineType, v : MichelineValue) : StackItem {
   const type_t = toVType(t)
   const annots : Array<string> = v.annots ? v.annots : t.annots || []
@@ -80,31 +94,31 @@ export function createStackItem(t : MichelineType, v : MichelineValue) : StackIt
   throw `createStackItem / invalid t: ${t.prim} v: ${v.prim}`
 }
 
-export function mockValueFromType(t : MichelineType) : MichelineValue {
+export function mockData(t : MichelineType) : MichelineValue {
   if (t.args) {
     const targ0 = t.args[0]
     const targ1 = t.args[1]
     if (t.prim === 'pair') {
       return {prim: 'Pair', args: [
-        mockValueFromType(targ0),
-        mockValueFromType(targ1)
+        mockData(targ0),
+        mockData(targ1)
       ]}
 
     } else if (t.prim === 'or') {
-      return {prim: 'Left|Right', args: [mockValueFromType(targ0), mockValueFromType(targ1)]}
+      return {prim: 'Left|Right', args: [mockData(targ0), mockData(targ1)]}
       
     } else if (t.prim === 'list' || t.prim === 'set') {
-      return [mockValueFromType(targ0)]
+      return [mockData(targ0)]
 
     } else if (t.prim === 'map' || t.prim === 'big_map') {
       const result : Array<{prim: 'Elt', args: [MichelineValue, MichelineValue]}> = [{prim: 'Elt', args: [
-        mockValueFromType(targ0),
-        mockValueFromType(targ1)
+        mockData(targ0),
+        mockData(targ1)
       ]}]
       return result
 
     } else if (t.prim === 'option') {
-      return {prim: 'Some|None', args: [mockValueFromType(t.args[0])]}
+      return {prim: 'Some|None', args: [mockData(t.args[0])]}
 
     } else if (t.prim === 'contract') {
       return {string: ``}
@@ -127,5 +141,5 @@ export function mockValueFromType(t : MichelineType) : MichelineValue {
   }
 
   debugger
-  throw `mockValueFromType / invalid Micheline type: ${t.prim}`
+  throw `mockData / invalid Micheline type: ${t.prim}`
 }

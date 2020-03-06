@@ -103,6 +103,14 @@ async function testTube() {
   const address = 'KT1LSMRcE2sLqg6H1mmFHG7RVwYNEQnkAtc1'
   const contract = await client.fetch.contract(address)
 
-  const result = Misualizer.codeConvert(contract.script.code[2].args)
-  console.log(result)
+  const stack = Misualizer.createStack({
+    t: contract.script.code[0].args[0],
+  }, {
+    t: contract.script.code[1].args[0]
+  })
+  const valve = Misualizer.createValve(contract.script.code[2].args, stack)
+  valve.flowOnce()
+  valve.flowOnce()
+  console.log(valve)
+
 }
