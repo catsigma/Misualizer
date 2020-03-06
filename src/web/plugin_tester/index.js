@@ -92,7 +92,17 @@ async function testDiff() {
 
 
 async function main() {
-  await testContract()
-  testDiff()
+  // await testContract()
+  // testDiff()
+
+  await testTube()
 }
 main()
+
+async function testTube() {
+  const address = 'KT1LSMRcE2sLqg6H1mmFHG7RVwYNEQnkAtc1'
+  const contract = await client.fetch.contract(address)
+
+  const result = Misualizer.codeConvert(contract.script.code[2].args)
+  console.log(result)
+}

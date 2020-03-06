@@ -6,7 +6,12 @@ import { SVGRenderer } from '../renderer/svg'
 import { replaceElement, reduceElement } from '../renderer/repr'
 import { createElementByType, mockValueFromType } from '../emu/micheline'
 
+import { codeConvert } from '../emu/tube/tube'
+
 const Misualizer = {
+  codeConvert(code : Object) {
+    return codeConvert(code)
+  },
   diff(t : Object, left : Object, right : Object) {
     const mock_elem = createElementByType(t, mockValueFromType(t))
     const left_elem = createElementByType(t, left)
