@@ -161,7 +161,6 @@ export function codeConvert(code : Object[]) : Tube {
       return new Tube(id++, passing_code, last)
   }
 
-  
   const result = walk(code)
   return result
 }

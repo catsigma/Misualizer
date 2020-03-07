@@ -71,7 +71,7 @@ function shift(point : point, direction : direction, factor : number = 50) : poi
   return [point[0] + shift_point[0], point[1] + shift_point[1]]
 }
 
-function distance(point1 : point, point2 : point, with_sqrt : boolean = true) {
+export function distance(point1 : point, point2 : point, with_sqrt : boolean = true) {
   const square_sum = Math.pow(point1[0] - point2[0], 2) + Math.pow(point1[1] - point2[1], 2)
   return with_sqrt ? Math.sqrt(square_sum) : square_sum
 }
@@ -185,6 +185,17 @@ export class Graph {
     else
       this.hide()
   }
+}
+
+export const linearGradient = (stops : Object[], attrs : Object) => {
+  const g = new Graph('linearGradient')
+  g.setAttrs(attrs)
+  stops.forEach(x => {
+    const stop = new Graph('stop')
+    stop.setAttrs(x)
+    g.el.appendChild(stop.el)
+  })
+  return g
 }
 
 export const TubeGraph = () => {
@@ -321,6 +332,27 @@ export const Curve = (start : point,
   const curve = new Graph('path')
   const [start_str, end_str] = [pp(start), pp(end)]
   const [c_start_str, c_end_str] = [pp(shift(start, start_direction, factor)), pp(shift(end, end_direction, factor))]
+
+  curve.setAttrs(Object.assign({
+    d: `
+      M ${start_str}
+      C ${c_start_str}, ${c_end_str}, ${end_str}
+    `,
+    stroke: '#aaa',
+    fill: 'transparent'
+  }, attrs))
+
+  return curve
+}
+
+export const CustomCurve = (start : point, 
+                      end : point, 
+                      cstart : point, 
+                      cend : point,
+                      attrs : Object = {}) => {
+  const curve = new Graph('path')
+  const [start_str, end_str] = [pp(start), pp(end)]
+  const [c_start_str, c_end_str] = [pp(cstart), pp(cend)]
 
   curve.setAttrs(Object.assign({
     d: `
