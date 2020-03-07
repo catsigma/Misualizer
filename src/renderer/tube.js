@@ -2,7 +2,7 @@
 
 import { Tube, Joint, Valve } from '../emu/tube/tube'
 import { throttle } from '../utils'
-import { TubeGraph, JointGraph, Graph } from './graph'
+import { TubeGraph, JointGraph, Graph, Curve } from './graph'
 
 function bindMouseControl(svg : Object, zoom_in : Object, zoom_out : Object) {
   const getViewBox = () => svg.getAttribute('viewBox').split(' ').map(x => parseInt(x))
@@ -62,39 +62,83 @@ export class SVGRenderer {
   }
   
   renderValve(valve : Valve) {
-    const graphs = []
-    const walk = (node : Tube | Joint | null, start_point : [number, number]) => {
+    const graph_id_mapping = {}
+    const levels = {}
+    const links = []
+
+    const walk = (node : Tube | Joint | null, level : number) => {
       if (!node || !node.id)
         return;
         
+      if (!(level in levels)) {
+        levels[level] = []
+      }
+
       if (node instanceof Tube) {
-        const {graph, end_point} = TubeGraph(start_point)
-        graph.on('click', () => {
-          console.log(node)
+        const tube = TubeGraph()
+
+        if (!(node.id in graph_id_mapping)) {
+          levels[level].push(Object.assign({}, {node}, tube))
+          graph_id_mapping[node.id] = tube
+        }
+
+        links.push({
+          from: node.id,
+          offset: tube.end_offset,
+          to: node.next && node.next.id
         })
-        graphs.push(graph)
-        walk(node.next, end_point)
+
+        walk(node.next, level + 1)
+
       } else if (node instanceof Joint) {
-        const {graph, end_points} = JointGraph(start_point, node.nexts.length)
-        graph.on('click', () => {
-          console.log(node)
+        const joint = JointGraph(node.nexts.length)
+        if (!(node.id in graph_id_mapping)) {
+          levels[level].push(Object.assign({}, {node}, joint))
+          graph_id_mapping[node.id] = joint
+        }
+
+        node.nexts.forEach((next, i) => {
+          links.push({
+            from: node.id,
+            offset: joint.end_offsets[i],
+            to: next.id
+          })
+
+          walk(next, level + 1)
         })
-        graphs.push(graph)
-        node.nexts.forEach((next, i) => walk(next, end_points[i]))
+
       }
     }
-    walk(valve.start.node, [0, 0])
+    walk(valve.start.node, 1)
+
+    const graphs = []
+    for (const level in levels) {
+      const currs = levels[level]
+      const width = currs.reduce((acc, x) => acc + x.graph.width() + 20, 0)
+
+      let prev_width = 0
+      currs.forEach((curr, i) => {
+        const w = curr.graph.width()
+        curr.graph.relocate([prev_width - width / 2, parseInt(level) * 32])
+        curr.graph.on('click', () => {
+          console.log(curr.node)
+        })
+        prev_width += w + 20
+        graphs.push(curr.graph)
+      })
+    }
+
+    links.forEach(link => {
+      if (!link.from || !link.to)
+        return;
+      
+      const from = graph_id_mapping[link.from].graph.key_points[0]
+      const to = graph_id_mapping[link.to].graph.key_points[0]
+      const curve = Curve([from[0] + link.offset[0], from[1] + link.offset[1]], to, 'down', 'up', 8)
+      graphs.push(curve)
+    })
 
     return this.createSVG([screen.width, 1000], new Graph(graphs).el)
-  }
-
-  renderTube(tube : Tube) {
-    // const elem = TubeGraph([0, 0], 100)
-    // return this.createSVG([screen.width, 200], elem.el)
-  }
-
-  renderJoint(joint : Joint) {
-
   }
 
   createSVG(size : [number, number], elem : Object) {

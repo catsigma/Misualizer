@@ -134,6 +134,13 @@ export class Graph {
     return this.el.getAttribute(name)
   }
 
+  width() {
+    return this.key_points[1][0] - this.key_points[3][0]
+  }
+  height() {
+    return this.key_points[2][1] - this.key_points[0][1]
+  }
+
   relocate(pos : point) {
     const prev_x = this.key_points[3][0]
     const prev_y = this.key_points[0][1]
@@ -180,60 +187,84 @@ export class Graph {
   }
 }
 
-export const TubeGraph = (start : point) => {
-  const height = 40
-  const [x, y] = start
+export const TubeGraph = () => {
+  const height = 14
+  const [x, y] = [0, 0]
 
-  const start_line = HLine(start, 10)
-  const end_line = HLine([x, y + height], 10)
-  const curve = Curve([x, y + 2], [x, y + height - 2], 'up', 'down', 16, {'stroke-width': '2'})
+  const start_line = Rect([x, y], 8, 4)
+  const end_line = Rect([x, y + height], 8, 4)
+  const vert_line = Line([x + 4, y], [x + 4, y + height])
 
-  return {
-    graph: new Graph([curve, start_line, end_line]),
-    end_point: [x, y + height + 10]
-  }
-}
-
-export const JointGraph = (start : point, count : number) => {
-  const height = 40
-  const [x, y] = start
+  const graph = new Graph([vert_line, start_line, end_line])
+  graph.key_points = [
+    [4, 0],
+    [8, height / 2],
+    [4, height],
+    [0, height / 2]
+  ]
   
-  const end_offsets = [...Array(count)].map((_, i) => i * 100 - count * 25)
-  const end_points = end_offsets.map<[number, number]>(x => [x, y + height])
-
-  const start_line = HLine(start, 10)
-  const end_lines = end_points.map(x => HLine(x, 10))
-  const curves = end_points.map(([px, py]) => 
-    Curve([x, y + 2], [px, py - 2], 'up', 'down', 16, {'stroke-width': '2'}))
-
   return {
-    graph: new Graph(curves.concat(end_lines).concat(start_line)),
-    end_points
+    graph,
+    end_offset: [0, height + 4]
   }
 }
 
-export const HLine = (center : point, width: number) => {
+export const JointGraph = (count : number) => {
+  const [x, y] = [0, 0]
+
+  const width = count * 8 + (count - 1) * 2
+  const start_rect = LRect([x, y], width, 8)
+  const end_points = [...Array(count)].map<[number, number]>((_, i) => [x + i * 10, y + 10])
+  const end_rects = end_points.map(p => LRect(p, 8, 8))
+
+  const graph = new Graph(end_rects.concat(start_rect))
+  graph.key_points = [
+    [width / 2, 0],
+    [width, 9],
+    [width / 2, 18],
+    [0, 9]
+  ]
+
+  return {
+    graph,
+    end_offsets: end_points.map<[number, number]>(p => [p[0] - x - width / 2 + 4, p[1] - y + 8])
+  }
+}
+
+export const Line = (p1 : point, p2 : point) => {
   const line = new Graph('line')
   line.setAttrs({
-    x1: center[0] - width / 2,
-    y1: center[1],
-    x2: center[0] + width / 2,
-    y2: center[1],
-    'stroke-width': '3',
+    x1: p1[0],
+    y1: p1[1],
+    x2: p2[0],
+    y2: p2[1],
+    'stroke-width': '4',
     stroke: 'black'
   })
   return line
 }
 
-export const Rect = (start : point, width: number, height: number) => {
+export const LRect = (center : point, width : number, height: number) => {
   const rect = new Graph('rect')
   rect.setAttrs({
+    x: center[0],
+    y: center[1],
+    width,
+    height,
+    fill: 'red'
+  })
+  return rect
+}
+
+export const Rect = (start : point, width: number, height: number, attrs? : Object) => {
+  const rect = new Graph('rect')
+  rect.setAttrs(Object.assign({
     x: start[0],
     y: start[1],
     width,
     height,
     fill: 'black'
-  })
+  }, attrs))
   const horiz_mid = start[0] + width / 2
   const vert_mid = start[1] + height / 2
   rect.key_points = [
