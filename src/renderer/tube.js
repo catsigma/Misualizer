@@ -141,10 +141,13 @@ export class SVGRenderer {
       const from = [origin[0] + link.offset[0], origin[1] + link.offset[1]]
       const to = graph_id_mapping[link.to].graph.key_points[0]
       
-      const mark_x = Math.abs(from[0]) > Math.abs(to[0]) ? from[0] : to[0] 
-      const k = mark_x < 0 ? 1 : -1
+      const k = from[0] > 0 ? 1 : -1
       const curve = to[1] - from[1] !== 22 ?
-        CustomCurve(from, to, [mark_x - 100 * k, from[1]], [mark_x - 100 * k, to[1]], {stroke: 'url(#tubeLongConnect)'}) :
+        CustomCurve(
+          from,
+          to,
+          from[0] + 150 * k,
+          {stroke: 'url(#tubeLongConnect)'}) :
         Curve(from, to, 'down', 'up', 8)
 
       graphs.push(curve)
@@ -177,9 +180,8 @@ export class SVGRenderer {
     const defs = new Graph('defs')
     const lg = linearGradient([
       {offset: '5%', 'stop-color': '#aaa'},
-      {offset: '20%', 'stop-color': '#eee'},
-      {offset: '50%', 'stop-color': '#f8f8f8'},
-      {offset: '80%', 'stop-color': '#eee'},
+      {offset: '10%', 'stop-color': '#f4f4f4'},
+      {offset: '90%', 'stop-color': '#f4f4f4'},
       {offset: '95%', 'stop-color': '#aaa'}
     ], {
       id: 'tubeLongConnect',

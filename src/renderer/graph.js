@@ -199,24 +199,24 @@ export const linearGradient = (stops : Object[], attrs : Object) => {
 }
 
 export const TubeGraph = () => {
-  const height = 14
+  const height = 10
   const [x, y] = [0, 0]
 
-  const start_line = Rect([x, y], 8, 4)
-  const end_line = Rect([x, y + height], 8, 4)
-  const vert_line = Line([x + 4, y], [x + 4, y + height])
+  const start_line = Rect([x, y], 16, 8)
+  const end_line = Rect([x, y + height], 16, 8)
+  // const vert_line = Line([x + 4, y], [x + 4, y + height])
 
-  const graph = new Graph([vert_line, start_line, end_line])
+  const graph = new Graph([start_line, end_line])
   graph.key_points = [
-    [4, 0],
-    [8, height / 2],
-    [4, height],
+    [8, 0],
+    [16, height / 2],
+    [8, height],
     [0, height / 2]
   ]
   
   return {
     graph,
-    end_offset: [0, height + 4]
+    end_offset: [0, height + 8]
   }
 }
 
@@ -345,23 +345,47 @@ export const Curve = (start : point,
   return curve
 }
 
-export const CustomCurve = (start : point, 
-                      end : point, 
-                      cstart : point, 
-                      cend : point,
-                      attrs : Object = {}) => {
+export const Polyline = (points : point[], attrs : Object = {}) => {
+  const polyline = new Graph('polyline')
+  polyline.setAttrs(Object.assign({
+    fill: 'transparent',
+    points: points.map(x => pp(x)).join(', ')
+  }, attrs))
+  return polyline
+}
+
+export const CustomCurve = (start : point,
+                            end : point,
+                            x : number,
+                            attrs : Object = {}) => {
   const curve = new Graph('path')
-  const [start_str, end_str] = [pp(start), pp(end)]
-  const [c_start_str, c_end_str] = [pp(cstart), pp(cend)]
+  const points = [
+    start,
+    [start[0], start[1] + 10],
+    [(x + start[0]) / 2, start[1] + 10],
+    // [x, start[1] + 10],
+    [x, (start[1] + end[1]) / 2],
+    [x, end[1] - 10],
+    [(x + end[0]) / 2, end[1] - 10],
+    // [end[0], end[1] - 10],
+    end
+  ].map(x => pp(x))
 
   curve.setAttrs(Object.assign({
     d: `
-      M ${start_str}
-      C ${c_start_str}, ${c_end_str}, ${end_str}
+      M ${points[0]}
+      Q ${points[1]}, ${points[2]}
+      T ${points[3]}
+      Q ${points[4]}, ${points[5]}
+      T ${points[6]}
     `,
     stroke: '#aaa',
     fill: 'transparent'
   }, attrs))
+
+  // const colors = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple']
+  // const gs = points.map((x, i) => Rect(x, 5, 5, {fill:colors[i]}))
+  // return new Graph(gs)
 
   return curve
 }

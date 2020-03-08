@@ -100,8 +100,8 @@ async function main() {
 main()
 
 async function testTube() {
-  // const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
-  const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
+  const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
+  // const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
   // const address = 'KT1LSMRcE2sLqg6H1mmFHG7RVwYNEQnkAtc1'
   const contract = await client.fetch.contract(address)
 
