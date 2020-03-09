@@ -100,8 +100,8 @@ async function main() {
 main()
 
 async function testTube() {
-  const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
-  // const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
+  // const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
+  const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
   // const address = 'KT1LSMRcE2sLqg6H1mmFHG7RVwYNEQnkAtc1'
   const contract = await client.fetch.contract(address)
 
@@ -111,17 +111,9 @@ async function testTube() {
     t: contract.script.code[1].args[0]
   })
   const valve = Misualizer.createValve(contract.script.code[2].args, stack)
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
-  // valve.flowOnce()
+  for (let i = 0; i < 100; i++) {
+    valve.flowOnce()
+  }
 
   console.log(valve)
 

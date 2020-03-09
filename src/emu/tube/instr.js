@@ -6,6 +6,9 @@ import { Stack, StackItem } from './stack'
 const get_t = t => t instanceof Array ? t : [t]
 
 export const instr_mapping = {
+  DEBUGGER(stack : Stack, instr : Object) {
+    debugger
+  },
   DUP(stack : Stack, instr : Object) {
     stack.insert(stack.top().clone())
   },
@@ -101,5 +104,612 @@ export const instr_mapping = {
 
     stack.insert(new StackItem(
       get_t(lambda.t[2]), instr.annots, instr.prim, null, [arg, lambda]))
+  },
+  RENAME(stack : Stack, instr : Object) {
+    stack.top().annots = instr.annots
+  },
+  INT(stack : Stack, instr : Object) {
+    stack.replace(x => 
+      new StackItem(['int'], instr.annots, instr.prim, null, [x]))
+  },
+  NEG(stack : Stack, instr : Object) {
+    stack.replace(x => 
+      new StackItem(['int'], instr.annots, instr.prim, null, [x]))
+  },
+  ABS(stack : Stack, instr : Object) {
+    stack.replace(x => 
+      new StackItem(['nat'], instr.annots, instr.prim, null, [x]))
+  },
+  LSL(stack : Stack, instr : Object) {
+    stack.insert(new StackItem(['nat'], instr.annots, instr.prim, null, stack.drop(2)))
+  },
+  LSR(stack : Stack, instr : Object) {
+    stack.insert(new StackItem(['nat'], instr.annots, instr.prim, null, stack.drop(2)))
+  },
+  EDIV(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    let t1, t2
+    if (a.t[0] === 'mutez') {
+      t1 = b.t[0] === 'nat' ? 'mutez' : 'nat'
+      t2 = 'mutez'
+    } else {
+      t1 = a.t[0] === 'nat' && b.t[0] === 'nat' ? 'nat' : 'int'
+      t2 = 'nat'
+    }
+
+    stack.insert(new StackItem(
+      ['option', ['pair', t1, t2]], instr.annots, instr.prim, null, [a, b]))
+  },
+  MUL(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    const t_set = new Set([a, b].map(x => x.t[0]))
+    const t = t_set.has('mutez') ? 'mutez' : t_set.has('int') ? 'int' : 'nat'
+
+    stack.insert(new StackItem([t], instr.annots, instr.prim, null, [a, b]))
+  },
+  ADD(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    const t_set = new Set([a, b].map(x => x.t[0]))
+    const t =
+      t_set.has('timestamp') ? 'timestamp' : 
+      t_set.has('mutez') ? 'mutez' :
+      t_set.has('int') ? 'int' : 'nat'
+
+    stack.insert(new StackItem([t], instr.annots, instr.prim, null, [a, b]))
+  },
+  SUB(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    const t_set = new Set([a, b].map(x => x.t[0]))
+    const t =
+      t_set.has('mutez') ? 'mutez' :
+      a.t[0] === 'timestamp' ? (b.t[0] === 'timestamp' ? 'int' : 'timestamp') : 'int'
+
+    stack.insert(new StackItem([t], instr.annots, instr.prim, null, [a, b]))
+  },
+  XOR(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    stack.insert(new StackItem(get_t(a.t[0]), instr.annots, instr.prim, null, [a, b]))
+  },
+  AND(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    stack.insert(new StackItem(get_t(b.t[0]), instr.annots, instr.prim, null, [a, b]))
+  },
+  OR(stack : Stack, instr : Object) {
+    const [a, b] = stack.drop(2)
+    stack.insert(new StackItem(get_t(a.t[0]), instr.annots, instr.prim, null, [a, b]))
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
+  },
+  XXX(stack : Stack, instr : Object) {
+
   },
 }
