@@ -16,6 +16,22 @@ const micheline_mapping = {
   bytes: new Set(['bytes', 'key', 'signature'])
 }
 
+export function fallbackType(t : string | VType) : MichelineType {
+  if (typeof t === 'string')
+    return {prim: t}
+
+  const t0 = typeof t[0] === 'string' ? t[0] : ''
+
+  if (t.length > 1) {
+    return {
+      prim: t0,
+      args: t.slice(1).map((x : string | VType) => fallbackType(x))
+    }
+  } else {
+    return {prim: t0}
+  }
+}
+
 export function toVType(t : MichelineType) : VType {
   if (t.args instanceof Array) {
     return [t.prim].concat(t.args.map(x => toVType(x)))

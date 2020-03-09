@@ -24,7 +24,11 @@ const Misualizer = {
     return new Stack(
       0, 
       [new StackItem(['pair', toVType(parameter.t), toVType(storage.t)], [], '', null, [p, s])],
-      []
+      [],
+      undefined,
+      {
+        parameter_vtype: toVType(parameter.t)
+      }
     )
   },
   createValve(code : Object, stack : Stack) {

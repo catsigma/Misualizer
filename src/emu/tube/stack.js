@@ -19,6 +19,7 @@ export class Stack {
   items : StackItem[]
   path : number[]
   env : Env
+  attached : Object
 
   constructor(cursor : number = 0, items : StackItem[] = [], path : number[] = [], env : Env = {
     self: 'SELF',
@@ -28,11 +29,12 @@ export class Stack {
     chain_id: 'CHAIN_ID',
     amount: 'AMOUNT',
     balance: 'BALANCE'
-  }) {
+  }, attached : Object = {}) {
     this.cursor = cursor
     this.items = items
     this.path = path
     this.env = env
+    this.attached = attached
   }
 
   at(index : number) : StackItem {
@@ -76,7 +78,7 @@ export class Stack {
   }
 
   clone() {
-    return new Stack(this.cursor, this.items.map(x => x.clone()), this.path.slice(), this.env)
+    return new Stack(this.cursor, this.items.map(x => x.clone()), this.path.slice(), this.env, this.attached)
   }
 }
 
