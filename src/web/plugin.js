@@ -32,8 +32,8 @@ const Misualizer = {
     )
   },
   createValve(code : Object, stack : Stack) {
-    const tube = codeConvert(code)
-    return new Valve(tube, stack)
+    const result = codeConvert(code)
+    return new Valve(result.tube, result.id_mapping, stack)
   }
   // diff(t : Object, left : Object, right : Object) {
   //   const mock_elem = createElementByType(t, mockValueFromType(t))

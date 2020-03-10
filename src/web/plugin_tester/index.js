@@ -112,14 +112,19 @@ async function testTube() {
   })
   const valve = Misualizer.createValve(contract.script.code[2].args, stack)
 
-  while(valve.flowOnce()) {}
+  // while(valve.flowOnce()) {}
 
   console.log(valve)
 
   const renderer = Misualizer.getGraphRenderer((node) => {
     console.log(node)
-    console.log(valve.mem[node.id][0].path)
-    renderer.glowGraphs(valve.mem[node.id][0].path)
+    // const path1 = valve.stack_mem[node.id].map(x => x.path).sort()
+    const path2 = valve.getPaths(node)
+    // console.log(path1)
+    // console.log(path2)
+    // console.log(JSON.stringify(path1) === JSON.stringify(path2))
+    renderer.glowGraphs(path2[0])
+    console.log(valve.flowByPath(path2[0]))
   })
   const g = renderer.renderValve(valve)
   document.body && document.body.appendChild(g)
