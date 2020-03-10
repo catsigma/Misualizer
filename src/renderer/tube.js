@@ -150,7 +150,7 @@ export class SVGRenderer {
           {stroke: 'url(#tubeLongConnect)'}) :
         Curve(from, to, 'down', 'up', 8)
 
-      graphs.push(curve)
+      graphs.unshift(curve)
     })
 
     return this.createSVG([screen.width, height + 32], new Graph(graphs).el)
@@ -177,6 +177,8 @@ export class SVGRenderer {
 
     const svg : Object = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.style.width = '100%'
+
+    // adding defs
     const defs = new Graph('defs')
     const lg = linearGradient([
       {offset: '5%', 'stop-color': '#aaa'},
@@ -190,6 +192,14 @@ export class SVGRenderer {
     defs.el.appendChild(lg.el)
     svg.appendChild(defs.el)
 
+    // adding styles
+    const style = document.createElement('style')
+    style.innerHTML = `
+      .cursor-pointer {cursor: pointer}
+    `
+    svg.appendChild(style)
+
+    // setting viewbox
     const view_box = [-size[0] / 2, 0, size[0], size[1]]
     svg.setAttribute('viewBox', view_box.join(' '))
     bindMouseControl(svg, zoom_in, zoom_out)
@@ -198,8 +208,6 @@ export class SVGRenderer {
     wrapper.appendChild(zoom_in)
     wrapper.appendChild(zoom_out)
     wrapper.appendChild(svg)
-
-
 
     return wrapper
   }

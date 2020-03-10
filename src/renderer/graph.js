@@ -159,14 +159,31 @@ export class Graph {
     this.el.appendChild(el)
   }
 
-  on(event : string, fn : Function) {
-    if (!this.el.getAttribute('class'))
-      this.el.setAttribute('class', 'with-event')
+  modClass(classname : string, t : 'add' | 'remove') {
+    const class_str = this.el.getAttribute('class') || ''
+    const class_set = new Set(class_str.split(/\s+/g))
+    if (t === 'add')
+      class_set.add(classname)
+    else
+      class_set.delete(classname)
+  
+    this.el.setAttribute('class', Array.from(class_set).join(' '))
+  }
 
+  addClass(classname : string) {
+    this.modClass(classname, 'add')
+  }
+  removeClass(classname : string) {
+    this.modClass(classname, 'remove')
+  }
+
+  on(event : string, fn : Function) {
+    this.addClass('cursor-pointer')
     this.el.addEventListener(event, fn)
   }
 
   off(event : string, fn : Function) {
+    this.removeClass('cursor-pointer')
     this.el.removeEventListener(event, fn)
   }
 
