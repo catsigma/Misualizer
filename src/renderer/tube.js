@@ -64,9 +64,22 @@ function bindMouseControl(svg : Object, zoom_in : Object, zoom_out : Object) {
 }
 
 export class SVGRenderer {
-  constructor() {
+  graph_mem : {number: Graph}
+  onSelect : (Tube | Joint) => void
+  
+  constructor(onSelect : (Tube | Joint) => void) {
+    this.graph_mem = {}
+    this.onSelect = onSelect || (() => {})
   }
   
+  glowGraphs(graph_id_lst: number[]) {
+    const graph_set = new Set(graph_id_lst.map(x => x.toString()))
+    for (const id in this.graph_mem) {
+      const [opacity, filter] = graph_set.has(id) ? ['1', 'url(#glow)'] : ['0.2', '']
+      this.graph_mem[id].setStyles({opacity, filter})
+    }
+  }
+
   renderValve(valve : Valve) {
     const graph_id_mapping = {}
     const levels = {}
@@ -125,11 +138,11 @@ export class SVGRenderer {
       currs.forEach((curr, i) => {
         const w = curr.graph.width()
         curr.graph.relocate([prev_width - width / 2, parseInt(level) * padding.y])
-        curr.graph.on('click', () => {
-          console.log(curr.node)
-        })
         prev_width += w + padding.x
         graphs.push(curr.graph)
+        
+        this.graph_mem[curr.node.id] = curr.graph
+        curr.graph.on('click', () => this.onSelect(curr.node))
       })
     }
 
@@ -180,16 +193,20 @@ export class SVGRenderer {
 
     // adding defs
     const defs = new Graph('defs')
-    const lg = linearGradient([
-      {offset: '5%', 'stop-color': '#aaa'},
-      {offset: '10%', 'stop-color': '#f4f4f4'},
-      {offset: '90%', 'stop-color': '#f4f4f4'},
-      {offset: '95%', 'stop-color': '#aaa'}
-    ], {
-      id: 'tubeLongConnect',
-      gradientTransform: 'rotate(90)'
-    })
-    defs.el.appendChild(lg.el)
+    const defs_innerHTML = `
+      <linearGradient id="tubeLongConnect" gradientTransform="rotate(90)">
+        <stop offset="5%" stop-color="#aaa"></stop>
+        <stop offset="10%" stop-color="#f4f4f4"></stop>
+        <stop offset="90%" stop-color="#f4f4f4"></stop>
+        <stop offset="95%" stop-color="#aaa">
+        </stop>
+      </linearGradient>
+
+      <filter id="glow" height="130%" width="130%" filterUnits="userSpaceOnUse">
+        <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="orange"/>
+      </filter>
+    `
+    defs.el.innerHTML = defs_innerHTML
     svg.appendChild(defs.el)
 
     // adding styles

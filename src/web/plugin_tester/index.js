@@ -117,7 +117,11 @@ async function testTube() {
 
   console.log(valve)
 
-  const renderer = Misualizer.getGraphRenderer()
+  const renderer = Misualizer.getGraphRenderer((node) => {
+    console.log(node)
+    console.log(valve.mem[node.id][0].path)
+    renderer.glowGraphs(valve.mem[node.id][0].path)
+  })
   const g = renderer.renderValve(valve)
   document.body && document.body.appendChild(g)
 }

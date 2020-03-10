@@ -92,6 +92,7 @@ export class Joint {
     if (this.t in instr_mapping) {
       const stacks = instr_mapping[this.t](stack)
       return stacks.map((stack, i) => {
+        stack.path.push(this.id)
         return {
           node: this.nexts[i],
           stack
