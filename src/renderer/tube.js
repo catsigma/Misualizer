@@ -144,6 +144,9 @@ export class SVGRenderer {
         
         this.graph_mem[curr.node.id] = curr.graph
         curr.graph.on('click', () => this.onSelect(curr.node))
+
+        if (curr.node instanceof Tube && (!curr.node.next || !curr.node.next.id))
+          curr.graph.setStyles({filter: 'url(#endNode)'})
       })
     }
 
@@ -205,6 +208,9 @@ export class SVGRenderer {
 
       <filter id="glow" height="130%" width="130%" filterUnits="userSpaceOnUse">
         <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="orange"/>
+      </filter>
+      <filter id="endNode" height="130%" width="130%" filterUnits="userSpaceOnUse">
+        <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="yellow"/>
       </filter>
     `
     defs.el.innerHTML = defs_innerHTML
