@@ -221,7 +221,6 @@ export const TubeGraph = () => {
 
   const start_line = Rect([x, y], 16, 8)
   const end_line = Rect([x, y + height], 16, 8)
-  // const vert_line = Line([x + 4, y], [x + 4, y + height])
 
   const graph = new Graph([start_line, end_line])
   graph.key_points = [
@@ -231,6 +230,7 @@ export const TubeGraph = () => {
     [0, height / 2]
   ]
   
+  graph.addClass('tube')
   return {
     graph,
     end_offset: [0, height + 8]
@@ -241,9 +241,9 @@ export const JointGraph = (count : number) => {
   const [x, y] = [0, 0]
 
   const width = count * 8 + (count - 1) * 2
-  const start_rect = LRect([x, y], width, 8)
+  const start_rect = Rect([x, y], width, 8)
   const end_points = [...Array(count)].map<[number, number]>((_, i) => [x + i * 10, y + 10])
-  const end_rects = end_points.map(p => LRect(p, 8, 8))
+  const end_rects = end_points.map(p => Rect(p, 8, 8))
 
   const graph = new Graph(end_rects.concat(start_rect))
   graph.key_points = [
@@ -253,6 +253,7 @@ export const JointGraph = (count : number) => {
     [0, 9]
   ]
 
+  graph.addClass('joint')
   return {
     graph,
     end_offsets: end_points.map<[number, number]>(p => [p[0] - x - width / 2 + 4, p[1] - y + 8])
@@ -266,22 +267,9 @@ export const Line = (p1 : point, p2 : point) => {
     y1: p1[1],
     x2: p2[0],
     y2: p2[1],
-    'stroke-width': '4',
     stroke: 'black'
   })
   return line
-}
-
-export const LRect = (center : point, width : number, height: number) => {
-  const rect = new Graph('rect')
-  rect.setAttrs({
-    x: center[0],
-    y: center[1],
-    width,
-    height,
-    fill: 'red'
-  })
-  return rect
 }
 
 export const Rect = (start : point, width: number, height: number, attrs? : Object) => {
@@ -290,17 +278,10 @@ export const Rect = (start : point, width: number, height: number, attrs? : Obje
     x: start[0],
     y: start[1],
     width,
-    height,
-    fill: 'black'
+    height
   }, attrs))
-  const horiz_mid = start[0] + width / 2
-  const vert_mid = start[1] + height / 2
-  rect.key_points = [
-    [horiz_mid, start[1]],
-    [start[0] + width, vert_mid],
-    [horiz_mid, start[1] + height],
-    [start[0], vert_mid]
-  ]
+  rect.addClass('rect')
+
   return rect
 }
 
@@ -355,10 +336,11 @@ export const Curve = (start : point,
       M ${start_str}
       C ${c_start_str}, ${c_end_str}, ${end_str}
     `,
-    stroke: '#aaa',
+    stroke: 'black',
     fill: 'transparent'
   }, attrs))
 
+  curve.addClass('curve')
   return curve
 }
 
@@ -396,14 +378,11 @@ export const CustomCurve = (start : point,
       Q ${points[4]}, ${points[5]}
       T ${points[6]}
     `,
-    stroke: '#aaa',
+    stroke: 'black',
     fill: 'transparent'
   }, attrs))
 
-  // const colors = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple']
-  // const gs = points.map((x, i) => Rect(x, 5, 5, {fill:colors[i]}))
-  // return new Graph(gs)
-
+  curve.addClass('custom-curve')
   return curve
 }
 

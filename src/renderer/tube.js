@@ -75,8 +75,10 @@ export class SVGRenderer {
   glowGraphs(graph_id_lst: number[]) {
     const graph_set = new Set(graph_id_lst.map(x => x.toString()))
     for (const id in this.graph_mem) {
-      const [opacity, filter] = graph_set.has(id) ? ['1', 'url(#glow)'] : ['0.2', '']
-      this.graph_mem[id].setStyles({opacity, filter})
+      this.graph_mem[id].removeClass('path-selected')
+      this.graph_mem[id].addClass('path-unselected')
+      if (graph_set.has(id))
+        this.graph_mem[id].addClass('path-selected')
     }
   }
 
@@ -146,7 +148,7 @@ export class SVGRenderer {
         curr.graph.on('click', () => this.onSelect(curr.node))
 
         if (curr.node instanceof Tube && (!curr.node.next || !curr.node.next.id))
-          curr.graph.setStyles({filter: 'url(#endNode)'})
+          curr.graph.addClass('end-node')
       })
     }
 
@@ -163,8 +165,7 @@ export class SVGRenderer {
         CustomCurve(
           from,
           to,
-          from[0] + 150 * k,
-          {stroke: 'url(#tubeLongConnect)'}) :
+          from[0] + 150 * k) :
         Curve(from, to, 'down', 'up', 8)
 
       graphs.unshift(curve)
@@ -200,17 +201,14 @@ export class SVGRenderer {
     const defs_innerHTML = `
       <linearGradient id="tubeLongConnect" gradientTransform="rotate(90)">
         <stop offset="5%" stop-color="#aaa"></stop>
-        <stop offset="10%" stop-color="#f4f4f4"></stop>
-        <stop offset="90%" stop-color="#f4f4f4"></stop>
+        <stop offset="10%" stop-color="#eee"></stop>
+        <stop offset="90%" stop-color="#eee"></stop>
         <stop offset="95%" stop-color="#aaa">
         </stop>
       </linearGradient>
 
       <filter id="glow" height="130%" width="130%" filterUnits="userSpaceOnUse">
         <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="orange"/>
-      </filter>
-      <filter id="endNode" height="130%" width="130%" filterUnits="userSpaceOnUse">
-        <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="yellow"/>
       </filter>
     `
     defs.el.innerHTML = defs_innerHTML
@@ -219,6 +217,13 @@ export class SVGRenderer {
     // adding styles
     const style = document.createElement('style')
     style.innerHTML = `
+      .curve {stroke: #aaa} 
+      .custom-curve {stroke: url(#tubeLongConnect)}
+      .rect {stroke: transparent;}
+      .joint .rect {fill: red}
+      .end-node {fill: teal}
+      .path-unselected {opacity: 0.3; filter: none}
+      .path-selected {opacity: 1; filter: url(#glow)}
       .cursor-pointer {cursor: pointer}
     `
     svg.appendChild(style)
