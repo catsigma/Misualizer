@@ -42,6 +42,7 @@ export class Valve {
     })
 
     this.cursors = next_cursors.filter(x => !x.stack.is_failed())
+    return !!this.cursors.length
   }
 }
 
@@ -89,15 +90,17 @@ export class Joint {
 
   flow(stack : Stack) : NodeWithStack[] {
     stack = stack.clone()
+
     if (this.t in instr_mapping) {
       const stacks = instr_mapping[this.t](stack)
-      return stacks.map((stack, i) => {
+      const result = stacks.map((stack, i) => {
         stack.path.push(this.id)
         return {
           node: this.nexts[i],
           stack
         }
       })
+      return result 
     }
     else {
       throw `unhandled code instr in Joint: ${this.t}`

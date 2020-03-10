@@ -2,8 +2,6 @@
 
 type VType = Array<string | VType>
 
-const json_clone = x => JSON.parse(JSON.stringify(x))
-
 type Env = {
   self: string,
   amount: string,
@@ -99,10 +97,10 @@ export class StackItem {
 
   clone() {
     return new StackItem(
-      json_clone(this.t), 
+      this.t, 
       this.annots.slice(),
       this.instr,
-      json_clone(this.value),
+      this.value,
       this.subs.map(x => x.clone()))
   }
 }

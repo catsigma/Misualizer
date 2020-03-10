@@ -121,7 +121,8 @@ export class SVGRenderer {
           walk(next, level + 1)
         })
 
-      }
+      } else
+        debugger
     }
     walk(valve.start.node, 1)
 
