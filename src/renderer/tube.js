@@ -137,7 +137,7 @@ export class SVGRenderer {
       const currs = levels[level]
       const width = currs.reduce((acc, x) => acc + x.graph.width() + padding.x, 0)
 
-      let prev_width = 0
+      let prev_width = 16
       currs.forEach((curr, i) => {
         const w = curr.graph.width()
         curr.graph.relocate([prev_width - width / 2, parseInt(level) * padding.y])
@@ -160,12 +160,12 @@ export class SVGRenderer {
       const from = [origin[0] + link.offset[0], origin[1] + link.offset[1]]
       const to = graph_id_mapping[link.to].graph.key_points[0]
       
-      const k = from[0] > 0 ? 1 : -1
+      const mark_x = Math.abs(from[0]) > Math.abs(to[0]) ? from[0] : to[0]
       const curve = to[1] - from[1] !== 22 ?
         CustomCurve(
           from,
           to,
-          from[0] + 150 * k) :
+          mark_x + Math.abs(mark_x) / mark_x * 100) :
         Curve(from, to, 'down', 'up', 8)
 
       graphs.unshift(curve)
@@ -201,8 +201,8 @@ export class SVGRenderer {
     const defs_innerHTML = `
       <linearGradient id="tubeLongConnect" gradientTransform="rotate(90)">
         <stop offset="5%" stop-color="#aaa"></stop>
-        <stop offset="10%" stop-color="#eee"></stop>
-        <stop offset="90%" stop-color="#eee"></stop>
+        <stop offset="20%" stop-color="#eee"></stop>
+        <stop offset="80%" stop-color="#eee"></stop>
         <stop offset="95%" stop-color="#aaa">
         </stop>
       </linearGradient>
