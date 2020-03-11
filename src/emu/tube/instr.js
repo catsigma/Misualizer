@@ -33,16 +33,29 @@ export const instr_mapping = {
   CURSOR(stack : Stack, instr : Object) {
     stack.cursor += parseInt(instr.args[0].int)
   },
-  ITER(stack : Stack, instr : Object) {
-    debugger
+  ITER(stack : Stack) {
+    const [lst] = stack.drop(1)
+    const stack2 = stack.clone()
+
+    stack.insert(new StackItem(get_t(lst.t[1]), [], 'ITER.ITEM', null, [lst]))
+    return [stack, stack2]
   },
-  LOOP(stack : Stack, instr : Object) {
-    debugger
+  LOOP(stack : Stack) {
+    const [cond] = stack.drop(1)
+    const stack2 = stack.clone()
+
+    return [stack, stack2]
   },
-  LOOP_LEFT(stack : Stack, instr : Object) {
-    debugger
+  LOOP_LEFT(stack : Stack) {
+    const [cond] = stack.drop(1)
+    const stack2 = stack.clone()
+
+    stack.insert(new StackItem(get_t(cond.t[1]), [], 'LOOP_LEFT.LEFT', null, [cond]))
+    stack2.insert(new StackItem(get_t(cond.t[2]), [], 'LOOP_LEFT.RIGHT', null, [cond]))
+
+    return [stack, stack2]
   },
-  IF_NONE(stack : Stack, instr : Object) {
+  IF_NONE(stack : Stack) {
     const [cond] = stack.drop(1)
     const stack2 = stack.clone()
 
@@ -50,7 +63,7 @@ export const instr_mapping = {
 
     return [stack, stack2]
   },
-  IF_CONS(stack : Stack, instr : Object) {
+  IF_CONS(stack : Stack) {
     const [cond] = stack.drop(1)
     const stack2 = stack.clone()
 
