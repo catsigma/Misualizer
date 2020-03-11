@@ -101,7 +101,7 @@ async function main() {
   //   await testTube(code)
   // })
 
-  const code = await getTestContract('loop_left.tz.json')
+  const code = await getTestContract('pexec_2.tz.json')
   await testTube(code)
 
   // const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
@@ -138,8 +138,8 @@ async function testTube(code : Object) {
     // console.log(path1)
     console.log(path2)
     // console.log(JSON.stringify(path1) === JSON.stringify(path2))
-    renderer.glowGraphs(path2[1])
-    console.log(valve.flowByPath(path2[1]))
+    renderer.glowGraphs(path2[0])
+    console.log(valve.flowByPath(path2[0]))
   })
   const g = renderer.renderValve(valve)
   document.body && document.body.appendChild(g)

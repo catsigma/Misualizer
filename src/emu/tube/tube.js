@@ -35,19 +35,13 @@ export class Valve {
   }
 
   getPaths(node : Tube | Joint) {
-    const loop_mem = {}
     const results = []
     
     const walk = (node : Tube | Joint, prev : number[]) => {
-      if (node instanceof Joint && loop_set.has(node.t)) {
-        if (!(node.id in loop_mem))
-          loop_mem[node.id] = 0
-
-        if (loop_mem[node.id] > 1)
-          return;
-        
-        loop_mem[node.id] += 1
-      }
+      if (node instanceof Joint &&
+          loop_set.has(node.t) &&
+          prev.reduce((acc, x) => x === node.id ? acc + 1 : acc, 0) > 2)
+        return;
 
       if (node.parents.length) {
         node.parents.forEach(parent_id => {
@@ -139,13 +133,9 @@ export class Joint {
 
   constructor(id : number, t : string, nexts : (Tube | Joint)[]) {
     this.id = id
-    this.init(t, nexts)
-  }
-
-  init(t : string, nexts : (Tube | Joint)[]) {
     this.t = t
-    this.nexts = nexts
     this.parents = []
+    this.nexts = nexts
   }
 
   addParent(id : number) {
@@ -215,10 +205,10 @@ export function codeConvert(code : Object[]) {
       if (joint_set.has(code[i].prim)) {
         const remaining = walk(code.slice(i + 1), last)
 
-        const joint = new Joint(id++, '', [])
+        const joint = new Joint(id++, code[i].prim, [])
         const joint_child1 = walk(code[i].args[0], loop_set.has(code[i].prim) ? joint : remaining)
         const joint_child2 = code[i].args.length > 1 ? walk(code[i].args[1], remaining) : remaining
-        joint.init(code[i].prim, [joint_child1, joint_child2])
+        joint.nexts = [joint_child1, joint_child2]
         id_mapping[joint.id] = joint
         joint_child1.addParent(joint.id)
         joint_child2.addParent(joint.id)
@@ -243,7 +233,6 @@ export function codeConvert(code : Object[]) {
 
       const result = new Tube(id++, passing_code, last)
       id_mapping[result.id] = result
-      debugger
       last && last.addParent(result.id)
       return result
     }

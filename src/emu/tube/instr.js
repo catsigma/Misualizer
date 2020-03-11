@@ -37,7 +37,7 @@ export const instr_mapping = {
     const [lst] = stack.drop(1)
     const stack2 = stack.clone()
 
-    stack.insert(new StackItem(get_t(lst.t[1]), [], 'ITER.ITEM', null, [lst]))
+    stack.insert(new StackItem(get_t(lst.t[1]), [], 'ITER.EACH', null, [lst]))
     return [stack, stack2]
   },
   LOOP(stack : Stack) {
@@ -331,6 +331,7 @@ export const instr_mapping = {
     stack.insert(lambda)
   },
   LAMBDA(stack : Stack, instr : Object) {
+    // TODO: convert instr.args to valve
     stack.insert(new StackItem(
       ['lambda', toVType(instr.args[0]), toVType(instr.args[1])], instr.annots, '', instr.args[2], []
     ))
