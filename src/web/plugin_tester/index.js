@@ -101,7 +101,7 @@ async function main() {
   //   await testTube(code)
   // })
 
-  // const code = await getTestContract('pexec_2.tz.json')
+  // const code = await getTestContract('loop_left.tz.json')
   // await testTube(code)
 
   // const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
@@ -129,7 +129,7 @@ async function testTube(code : Object) {
   console.log('valve', valve)
   const {steps, ends, fails} = valve.flow()
   console.log('steps', steps)
-  console.log('ends', ends)
+  console.log('ends', ends.map(x => x.path))
   console.log('fails', fails)
 
   const renderer = Misualizer.getGraphRenderer((node) => {

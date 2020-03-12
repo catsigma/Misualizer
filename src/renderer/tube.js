@@ -96,7 +96,7 @@ export class SVGRenderer {
       }
 
       if (node instanceof Tube) {
-        const tube = TubeGraph()
+        const tube = TubeGraph(node.id + '')
         levels[level].push(Object.assign({}, {node}, tube))
         graph_id_mapping[node.id] = tube
 
@@ -109,7 +109,7 @@ export class SVGRenderer {
         walk(node.next, level + 1)
 
       } else if (node instanceof Joint) {
-        const joint = JointGraph(node.nexts.length)
+        const joint = JointGraph(node.nexts.length, node.id + '')
         levels[level].push(Object.assign({}, {node}, joint))
         graph_id_mapping[node.id] = joint
 

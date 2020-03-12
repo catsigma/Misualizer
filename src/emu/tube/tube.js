@@ -72,31 +72,36 @@ export class Valve {
 
     let cursors = this.cursors
     while (cursors.length) {
-      const {next_cursors, stack_mem, fail_stacks} = this.flowOnce(cursors)
+      const {next_cursors, stack_mem, end_stacks, fail_stacks} = this.flowOnce(cursors)
 
-      if ('0' in stack_mem) {
-        ends = ends.concat(stack_mem[0])
-        delete stack_mem[0]
-      }
+      ends = ends.concat(end_stacks)
       fails = fails.concat(fail_stacks)
 
       if (Object.keys(stack_mem).length)
         steps.push(stack_mem)
         
-      cursors = next_cursors
+      cursors = next_cursors.filter(({node, stack}) => {
+        if (node instanceof Joint &&
+            loop_set.has(node.t) &&
+            stack.path.reduce((acc, x) => (node && x === node.id) ? acc + 1 : acc, 0) > 1)
+          return false
+        else
+          return true
+      })
     }
 
-    ends.forEach(x => x.path.pop())
     return {steps, ends, fails}
   }
 
   flowOnce(cursors : NodeWithStack[]) : {
     next_cursors : NodeWithStack[],
     stack_mem : {number : Stack[]},
+    end_stacks : Stack[],
     fail_stacks : Stack[]
   } {
     let next_cursors : NodeWithStack[] = []
     const stack_mem = {}
+    const end_stacks = []
     const fail_stacks = []
 
     cursors.forEach(cursor => {
@@ -105,7 +110,7 @@ export class Valve {
 
       const node = cursor.node
       const result = node.flow(cursor.stack)
-      
+
       stack_mem[node.id] = (stack_mem[node.id] || []).concat(
         result instanceof Array ? result.map(x => x.stack) : result.stack
       )
@@ -113,6 +118,9 @@ export class Valve {
       const result_lst = (result instanceof Array ? result : [result]).filter(x => {
         if (x.stack.is_failed()) {
           fail_stacks.push(x.stack)
+          return false
+        } if (!x.node || x.node.id === 0) {
+          end_stacks.push(x.stack)
           return false
         } else
           return true
@@ -124,6 +132,7 @@ export class Valve {
     return {
       next_cursors,
       stack_mem,
+      end_stacks,
       fail_stacks
     }
   }

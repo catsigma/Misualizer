@@ -215,14 +215,14 @@ export const linearGradient = (stops : Object[], attrs : Object) => {
   return g
 }
 
-export const TubeGraph = () => {
+export const TubeGraph = (id? : string) => {
   const height = 10
   const [x, y] = [0, 0]
 
   const start_line = Rect([x, y], 16, 8)
   const end_line = Rect([x, y + height], 16, 8)
 
-  const graph = new Graph([start_line, end_line])
+  const graph = new Graph([start_line, end_line].concat(id ? Text([16, 0], id, 0.8) : []))
   graph.key_points = [
     [8, 0],
     [16, height / 2],
@@ -237,7 +237,7 @@ export const TubeGraph = () => {
   }
 }
 
-export const JointGraph = (count : number) => {
+export const JointGraph = (count : number, id? : string) => {
   const [x, y] = [0, 0]
 
   const width = count * 8 + (count - 1) * 2
@@ -245,7 +245,7 @@ export const JointGraph = (count : number) => {
   const end_points = [...Array(count)].map<[number, number]>((_, i) => [x + i * 10, y + 10])
   const end_rects = end_points.map(p => Rect(p, 8, 8))
 
-  const graph = new Graph(end_rects.concat(start_rect))
+  const graph = new Graph(end_rects.concat(start_rect, id ? Text([width, 0], id, 0.8) : []))
   graph.key_points = [
     [width / 2, 0],
     [width, 9],
