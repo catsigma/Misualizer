@@ -14,24 +14,17 @@ type NodeWithStack = {
 export class Valve {
   start : NodeWithStack
   cursors : NodeWithStack[]
-  stack_mem : {number: Stack[]}
   id_mapping: {number: (Tube | Joint)}
 
   constructor(node : Tube | Joint, id_mapping : {number: (Tube | Joint)}, stack : Stack) {
     this.start = {stack, node}
     this.cursors = [{stack, node}]
-    this.stack_mem = {}
     this.id_mapping = id_mapping
   }
 
-  addToStackMem(node : Tube | Joint | null, result : Stack | Stack[]) {
-    if (!node)
-      return;
-
-    if (!(node.id in this.stack_mem))
-      this.stack_mem[node.id] = []
-
-    this.stack_mem[node.id] = this.stack_mem[node.id].concat(result)
+  setStack(stack : Stack) {
+    this.start.stack = stack
+    this.cursors = [{stack, node: this.start.node}]
   }
 
   getPaths(node : Tube | Joint) {
@@ -72,20 +65,67 @@ export class Valve {
     return ret
   }
 
-  flowOnce() {
-    let next_cursors = []
+  flow() {
+    let fails : Stack[] = []
+    let ends : Stack[] = []
+    const steps = []
 
-    this.cursors.forEach(cursor => {
+    let cursors = this.cursors
+    while (cursors.length) {
+      const {next_cursors, stack_mem, fail_stacks} = this.flowOnce(cursors)
+
+      if ('0' in stack_mem) {
+        ends = ends.concat(stack_mem[0])
+        delete stack_mem[0]
+      }
+      fails = fails.concat(fail_stacks)
+
+      if (Object.keys(stack_mem).length)
+        steps.push(stack_mem)
+        
+      cursors = next_cursors
+    }
+
+    ends.forEach(x => x.path.pop())
+    return {steps, ends, fails}
+  }
+
+  flowOnce(cursors : NodeWithStack[]) : {
+    next_cursors : NodeWithStack[],
+    stack_mem : {number : Stack[]},
+    fail_stacks : Stack[]
+  } {
+    let next_cursors : NodeWithStack[] = []
+    const stack_mem = {}
+    const fail_stacks = []
+
+    cursors.forEach(cursor => {
       if (!cursor.node)
         return;
 
-      const result = cursor.node.flow(cursor.stack)
-      this.addToStackMem(cursor.node, result instanceof Array ? result.map(x => x.stack) : result.stack)
-      next_cursors = next_cursors.concat(result)
+      const node = cursor.node
+      const result = node.flow(cursor.stack)
+      
+      stack_mem[node.id] = (stack_mem[node.id] || []).concat(
+        result instanceof Array ? result.map(x => x.stack) : result.stack
+      )
+      
+      const result_lst = (result instanceof Array ? result : [result]).filter(x => {
+        if (x.stack.is_failed()) {
+          fail_stacks.push(x.stack)
+          return false
+        } else
+          return true
+      })
+
+      next_cursors = next_cursors.concat(result_lst)
     })
 
-    this.cursors = next_cursors.filter(x => !x.stack.is_failed())
-    return !!this.cursors.length
+    return {
+      next_cursors,
+      stack_mem,
+      fail_stacks
+    }
   }
 }
 

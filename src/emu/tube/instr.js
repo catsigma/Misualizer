@@ -2,6 +2,7 @@
 
 import { createStackItem, fallbackType, toVType } from './micheline'
 import { Stack, StackItem } from './stack'
+import { Valve, codeConvert } from './tube'
 
 const get_t = t => t instanceof Array ? t : [t]
 
@@ -135,9 +136,12 @@ export const instr_mapping = {
   EXEC(stack : Stack, instr : Object) {
     const [arg, lambda] = stack.drop(2)
 
-    // TODO: has concrete lambda value
-    stack.insert(new StackItem(
-      get_t(lambda.t[2]), instr.annots, instr.prim, null, [arg, lambda]))
+    if (lambda.value instanceof Valve) {
+      // TODO: exec result
+    } else {
+      stack.insert(new StackItem(
+        get_t(lambda.t[2]), instr.annots, instr.prim, null, [arg, lambda]))
+    }
   },
   RENAME(stack : Stack, instr : Object) {
     stack.top().annots = instr.annots
@@ -315,7 +319,7 @@ export const instr_mapping = {
   },
   APPLY(stack : Stack, instr : Object) {
     const [param, lambda] = stack.drop(2)
-
+    // TODO: fix for valve
     if (!(lambda.value instanceof Array))
       throw `APPLY / invalid lambda value: ${lambda.value}`
 
@@ -331,9 +335,11 @@ export const instr_mapping = {
     stack.insert(lambda)
   },
   LAMBDA(stack : Stack, instr : Object) {
-    // TODO: convert instr.args to valve
+    const result = codeConvert(instr.args[2])
+    const valve = new Valve(result.tube, result.id_mapping, stack)
+
     stack.insert(new StackItem(
-      ['lambda', toVType(instr.args[0]), toVType(instr.args[1])], instr.annots, '', instr.args[2], []
+      ['lambda', toVType(instr.args[0]), toVType(instr.args[1])], instr.annots, '', valve, []
     ))
   },
   CONCAT(stack : Stack, instr : Object) {

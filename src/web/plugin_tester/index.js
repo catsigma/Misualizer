@@ -101,14 +101,14 @@ async function main() {
   //   await testTube(code)
   // })
 
-  const code = await getTestContract('pexec_2.tz.json')
-  await testTube(code)
+  // const code = await getTestContract('pexec_2.tz.json')
+  // await testTube(code)
 
   // const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
   // const address = 'KT1LSMRcE2sLqg6H1mmFHG7RVwYNEQnkAtc1'
-  // const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
-  // const contract = await client.fetch.contract(address)
-  // await testTube(contract.script.code)
+  const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
+  const contract = await client.fetch.contract(address)
+  await testTube(contract.script.code)
 }
 main()
 
@@ -126,18 +126,18 @@ async function testTube(code : Object) {
     t: code[1].args[0]
   })
   const valve = Misualizer.createValve(code[2].args, stack)
-
-  // while(valve.flowOnce()) {}
-
-  // console.log(valve)
+  console.log('valve', valve)
+  const {steps, ends, fails} = valve.flow()
+  console.log('steps', steps)
+  console.log('ends', ends)
+  console.log('fails', fails)
 
   const renderer = Misualizer.getGraphRenderer((node) => {
     console.log(node)
     // const path1 = valve.stack_mem[node.id].map(x => x.path).sort()
     const path2 = valve.getPaths(node)
-    // console.log(path1)
-    console.log(path2)
-    // console.log(JSON.stringify(path1) === JSON.stringify(path2))
+    console.log('path lst', path2)
+
     renderer.glowGraphs(path2[0])
     console.log(valve.flowByPath(path2[0]))
   })

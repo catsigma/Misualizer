@@ -147,8 +147,17 @@ export class SVGRenderer {
         this.graph_mem[curr.node.id] = curr.graph
         curr.graph.on('click', () => this.onSelect(curr.node))
 
-        if (curr.node instanceof Tube && (!curr.node.next || !curr.node.next.id))
-          curr.graph.addClass('end-node')
+        if (curr.node instanceof Tube) {
+          if (!curr.node.next || !curr.node.next.id)
+            curr.graph.addClass('end-node')
+          
+          const last_instr_prim = curr.node.code.length ? 
+            curr.node.code[curr.node.code.length - 1].prim : 
+            ''
+
+          if (last_instr_prim === 'FAILWITH')
+            curr.graph.addClass('fail-node')
+        }
       })
     }
 
@@ -220,8 +229,9 @@ export class SVGRenderer {
       .curve {stroke: #aaa} 
       .custom-curve {stroke: url(#tubeLongConnect)}
       .rect {stroke: transparent;}
-      .joint .rect {fill: red}
-      .end-node {fill: teal}
+      .joint .rect {fill: DarkSeaGreen}
+      .end-node {fill: CornflowerBlue}
+      .fail-node {fill: FireBrick}
       .path-unselected {opacity: 0.3; filter: none}
       .path-selected {opacity: 1; filter: url(#glow)}
       .cursor-pointer {cursor: pointer}
