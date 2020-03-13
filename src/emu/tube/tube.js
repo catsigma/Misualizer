@@ -15,11 +15,13 @@ export class Valve {
   start : NodeWithStack
   cursors : NodeWithStack[]
   id_mapping: {number: (Tube | Joint)}
+  max_id : number
 
-  constructor(node : Tube | Joint, id_mapping : {number: (Tube | Joint)}, stack : Stack) {
+  constructor(node : Tube | Joint, id_mapping : {number: (Tube | Joint)}, stack : Stack, max_id : number) {
     this.start = {stack, node}
     this.cursors = [{stack, node}]
     this.id_mapping = id_mapping
+    this.max_id = max_id
   }
 
   setStack(stack : Stack) {
@@ -155,22 +157,30 @@ export class Tube {
     this.parents.push(id)
   }
 
-  flow(stack : Stack) : NodeWithStack {
-    stack = stack.clone()
+  flow(stack : Stack) : NodeWithStack | NodeWithStack[] {
+    let stacks = [stack.clone()]
 
     this.code.forEach(item => {
-      if (item.prim in instr_mapping)
-        instr_mapping[item.prim](stack, item)
+      if (item.prim in instr_mapping) {
+        if (item.prim === 'EXEC') {
+          stacks = stacks.reduce(
+            (acc, x) => acc.concat(instr_mapping[item.prim](x, item)), []) 
+        } else {
+          stacks.forEach(x => instr_mapping[item.prim](x, item))
+        }
+      }
       else {
         throw `unhandled code instr in Tube: ${item.prim}`
       }
     })
 
-    stack.path.push(this.id)
-    return {
-      node: this.next,
-      stack
+    const retStack = stack => {
+      stack.path.push(this.id)
+      return {node: this.next, stack}
     }
+    return stacks.length === 1 ? 
+      retStack(stacks[0]) : 
+      stacks.map(stack => retStack(stack))
   }
 }
 
@@ -241,8 +251,8 @@ export function makePlainCode(code : Object[]) {
   return result
 }
 
-export function codeConvert(code : Object[]) {
-  let id = 1
+export function codeConvert(code : Object[], init_id? : number) {
+  let id = init_id || 1
   const id_mapping = {}
 
   code = makePlainCode(code)
@@ -251,6 +261,13 @@ export function codeConvert(code : Object[]) {
     const passing_code = []
 
     for (let i = 0; i < code.length; i++) {
+      if (code[i].prim === 'LAMBDA') {
+        const lambda_result = codeConvert(code[i].args[2], id + 1)
+        const lambda_valve = new Valve(
+          lambda_result.tube, lambda_result.id_mapping, new Stack(), lambda_result.id)
+        code[i].args[2] = lambda_valve
+      }
+
       if (joint_set.has(code[i].prim)) {
         const remaining = walk(code.slice(i + 1), last)
 
@@ -289,6 +306,7 @@ export function codeConvert(code : Object[]) {
 
   return {
     tube: walk(code),
-    id_mapping
+    id_mapping,
+    id: id - 1
   }
 }

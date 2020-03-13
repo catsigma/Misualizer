@@ -2,7 +2,7 @@
 
 import { createStackItem, fallbackType, toVType } from './micheline'
 import { Stack, StackItem } from './stack'
-import { Valve, codeConvert } from './tube'
+import { Tube, Valve, codeConvert } from './tube'
 
 const get_t = t => t instanceof Array ? t : [t]
 
@@ -88,6 +88,25 @@ export const instr_mapping = {
 
     return [stack, stack2]
   },
+  EXEC(stack : Stack, instr : Object) {
+    const [arg, lambda] = stack.drop(2)
+    
+    if (lambda.value instanceof Valve) {
+      stack.insert(arg)
+      lambda.value.setStack(stack)
+
+      stack.attached.renderValve(lambda.value)
+
+      const {ends, fails} = lambda.value.flow()
+      return ends.concat(fails)
+
+    } else {
+      stack.insert(new StackItem(
+        get_t(lambda.t[2]), instr.annots, instr.prim, null, [arg, lambda]))
+
+      return [stack]
+    }
+  },
   PUSH(stack : Stack, instr : Object) {
     stack.insert(createStackItem(instr.args[0], instr.args[1]))
   },
@@ -132,16 +151,6 @@ export const instr_mapping = {
     stack.insert(new StackItem(
       ['address'], instr.annots, '', stack.env.sender, []
     ))
-  },
-  EXEC(stack : Stack, instr : Object) {
-    const [arg, lambda] = stack.drop(2)
-
-    if (lambda.value instanceof Valve) {
-      // TODO: exec result
-    } else {
-      stack.insert(new StackItem(
-        get_t(lambda.t[2]), instr.annots, instr.prim, null, [arg, lambda]))
-    }
   },
   RENAME(stack : Stack, instr : Object) {
     stack.top().annots = instr.annots
@@ -319,27 +328,30 @@ export const instr_mapping = {
   },
   APPLY(stack : Stack, instr : Object) {
     const [param, lambda] = stack.drop(2)
-    // TODO: fix for valve
-    if (!(lambda.value instanceof Array))
+
+    if (!(lambda.value instanceof Valve))
       throw `APPLY / invalid lambda value: ${lambda.value}`
 
-    lambda.value.unshift({prim: 'PAIR'})
-    lambda.value.unshift({
-      prim: 'PUSH',
-      args: [
-        fallbackType(param.t),
-        param
-      ]
+    const nodes = lambda.value.cursors[0].node instanceof Tube ?
+      [lambda.value.cursors[0].node] :
+      lambda.value.cursors[0].node.nexts
+
+    nodes.forEach(node => {
+      node.code.unshift({prim: 'PAIR'})
+      node.code.unshift({
+        prim: 'PUSH',
+        args: [
+          fallbackType(param.t),
+          param
+        ]
+      })
     })
     
     stack.insert(lambda)
   },
   LAMBDA(stack : Stack, instr : Object) {
-    const result = codeConvert(instr.args[2])
-    const valve = new Valve(result.tube, result.id_mapping, stack)
-
     stack.insert(new StackItem(
-      ['lambda', toVType(instr.args[0]), toVType(instr.args[1])], instr.annots, '', valve, []
+      ['lambda', toVType(instr.args[0]), toVType(instr.args[1])], instr.annots, '', instr.args[2], []
     ))
   },
   CONCAT(stack : Stack, instr : Object) {

@@ -101,14 +101,14 @@ async function main() {
   //   await testTube(code)
   // })
 
-  // const code = await getTestContract('loop_left.tz.json')
-  // await testTube(code)
+  const code = await getTestContract('pexec.tz.json')
+  await testTube(code)
 
   // const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
   // const address = 'KT1LSMRcE2sLqg6H1mmFHG7RVwYNEQnkAtc1'
-  const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
-  const contract = await client.fetch.contract(address)
-  await testTube(contract.script.code)
+  // const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
+  // const contract = await client.fetch.contract(address)
+  // await testTube(contract.script.code)
 }
 main()
 
@@ -125,22 +125,30 @@ async function testTube(code : Object) {
   }, {
     t: code[1].args[0]
   })
+  
+  const renderer = Misualizer.getGraphRenderer((node) => {
+    console.log(node)
+    // const path1 = valve.stack_mem[node.id].map(x => x.path).sort()
+    // const path2 = valve.getPaths(node)
+    // console.log('path lst', path2)
+
+    // renderer.glowGraphs(path2[0])
+    // console.log(valve.flowByPath(path2[0]))
+  })
+  stack.attached.renderValve = (valve) => {
+    const g = renderer.renderValve(valve)
+    document.body && document.body.appendChild(g)
+  }
+
   const valve = Misualizer.createValve(code[2].args, stack)
   console.log('valve', valve)
   const {steps, ends, fails} = valve.flow()
   console.log('steps', steps)
   console.log('ends', ends.map(x => x.path))
   console.log('fails', fails)
-
-  const renderer = Misualizer.getGraphRenderer((node) => {
-    console.log(node)
-    // const path1 = valve.stack_mem[node.id].map(x => x.path).sort()
-    const path2 = valve.getPaths(node)
-    console.log('path lst', path2)
-
-    renderer.glowGraphs(path2[0])
-    console.log(valve.flowByPath(path2[0]))
-  })
+  
+  // renderer.glowGraphs(ends.map(x => x.path)[0])
+  
   const g = renderer.renderValve(valve)
   document.body && document.body.appendChild(g)
 }
