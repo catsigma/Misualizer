@@ -128,6 +128,7 @@ export class SVGRenderer {
     }
     walk(valve.start.node, 1)
 
+    let max_width = 0
     let height = 0
     const padding = {x: 30, y: 40}
     const graphs = []
@@ -136,6 +137,7 @@ export class SVGRenderer {
 
       const currs = levels[level]
       const width = currs.reduce((acc, x) => acc + x.graph.width() + padding.x, 0)
+      max_width = width > max_width ? width : max_width
 
       let prev_width = 16
       currs.forEach((curr, i) => {
@@ -180,7 +182,7 @@ export class SVGRenderer {
       graphs.unshift(curve)
     })
 
-    return this.createSVG([screen.width, height + 32], new Graph(graphs).el)
+    return this.createSVG([max_width + 300, height + 32 * 2], new Graph(graphs).el)
   }
 
   createSVG(size : [number, number], elem : Object) {

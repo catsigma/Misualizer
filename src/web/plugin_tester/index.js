@@ -101,14 +101,14 @@ async function main() {
   //   await testTube(code)
   // })
 
-  const code = await getTestContract('pexec.tz.json')
-  await testTube(code)
+  // const code = await getTestContract('pexec.tz.json')
+  // await testTube(code)
 
-  // const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
+  const address = 'KT1UvfyLytrt71jh63YV4Yex5SmbNXpWHxtg'
   // const address = 'KT1LSMRcE2sLqg6H1mmFHG7RVwYNEQnkAtc1'
   // const address = 'KT1GgUJwMQoFayRYNwamRAYCvHBLzgorLoGo'
-  // const contract = await client.fetch.contract(address)
-  // await testTube(contract.script.code)
+  const contract = await client.fetch.contract(address)
+  await testTube(contract.script.code)
 }
 main()
 
@@ -141,11 +141,11 @@ async function testTube(code : Object) {
   }
 
   const valve = Misualizer.createValve(code[2].args, stack)
-  console.log('valve', valve)
-  const {steps, ends, fails} = valve.flow()
-  console.log('steps', steps)
-  console.log('ends', ends.map(x => x.path))
-  console.log('fails', fails)
+  // console.log('valve', valve)
+  // const {steps, ends, fails} = valve.flow()
+  // console.log('steps', steps)
+  // console.log('ends', ends.map(x => x.path))
+  // console.log('fails', fails)
   
   // renderer.glowGraphs(ends.map(x => x.path)[0])
   
