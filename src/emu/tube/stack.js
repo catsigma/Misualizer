@@ -35,6 +35,10 @@ export class Stack {
     this.attached = attached
   }
 
+  toString() {
+    return `${this.items.map(x => x.toString()).join('\n')}`
+  }
+
   at(index : number) : StackItem {
     return this.items[index]
   }
@@ -93,6 +97,20 @@ export class StackItem {
     this.instr = instr
     this.value = value
     this.subs = subs
+  }
+
+  toString() {
+    if (this.value)
+      return this.value
+
+    if (this.instr)
+      return `${this.instr}(${this.subs.map(x => x.toString()).join(', ')})`
+
+    if (this.annots.length)
+      return `${this.annots[0]}:${this.t[0].toString()}`
+
+    if (this.subs.length)
+      return `(${this.subs.map(x => x.toString()).join(', ')})`
   }
 
   clone() {

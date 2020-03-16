@@ -2,8 +2,9 @@
   <div>
     <div class="tip" v-if="path_lst.length">
       <div class="tip-wrapper">
-        <div v-if="hover_node && inspect_result" class="node-inspect">
-          {{inspect_result[hover_node.id] && inspect_result[hover_node.id].path}}
+        <div v-if="inspect_result && hover_node && hover_node.id in inspect_result" 
+             class="node-inspect mono">
+            {{inspect_result[hover_node.id].toString()}}
         </div>
         <div :class="{path: true, selected: selected_path === path}" :key="i" v-for="(path, i) in path_lst" 
              @mouseenter="glowPath(path)" 
@@ -158,11 +159,12 @@ export default {
       this.renderer = Misualizer.getGraphRenderer({
         click: (node) => {
           this.path_lst = this.main_valve.getPaths(node).sort((a,b) => a.length - b.length)
+          this.glowPath(this.path_lst[0])
+          this.flowByPath(this.path_lst[0])
         },
         mouseenter: (node) => {
           this.hover_node = node
-        },
-        mouseleave: () => this.hover_node = null
+        }
       })
       
       const stack = Misualizer.createStack({
@@ -225,7 +227,14 @@ h2 {margin: 4px 0 0 0;}
 
   .path {font-size: 1.2rem; margin: 4px 0; padding: 0 2px; border-radius: 2px;}
   .path:hover, .path.selected {background: $c6; color: $c5; cursor: pointer}
-  .node-inspect {padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px dotted $c6}
+  .node-inspect {
+    position: absolute;
+    right: 302px;
+    bottom: 0px;
+    width: 800px;
+    padding: 2px 4px;
+    background: $c5;
+  }
 }
 
 
