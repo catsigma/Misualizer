@@ -6,12 +6,12 @@ html {font-size: 10px;}
   outline: none;
   font-family: TZ, 'Roboto Condensed', sans-serif; 
   vertical-align: middle; 
-  -webkit-appearance: none; 
   transition: all 0.2s; 
   box-sizing: border-box;
   font-size: 1.4rem;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 text {
@@ -29,6 +29,10 @@ pre {
 
 body {
   background: $c6;
+}
+
+input[type=checkbox] {
+  margin-right: 2px;
 }
 
 button {

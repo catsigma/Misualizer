@@ -86,7 +86,7 @@ export default {
       net_type: 'mainnet',
       renderers: {
         graph: 'graph',
-        text: 'text',
+        // text: 'text',
         raw: 'raw'
       },
       renderer: 'graph',

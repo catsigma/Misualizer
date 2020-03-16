@@ -65,13 +65,13 @@ function bindMouseControl(svg : Object, zoom_in : Object, zoom_out : Object) {
 
 export class SVGRenderer {
   graph_mem : {number: Graph}
-  onSelect : (Tube | Joint) => void
-  
-  constructor(onSelect : (Tube | Joint) => void) {
+  node_binding : {string : (Tube | Joint) => void}
+
+  constructor(node_binding : {string : (Tube | Joint) => void}) {
     this.graph_mem = {}
-    this.onSelect = onSelect || (() => {})
+    this.node_binding = node_binding
   }
-  
+
   glowGraphs(graph_id_lst: number[]) {
     const graph_set = new Set(graph_id_lst.map(x => x.toString()))
     for (const id in this.graph_mem) {
@@ -82,7 +82,11 @@ export class SVGRenderer {
     }
   }
 
-  renderValve(valve : Valve) {
+  renderValve(valve : Valve, options : {
+    display_id: boolean
+  } = {
+    display_id: true
+  }) {
     const graph_id_mapping = {}
     const levels = {}
     const links = []
@@ -96,7 +100,7 @@ export class SVGRenderer {
       }
 
       if (node instanceof Tube) {
-        const tube = TubeGraph(node.id + '')
+        const tube = TubeGraph(options.display_id ? node.id + '' : '')
         levels[level].push(Object.assign({}, {node}, tube))
         graph_id_mapping[node.id] = tube
 
@@ -109,7 +113,7 @@ export class SVGRenderer {
         walk(node.next, level + 1)
 
       } else if (node instanceof Joint) {
-        const joint = JointGraph(node.nexts.length, node.id + '')
+        const joint = JointGraph(node.nexts.length, options.display_id ? node.id + '' : '')
         levels[level].push(Object.assign({}, {node}, joint))
         graph_id_mapping[node.id] = joint
 
@@ -147,7 +151,8 @@ export class SVGRenderer {
         graphs.push(curr.graph)
         
         this.graph_mem[curr.node.id] = curr.graph
-        curr.graph.on('click', () => this.onSelect(curr.node))
+        for (const key in this.node_binding)
+          curr.graph.on(key, () => this.node_binding[key](curr.node))
 
         if (curr.node instanceof Tube) {
           if (!curr.node.next || !curr.node.next.id)

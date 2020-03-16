@@ -13,8 +13,8 @@ import { SVGRenderer } from '../renderer/tube'
 
 
 const Misualizer = {
-  getGraphRenderer(onSelect : (..._ : Object) => void) {
-    return new SVGRenderer(onSelect)
+  getGraphRenderer(node_binding : {string : (...Object) => void}) {
+    return new SVGRenderer(node_binding)
   },
   createStack(parameter : {t: Object, val?: Object}, storage: {t: Object, val?: Object}) {
     const p = createStackItem(parameter.t, parameter.val || mockData(parameter.t))

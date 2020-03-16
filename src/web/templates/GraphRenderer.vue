@@ -1,7 +1,17 @@
 <template>
   <div>
-    <div class="tip" v-if="selected.graph_node">
-      <div class="content mono">{{selected.graph_node.title}}</div>
+    <div class="tip" v-if="path_lst.length">
+      <div class="tip-wrapper">
+        <div v-if="hover_node && inspect_result" class="node-inspect">
+          {{inspect_result[hover_node.id] && inspect_result[hover_node.id].path}}
+        </div>
+        <div :class="{path: true, selected: selected_path === path}" :key="i" v-for="(path, i) in path_lst" 
+             @mouseenter="glowPath(path)" 
+             @mouseleave="glowPath()" 
+             @click="flowByPath(path)">
+          {{path.join(' -> ')}}
+        </div>
+      </div>
     </div>
     <div class="desk">
       <div class="desk-left">
@@ -16,23 +26,35 @@
         <div class="operations">
           <h2>Operations</h2>
           <div>
-            <button class="sm">Play</button>
-            <button class="sm" @click="setCustom">Set custom value</button>
+            <button class="sm" @click="inspectAll">Inspect all stacks</button>
+            <button class="sm" @click="inspectOne">Inspect one step</button>
           </div>
         </div>
-        <div class="custom">
-          <div>
-            <h2>Custom parameter</h2>
-            <textarea placeholder="custom parameter value in JSON" class="mono" v-model="custom.param"></textarea>
-          </div>
-          <div>
-            <h2>Custom storage</h2>
-            <textarea placeholder="custom storage value in JSON" class="mono" v-model="custom.storage"></textarea>
-          </div>
-          <div>
-            <h2>Custom arguments</h2>
-            <textarea placeholder="custom arguments in JSON" class="mono custom-arguments" @input="argsChange" :value="JSON.stringify(custom.args, null, 2)"></textarea>
-          </div>
+        <div class="options">
+          <h2>Options</h2>
+          <ul class="check-list">
+            <li>
+              <input type="checkbox" v-model="options.display_id" /><label>Display node ID</label>
+            </li>
+            <li>
+              <input type="checkbox" v-model="options.use_custom_param" /><label>Using custom parameters</label>
+              <div class="custom" v-if="options.use_custom_param">
+                <button class="sm" @click="renderGraph()">Confirm</button>
+                <div>
+                  <h2>Custom parameter</h2>
+                  <textarea placeholder="custom parameter value in JSON" class="mono" v-model="custom.param"></textarea>
+                </div>
+                <div>
+                  <h2>Custom storage</h2>
+                  <textarea placeholder="custom storage value in JSON" class="mono" v-model="custom.storage"></textarea>
+                </div>
+                <div>
+                  <h2>Custom arguments</h2>
+                  <textarea placeholder="custom arguments in JSON" class="mono custom-arguments" @input="argsChange" :value="JSON.stringify(custom.args, null, 2)"></textarea>
+                </div>
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -45,7 +67,10 @@ export default {
   props: ['contract', 'address'],
   data() {
     return {
-      selected: {},
+      options: {
+        display_id: true,
+        use_custom_param: false
+      },
       custom: {
         param: '',
         storage: '',
@@ -58,12 +83,24 @@ export default {
           amount: 'AMOUNT',
           balance: 'BALANCE'
         }
-      }
+      },
+      main_valve: null,
+      renderer: null,
+      inspect_result: null,
+      path_lst: [],
+      hover_node: null,
+      selected_path: null
     }
   },
   watch: {
     contract() {
       this.initCustom()
+      this.renderGraph()
+    },
+    'options.display_id'() {
+      this.renderGraph()
+    },
+    'options.display_stack'() {
       this.renderGraph()
     }
   },
@@ -88,20 +125,46 @@ export default {
     argsChange(e) {
       this.custom.args = JSON.parse(e.target.value)
     },
-    setCustom() {
-      const custom_param = this.custom.param ? JSON.parse(this.custom.param) : null
-      const custom_storage = this.custom.storage ? JSON.parse(this.custom.storage) : null
-      this.renderGraph(custom_param, custom_storage)
+    inspectOne() {
+
     },
-    renderGraph(custom_param, custom_storage) {
+    inspectAll() {
+      if (this.main_valve) {
+        if (confirm('This process could get stuck if there are too many condition branchs in contract\nDo you want to continue?')) {
+          this.inspect_result = this.main_valve.flow()
+        }
+      }
+    },
+    glowPath(path) {
+      const p = path || this.selected_path
+      if (p)
+        this.renderer.glowGraphs(p)
+    },
+    flowByPath(path) {
+      this.selected_path = path
+      this.inspect_result = this.main_valve.flowByPath(path)
+    },
+    renderGraph() {
       if (!this.contract) return;
+
+      const [custom_param, custom_storage] = this.options.use_custom_param ?
+        [
+          this.custom.param.trim() ? JSON.parse(this.custom.param) : null, 
+          this.custom.storage.trim() ? JSON.parse(this.custom.storage) : null
+        ] : []
 
       const script_code = this.contract.script.code
 
-      const renderer = Misualizer.getGraphRenderer((node) => {
-        console.log(node)
+      this.renderer = Misualizer.getGraphRenderer({
+        click: (node) => {
+          this.path_lst = this.main_valve.getPaths(node).sort((a,b) => a.length - b.length)
+        },
+        mouseenter: (node) => {
+          this.hover_node = node
+        },
+        mouseleave: () => this.hover_node = null
       })
-
+      
       const stack = Misualizer.createStack({
         t: script_code[0].args[0],
         val: custom_param
@@ -113,9 +176,9 @@ export default {
         console.log('render sub valve')
       }
 
-      const main_valve = Misualizer.createValve(script_code[2].args, stack)
+      this.main_valve = Misualizer.createValve(script_code[2].args, stack)
 
-      this.setSVG('contract_graph',  renderer.renderValve(main_valve))
+      this.setSVG('contract_graph',  this.renderer.renderValve(this.main_valve, this.options))
     }
   }
 }
@@ -139,6 +202,9 @@ h2 {margin: 4px 0 0 0;}
   width: 100%;
   margin-right: 8px;
 }
+.desk-right {
+  min-width: 300px;
+}
 
 .block {
   margin-bottom: 16px;
@@ -146,16 +212,25 @@ h2 {margin: 4px 0 0 0;}
 
 .tip {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: $c3;
+  bottom: 14px;
+  right: 14px;
+  width: 300px;
+  background: $c5;
   color: $c6;
   z-index: 9;
 
-  .content {
-    padding: 4px 8px;
+  .tip-wrapper {
+    margin: 2px 4px;
   }
+
+  .path {font-size: 1.2rem; margin: 4px 0; padding: 0 2px; border-radius: 2px;}
+  .path:hover, .path.selected {background: $c6; color: $c5; cursor: pointer}
+  .node-inspect {padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px dotted $c6}
+}
+
+
+button {
+  margin-top: 4px;
 }
 
 .custom {
