@@ -1,5 +1,7 @@
 // @flow
 
+import { type_mapping, instr_mapping, tToString } from './repr'
+
 type VType = Array<string | VType>
 
 type Env = {
@@ -35,8 +37,8 @@ export class Stack {
     this.attached = attached
   }
 
-  toString() {
-    return `${this.items.map(x => x.toString()).join('\n')}`
+  toStringLst() {
+    return this.items.map<string>(x => x.toString())
   }
 
   at(index : number) : StackItem {
@@ -99,18 +101,21 @@ export class StackItem {
     this.subs = subs
   }
 
-  toString() {
-    if (this.value)
-      return this.value
+  toString() : string {
+    const prefix = this.annots.length ? this.annots[0] + ':' : ''
+    let surfix = ''
 
-    if (this.instr)
-      return `${this.instr}(${this.subs.map(x => x.toString()).join(', ')})`
+    if (this.instr in instr_mapping)
+      surfix = instr_mapping[this.instr](this)
+    else if (this.t[0].toString() in type_mapping)
+      surfix = type_mapping[this.t[0].toString()](this)
+    else if (typeof this.value === 'string' && this.value)
+      surfix = this.value
+    else {
+      surfix = tToString(this.t)
+    }
 
-    if (this.annots.length)
-      return `${this.annots[0]}:${this.t[0].toString()}`
-
-    if (this.subs.length)
-      return `(${this.subs.map(x => x.toString()).join(', ')})`
+    return prefix + surfix
   }
 
   clone() {

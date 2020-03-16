@@ -3,8 +3,12 @@
     <div class="tip" v-if="path_lst.length">
       <div class="tip-wrapper">
         <div v-if="inspect_result && hover_node && hover_node.id in inspect_result" 
-             class="node-inspect mono">
-            {{inspect_result[hover_node.id].toString()}}
+             class="node-inspect">
+            <div class="stack mono" 
+                 :key="i" 
+                 v-for="(stack, i) in inspect_result[hover_node.id] instanceof Array ? inspect_result[hover_node.id] : [inspect_result[hover_node.id]]">
+              <b>Stack:</b> <span class="mono" :key="i" v-for="(item, i) in stack.toStringLst()">{{item}}</span>
+            </div>
         </div>
         <div :class="{path: true, selected: selected_path === path}" :key="i" v-for="(path, i) in path_lst" 
              @mouseenter="glowPath(path)" 
@@ -38,7 +42,7 @@
               <input type="checkbox" v-model="options.display_id" /><label>Display node ID</label>
             </li>
             <li>
-              <input type="checkbox" v-model="options.use_custom_param" /><label>Using custom parameters</label>
+              <!-- <input type="checkbox" v-model="options.use_custom_param" /><label>Using custom parameters</label> -->
               <div class="custom" v-if="options.use_custom_param">
                 <button class="sm" @click="renderGraph()">Confirm</button>
                 <div>
@@ -164,6 +168,7 @@ export default {
         },
         mouseenter: (node) => {
           this.hover_node = node
+          console.log(this.inspect_result[node.id])
         }
       })
       
@@ -234,7 +239,24 @@ h2 {margin: 4px 0 0 0;}
     width: 800px;
     padding: 2px 4px;
     background: $c5;
+    color: $c3;
+
+    .stack {
+      b {
+        color: $c3;
+      }
+      span {
+        display: inline-block;
+        margin: 2px 4px 2px 0;
+        border-radius: 4px;
+        padding: 0 2px;
+        background: $c6;
+        color: $c16;
+        font-size: 1.2rem;
+      }
+    }
   }
+
 }
 
 
