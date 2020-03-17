@@ -183,10 +183,11 @@ export default {
           this.path_lst = this.main_valve.getPaths(node).sort((a,b) => a.length - b.length)
           this.glowPath(this.path_lst[0])
           this.flowByPath(this.path_lst[0])
+          this.hover_node = node
         },
         mouseenter: (node) => {
-          this.hover_node = node
-          console.log(this.inspect_result[node.id])
+          if (node.id in this.inspect_result)
+            this.hover_node = node
         }
       })
       
