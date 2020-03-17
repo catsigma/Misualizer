@@ -7,7 +7,8 @@
             <div class="stack mono" 
                  :key="i" 
                  v-for="(stack, i) in inspect_result[hover_node.id] instanceof Array ? inspect_result[hover_node.id] : [inspect_result[hover_node.id]]">
-              <b>Stack:</b> <span class="mono" :key="i" v-for="(item, i) in stack.toStringLst()">{{item}}</span>
+              <b>Stack:</b> 
+              <span :key="i" v-for="(item, i) in stack.toStringLst()" v-html="stackRepr(item)"></span>
             </div>
         </div>
         <div :class="{path: true, selected: selected_path === path}" :key="i" v-for="(path, i) in path_lst" 
@@ -42,6 +43,9 @@
               <input type="checkbox" v-model="options.display_id" /><label>Display node ID</label>
             </li>
             <li>
+              <input type="checkbox" v-model="options.hide_annots" /><label>Hide all annots</label>
+            </li>
+            <li>
               <!-- <input type="checkbox" v-model="options.use_custom_param" /><label>Using custom parameters</label> -->
               <div class="custom" v-if="options.use_custom_param">
                 <button class="sm" @click="renderGraph()">Confirm</button>
@@ -74,6 +78,7 @@ export default {
     return {
       options: {
         display_id: true,
+        hide_annots: false,
         use_custom_param: false
       },
       custom: {
@@ -105,7 +110,7 @@ export default {
     'options.display_id'() {
       this.renderGraph()
     },
-    'options.display_stack'() {
+    'options.hide_annots'() {
       this.renderGraph()
     }
   },
@@ -114,6 +119,19 @@ export default {
     this.renderGraph()
   },
   methods: {
+    stackRepr(item) {
+      item = item.replace(/\<|\>/g, x => {
+        if (x === '<')
+          return '&lt'
+        else
+          return '&gt'
+      }).replace(/#.+?#/g, x => {
+        return this.options.hide_annots ? '' :
+          `<span class="annot">${x.slice(1, -1)}</span>`
+      })
+
+      return item
+    },
     initCustom() {
       this.custom.param = ''
       this.custom.storage = JSON.stringify(this.contract.script.storage, null, 2)
@@ -191,6 +209,38 @@ export default {
 }
 </script>
 
+<style lang="scss">
+@import "../colors";
+
+.stack {
+  * {
+    font-size: 1.2rem;
+    vertical-align: baseline;
+  }
+  
+  b {
+    color: $c3;
+  }
+
+  span {
+    display: inline-block;
+    margin: 2px 4px 2px 0;
+    border-radius: 4px;
+    background: $c6;
+    color: $c16;
+    padding: 0 2px;
+    font-size: 1.2rem;
+    
+  }
+
+  span.annot {
+    margin: 0;
+    background: $c4;
+    color: white;
+  }
+}
+</style>
+
 <style scoped lang="scss">
 @import "../colors";
 
@@ -217,6 +267,7 @@ h2 {margin: 4px 0 0 0;}
   margin-bottom: 16px;
 }
 
+
 .tip {
   position: fixed;
   bottom: 14px;
@@ -241,20 +292,6 @@ h2 {margin: 4px 0 0 0;}
     background: $c5;
     color: $c3;
 
-    .stack {
-      b {
-        color: $c3;
-      }
-      span {
-        display: inline-block;
-        margin: 2px 4px 2px 0;
-        border-radius: 4px;
-        padding: 0 2px;
-        background: $c6;
-        color: $c16;
-        font-size: 1.2rem;
-      }
-    }
   }
 
 }

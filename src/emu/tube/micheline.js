@@ -43,8 +43,9 @@ export function toVType(t : MichelineType) : VType {
 export function settingInstrID(item : StackItem, prefix : string = 'G') {
   let id = 1
 
+  const unhandle_set = new Set(['pair', 'or'])
   const walk = (item : StackItem) => {
-    if (!item.annots.length)
+    if (!item.annots.length && !unhandle_set.has(item.t[0]))
       item.annots.push(prefix + id++)
 
     item.subs.forEach(item => walk(item))

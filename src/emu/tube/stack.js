@@ -38,7 +38,7 @@ export class Stack {
   }
 
   toStringLst() {
-    return this.items.map<string>(x => x.toString())
+    return this.items.map<string>(x => x.reduceSelf().toString())
   }
 
   at(index : number) : StackItem {
@@ -86,6 +86,7 @@ export class Stack {
   }
 }
 
+
 export class StackItem {
   t : VType
   instr : string
@@ -102,16 +103,18 @@ export class StackItem {
   }
 
   toString() : string {
-    const prefix = this.annots.length ? this.annots[0] + ':' : ''
+    const prefix = this.annots.length ? `#${this.annots[0]}#` : ''
     let surfix = ''
 
     if (this.instr in instr_mapping)
       surfix = instr_mapping[this.instr](this)
-    else if (this.t[0].toString() in type_mapping)
+    else if (!this.instr && this.t[0].toString() in type_mapping)
       surfix = type_mapping[this.t[0].toString()](this)
     else if (typeof this.value === 'string' && this.value)
       surfix = this.value
-    else {
+    else if (this.instr && this.subs.length) {
+      surfix = `${this.instr}(${this.subs.map(x => x.toString()).join(', ')})`
+    } else {
       surfix = tToString(this.t)
     }
 
@@ -125,5 +128,48 @@ export class StackItem {
       this.instr,
       this.value,
       this.subs.map(x => x.clone()))
+  }
+
+  reduceSelf() {
+    const mapping = {
+      'IF_LEFT.LEFT'(item : StackItem) {
+        return item.getSub(0, 'Left|Right', 0, '') || item
+      },
+      'IF_LEFT.RIGHT'(item : StackItem) {
+        return item.getSub(0, 'Left|Right', 1, '') || item
+      }
+    }
+
+    this.subs = this.subs.map(x => x.reduceSelf())
+
+    if (this.instr in mapping) {
+      if (this.subs.length && this.subs[0].instr in mapping) {
+        return mapping[this.instr](this)
+      } else {
+        return mapping[this.instr](this)
+      }
+    } else {
+      return this
+    }
+  }
+
+  getSub(...query : (string | number)[]) : StackItem | null {
+    let cursor = this
+
+    for (let i = 0; i < query.length; i += 2) {
+      const index = typeof query[i] === 'number' ? query[i] : -1
+      const instr = typeof query[i + 1] === 'string' ? query[i + 1] : ''
+      const result = cursor.subs[index]
+
+      if (!result)
+        return null
+
+      if (instr && result.instr !== instr)
+        return null
+
+      cursor = result
+    }
+
+    return cursor
   }
 }
