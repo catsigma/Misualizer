@@ -3,12 +3,16 @@
 type VType = Array<string | VType>
 
 import { StackItem, Stack } from './stack'
+import { get_t } from './instr'
 
 function generalOutput(item : StackItem) {
   return `${item.instr}(${item.subs.map(x => x.toString()).join(', ')})`
 }
 
-export function tToString(t : VType) {
+export function tToString(t : VType | string) {
+  if (typeof t === 'string')
+    return t
+
   return `${t[0].toString()}` + (
    t.length > 1 ? `<${t.slice(1).map(x => typeof x === 'string' ? x : tToString(x)).join(', ')}>`
    : '')
@@ -16,7 +20,7 @@ export function tToString(t : VType) {
 
 export const type_mapping = {
   fail(item : StackItem) {
-    const reason = item.getSub(0, '')
+    const reason = item.getSub({index: 0})
     return `FAILWITH: ${reason ? reason.toString() : ''}`
   },
   pair(item : StackItem) {
@@ -25,19 +29,26 @@ export const type_mapping = {
 }
 
 export const instr_mapping = {
+  'IF_NONE.SOME'(item : StackItem) {
+    const v = item.getSub({index: 0})
+    if (v) {
+      v.t = get_t(v.t[1])
+      return v.toString()
+    } else {
+      return generalOutput(item)
+    }
+  },
   'IF_LEFT.LEFT'(item : StackItem) {
-    const v = item.getSub(0, 'Left|Right', 0, '')
-    return v ? v.toString() : `(${item.subs[0].toString()}).LEFT`
+    return `(${item.subs[0].toString()}).left`
   },
   'IF_LEFT.RIGHT'(item : StackItem) {
-    const v = item.getSub(0, 'Left|Right', 1, '')
-    return v ? v.toString() : `(${item.subs[0].toString()}).RIGHT`
+    return `(${item.subs[0].toString()}).right`
   },
   'Left|Right'(item : StackItem) {
     return `(${item.subs[0].toString()} | ${item.subs[1].toString()})`
   },
   COMPARE_BASE(item : StackItem, symbol : string) {
-    const v = item.getSub(0, 'COMPARE')
+    const v = item.getSub({index: 0, instr: 'COMPARE'})
     return v ? `${v.subs[0].toString()} ${symbol} ${v.subs[1].toString()}` : generalOutput(item)
   },
   EQ(item : StackItem) {
@@ -57,5 +68,21 @@ export const instr_mapping = {
   },
   LT(item : StackItem) {
     return instr_mapping.COMPARE_BASE(item, '<')
+  },
+  ADD(item : StackItem) {
+    return `(${item.subs[0].toString()} + ${item.subs[1].toString()})`
+  },
+  MUL(item : StackItem) {
+    return `${item.subs[0].toString()} * ${item.subs[1].toString()}`
+  },
+  EDIV(item : StackItem) {
+    return `${item.subs[0].toString()} / ${item.subs[1].toString()}`
+  },
+  NIL(item : StackItem) {
+    return `[]`
+  },
+  CONS(item : StackItem) {
+    const v = item.getSub({index: 1, instr: 'NIL'})
+    return v ? `[${item.subs[0].toString()}]` : generalOutput(item)
   }
 }

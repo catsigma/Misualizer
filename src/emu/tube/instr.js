@@ -4,7 +4,7 @@ import { createStackItem, fallbackType, toVType } from './micheline'
 import { Stack, StackItem } from './stack'
 import { Tube, Valve, codeConvert } from './tube'
 
-const get_t = t => t instanceof Array ? t : [t]
+export const get_t = (t : Object) => t instanceof Array ? t : [t]
 
 export const instr_mapping = {
   DEBUGGER(stack : Stack, instr : Object) {

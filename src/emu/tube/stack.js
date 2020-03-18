@@ -1,6 +1,7 @@
 // @flow
 
 import { type_mapping, instr_mapping, tToString } from './repr'
+import { get_t } from './instr'
 
 type VType = Array<string | VType>
 
@@ -121,50 +122,64 @@ export class StackItem {
     return prefix + surfix
   }
 
-  clone() {
+  clone(no_subs : boolean = false) {
     return new StackItem(
       this.t, 
-      this.annots.slice(),
+      this.annots,
       this.instr,
       this.value,
-      this.subs.map(x => x.clone()))
+      no_subs ? [] : this.subs.map(x => x.clone()))
   }
 
   reduceSelf() {
+    const cloned = this.clone(true)
     const mapping = {
       'IF_LEFT.LEFT'(item : StackItem) {
-        return item.getSub(0, 'Left|Right', 0, '') || item
+        return item.getSub({index: 0, instr: 'Left|Right'}, {index: 0}) || item
       },
       'IF_LEFT.RIGHT'(item : StackItem) {
-        return item.getSub(0, 'Left|Right', 1, '') || item
+        return item.getSub({index: 0, instr: 'Left|Right'}, {index: 1}) || item
+      },
+      CAR(item : StackItem) {
+        return item.getSub({index: 0, t: 'pair', instr: ''}, {index: 0, count: 2}) || item
+      },
+      CDR(item : StackItem) {
+        return item.getSub({index: 0, t: 'pair', instr: ''}, {index: 1, count: 2}) || item
+      },
+      'IF_NONE.SOME'(item : StackItem) {
+        return item.getSub({index: 0, instr: 'SOME', t: 'option'}, {index: 0}) || item
       }
     }
 
-    this.subs = this.subs.map(x => x.reduceSelf())
+    cloned.subs = this.subs.map(x => x.reduceSelf())
 
     if (this.instr in mapping) {
-      if (this.subs.length && this.subs[0].instr in mapping) {
-        return mapping[this.instr](this)
-      } else {
-        return mapping[this.instr](this)
-      }
+      return mapping[this.instr](cloned)
     } else {
-      return this
+      return cloned
     }
   }
 
-  getSub(...query : (string | number)[]) : StackItem | null {
+  getSub(...query : {
+    index : number,
+    t? : string,
+    instr? : string,
+    count? : number
+  }[]) : StackItem | null {
     let cursor = this
 
-    for (let i = 0; i < query.length; i += 2) {
-      const index = typeof query[i] === 'number' ? query[i] : -1
-      const instr = typeof query[i + 1] === 'string' ? query[i + 1] : ''
-      const result = cursor.subs[index]
+    for (let i = 0; i < query.length; i++) {
+      const {t, instr, index, count} = query[i]
 
-      if (!result)
+      if (count && cursor.subs.length !== count)
         return null
 
-      if (instr && result.instr !== instr)
+      const result = cursor.subs[index]
+
+      if (t && result.t[0] !== t)
+        return null
+
+      if (instr !== undefined && result.instr !== instr)
         return null
 
       cursor = result
