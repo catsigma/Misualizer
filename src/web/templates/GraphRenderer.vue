@@ -4,7 +4,7 @@
       <pre class="mono">{{code_block}}</pre>
     </div>
     
-    <div class="node-inspect" v-if="inspect_result && hover_node && hover_node.id in inspect_result">
+    <div class="node-inspect" :style="{left: options.show_code_block ? '212px' : '8px'}" v-if="inspect_result && hover_node && hover_node.id in inspect_result">
       <div class="stack mono" 
            :key="i" 
            v-for="(stack, i) in inspect_result[hover_node.id] instanceof Array ? inspect_result[hover_node.id] : [inspect_result[hover_node.id]]">
@@ -192,11 +192,13 @@ export default {
           this.glowPath(this.path_lst[0])
           this.flowByPath(this.path_lst[0])
           this.hover_node = node
+          this.code_block = node.t || JSON.stringify(node.code, null, 2)
         },
         mouseenter: (node) => {
-          this.code_block = node.t ? node.t : JSON.stringify(node.code, null, 2)
-          if (this.inspect_result && node.id in this.inspect_result)
+          if (this.inspect_result && node.id in this.inspect_result) {
             this.hover_node = node
+            this.code_block = node.t || JSON.stringify(node.code, null, 2)
+          }
         }
       })
       
