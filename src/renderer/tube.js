@@ -83,9 +83,9 @@ export class SVGRenderer {
   }
 
   renderValve(valve : Valve, options : {
-    display_id: boolean
+    show_id: boolean
   } = {
-    display_id: true
+    show_id: true
   }) {
     const graph_id_mapping = {}
     const levels = {}
@@ -100,7 +100,7 @@ export class SVGRenderer {
       }
 
       if (node instanceof Tube) {
-        const tube = TubeGraph(options.display_id ? node.id + '' : '')
+        const tube = TubeGraph(options.show_id ? node.id + '' : '')
         levels[level].push(Object.assign({}, {node}, tube))
         graph_id_mapping[node.id] = tube
 
@@ -113,7 +113,7 @@ export class SVGRenderer {
         walk(node.next, level + 1)
 
       } else if (node instanceof Joint) {
-        const joint = JointGraph(node.nexts.length, options.display_id ? node.id + '' : '')
+        const joint = JointGraph(node.nexts.length, options.show_id ? node.id + '' : '')
         levels[level].push(Object.assign({}, {node}, joint))
         graph_id_mapping[node.id] = joint
 

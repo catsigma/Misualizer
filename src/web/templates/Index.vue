@@ -81,7 +81,7 @@ export default {
       version,
       nets: {
         mainnet: 'mainnet',
-        babylonnet: 'babylonnet'
+        testnet: 'testnet'
       },
       net_type: 'mainnet',
       renderers: {
@@ -99,7 +99,7 @@ export default {
     async checkContract() {
       const host = {
         mainnet: 'https://rpc.tzbeta.net',
-        babylonnet: 'https://rpctest.tzbeta.net'
+        testnet: 'https://rpctest.tzbeta.net'
       }[this.net_type]
 
       const client = new TBN({

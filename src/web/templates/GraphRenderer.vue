@@ -1,16 +1,21 @@
 <template>
   <div>
-    <div class="tip" v-if="path_lst.length">
-      <div class="tip-wrapper">
-        <div class="node-inspect" v-if="inspect_result && hover_node && hover_node.id in inspect_result">
-            <div class="stack mono" 
-                 :key="i" 
-                 v-for="(stack, i) in inspect_result[hover_node.id] instanceof Array ? inspect_result[hover_node.id] : [inspect_result[hover_node.id]]">
-              <b>Stack:</b> 
-              <span :key="i" v-for="(item, i) in stack.toStringLst()" v-html="stackRepr(item)"></span>
-            </div>
-        </div>
-        <div :class="{path: true, selected: selected_path === path}" :key="i" v-for="(path, i) in path_lst" 
+    <div class="code-block" v-if="code_block && options.show_code_block">
+      <pre class="mono">{{code_block}}</pre>
+    </div>
+    
+    <div class="node-inspect" v-if="inspect_result && hover_node && hover_node.id in inspect_result">
+      <div class="stack mono" 
+           :key="i" 
+           v-for="(stack, i) in inspect_result[hover_node.id] instanceof Array ? inspect_result[hover_node.id] : [inspect_result[hover_node.id]]">
+        <b>Stack:</b> 
+        <span :key="i" v-for="(item, i) in stack.toStringLst()" v-html="stackRepr(item)"></span>
+      </div>
+    </div>
+
+    <div class="path" v-if="path_lst.length">
+      <div class="path-wrapper">
+        <div :class="{'path-item': true, selected: selected_path === path}" :key="i" v-for="(path, i) in path_lst" 
              @mouseenter="glowPath(path)" 
              @mouseleave="glowPath()" 
              @click="flowByPath(path)">
@@ -39,10 +44,13 @@
           <h2>Options</h2>
           <ul class="check-list">
             <li>
-              <input type="checkbox" v-model="options.display_id" /><label>Display node ID</label>
+              <input type="checkbox" v-model="options.show_id" /><label>Show nodes' ID</label>
             </li>
             <li>
-              <input type="checkbox" v-model="options.hide_annots" /><label>Hide all annots</label>
+              <input type="checkbox" v-model="options.show_code_block" /><label>Show nodes' code block</label>
+            </li>
+            <li>
+              <input type="checkbox" v-model="options.show_annots" /><label>Show annots</label>
             </li>
             <li>
               <!-- <input type="checkbox" v-model="options.use_custom_param" /><label>Using custom parameters</label> -->
@@ -70,14 +78,14 @@
 </template>
 
 <script>
-
 export default {
   props: ['contract', 'address'],
   data() {
     return {
       options: {
-        display_id: true,
-        hide_annots: false,
+        show_id: true,
+        show_code_block: true,
+        show_annots: true,
         use_custom_param: false
       },
       custom: {
@@ -98,6 +106,7 @@ export default {
       inspect_result: null,
       path_lst: [],
       hover_node: null,
+      code_block: '',
       selected_path: null
     }
   },
@@ -106,10 +115,10 @@ export default {
       this.initCustom()
       this.renderGraph()
     },
-    'options.display_id'() {
+    'options.show_id'() {
       this.renderGraph()
     },
-    'options.hide_annots'() {
+    'options.show_annots'() {
       this.renderGraph()
     }
   },
@@ -125,8 +134,8 @@ export default {
         else
           return '&gt'
       }).replace(/#.+?#/g, x => {
-        return this.options.hide_annots ? '' :
-          `<span class="annot">${x.slice(1, -1)}</span>`
+        return this.options.show_annots ? 
+          `<span class="annot">${x.slice(1, -1)}</span>` : ''
       })
 
       return item
@@ -185,6 +194,7 @@ export default {
           this.hover_node = node
         },
         mouseenter: (node) => {
+          this.code_block = node.t ? node.t : JSON.stringify(node.code, null, 2)
           if (this.inspect_result && node.id in this.inspect_result)
             this.hover_node = node
         }
@@ -260,40 +270,60 @@ h2 {margin: 4px 0 0 0;}
   margin-right: 8px;
 }
 .desk-right {
-  min-width: 300px;
+  min-width: 200px;
 }
 
 .block {
   margin-bottom: 16px;
 }
 
+$bg: $c5;
 
-.tip {
+.code-block {
   position: fixed;
-  bottom: 14px;
-  right: 14px;
-  width: 300px;
-  background: $c5;
+  padding: 4px;
+  left: 8px;
+  bottom: 4px;
+  background: $bg;
+  height: 300px;
+  width: 200px;
+  z-index: 8;
+
+  pre {
+    padding: 2px;
+    color:  $c3;
+    background: $c6;
+    height: 292px;
+    overflow: auto;
+  }
+}
+
+.node-inspect {
+  position: fixed;
+  bottom: 4px;
+  left: 212px;
+  right: 224px;
+  padding: 2px 4px;
+  background: $bg;
+  color: $c3;
+  z-index: 9;
+}
+
+.path {
+  position: fixed;
+  bottom: 4px;
+  right: 8px;
+  width: 212px;
+  background: $bg;
   color: $c6;
   z-index: 9;
 
-  .tip-wrapper {
+  .path-wrapper {
     margin: 2px 4px;
   }
 
-  .path {font-size: 1.2rem; margin: 4px 0; padding: 0 2px; border-radius: 2px;}
-  .path:hover, .path.selected {background: $c6; color: $c5; cursor: pointer}
-  .node-inspect {
-    position: absolute;
-    right: 302px;
-    bottom: 0px;
-    width: 800px;
-    padding: 2px 4px;
-    background: $c5;
-    color: $c3;
-
-  }
-
+  .path-item {font-size: 1.2rem; margin: 4px 0; padding: 0 2px; border-radius: 2px;}
+  .path-item:hover, .path-item.selected {background: $c6; color: $c5; cursor: pointer}
 }
 
 
@@ -303,7 +333,7 @@ button {
 
 .custom {
   textarea {
-    width: 300px;
+    width: 200px;
     height: 200px;
     padding: 4px;
   }
