@@ -33,13 +33,13 @@
       </div>
 
       <div class="desk-right">
-        <div class="operations">
+        <!-- <div class="operations">
           <h2>Operations</h2>
           <div>
             <button class="sm" @click="inspectAll">Inspect all stacks</button>
             <button class="sm" @click="inspectOne">Inspect one step</button>
           </div>
-        </div>
+        </div> -->
         <div class="options">
           <h2>Options</h2>
           <ul class="check-list">
