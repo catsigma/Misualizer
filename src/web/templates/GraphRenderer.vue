@@ -53,7 +53,7 @@
               <input type="checkbox" v-model="options.show_annots" /><label>Show annots</label>
             </li>
             <li>
-              <!-- <input type="checkbox" v-model="options.use_custom_param" /><label>Using custom parameters</label> -->
+              <input type="checkbox" v-model="options.use_custom_param" /><label>Using custom parameters</label>
               <div class="custom" v-if="options.use_custom_param">
                 <button class="sm" @click="renderGraph()">Confirm</button>
                 <div>
@@ -65,7 +65,7 @@
                   <textarea placeholder="custom storage value in JSON" class="mono" v-model="custom.storage"></textarea>
                 </div>
                 <div>
-                  <h2>Custom arguments</h2>
+                  <h2>Custom environment arguments</h2>
                   <textarea placeholder="custom arguments in JSON" class="mono custom-arguments" @input="argsChange" :value="JSON.stringify(custom.args, null, 2)"></textarea>
                 </div>
               </div>
@@ -208,7 +208,7 @@ export default {
       }, {
         t: script_code[1].args[0],
         val: custom_storage
-      })
+      }, this.options.use_custom_param ? this.custom.args : undefined)
       stack.attached.renderValve = (valve) => {
         console.log('render sub valve')
       }
@@ -335,6 +335,7 @@ button {
 
 .custom {
   textarea {
+    font-size: 1.2rem;
     width: 200px;
     height: 200px;
     padding: 4px;

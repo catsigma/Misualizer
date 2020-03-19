@@ -16,7 +16,7 @@ const Misualizer = {
   getGraphRenderer(node_binding : {string : (...Object) => void}) {
     return new SVGRenderer(node_binding)
   },
-  createStack(parameter : {t: Object, val?: Object}, storage: {t: Object, val?: Object}) {
+  createStack(parameter : {t: Object, val?: Object}, storage: {t: Object, val?: Object}, env? : Object) {
     const p = createStackItem(parameter.t, parameter.val || mockData(parameter.t))
     const s = createStackItem(storage.t, storage.val || mockData(storage.t))
     settingInstrID(p, 'P')
@@ -25,7 +25,7 @@ const Misualizer = {
       0, 
       [new StackItem(['pair', toVType(parameter.t), toVType(storage.t)], [], '', null, [p, s])],
       [],
-      undefined,
+      env,
       {
         parameter_vtype: toVType(parameter.t)
       }
