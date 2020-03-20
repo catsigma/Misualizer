@@ -60,7 +60,6 @@ import TBN from 'tezbridge-network/PsBabyM1'
 import Selector from './Selector'
 import Loading from './Loading'
 
-import TextRenderer from './TextRenderer'
 import RawRenderer from './RawRenderer'
 import GraphRenderer from './GraphRenderer'
 import Diff from './Diff'
@@ -71,7 +70,6 @@ export default {
   components: {
     Loading,
     Selector,
-    TextRenderer,
     RawRenderer,
     GraphRenderer,
     Diff
@@ -86,7 +84,6 @@ export default {
       net_type: 'mainnet',
       renderers: {
         graph: 'graph',
-        // text: 'text',
         raw: 'raw'
       },
       renderer: 'graph',

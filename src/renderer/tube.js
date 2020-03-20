@@ -1,6 +1,6 @@
 // @flow
 
-import { Tube, Joint, Valve } from '../emu/tube/tube'
+import { Tube, Joint, Valve } from '../emu/tube'
 import { throttle } from '../utils'
 import { Text,
          TubeGraph, 
@@ -11,8 +11,8 @@ import { Text,
          CustomCurve, 
          distance,
          linearGradient } from './graph'
-import { DiffValue } from '../emu/tube/diff'
-import { StackItem } from '../emu/tube/stack'
+import { DiffValue } from '../emu/diff'
+import { StackItem } from '../emu/stack'
 
 function bindMouseControl(svg : Object, zoom_in : Object, zoom_out : Object) {
   const getViewBox = () => svg.getAttribute('viewBox').split(' ').map(x => parseInt(x))

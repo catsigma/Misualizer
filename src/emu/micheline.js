@@ -1,21 +1,12 @@
 // @flow
 
-export type EType = Array<string | EType>
+import { StackItem } from './stack'
 
-import { Element } from './elem'
+type VType = Array<string | VType>
 
 type MichelineType = {prim: string, args?: Array<MichelineType>, annots?: Array<string>}
 
 type MichelineInstr = {prim: string, args?: Array<MichelineInstr>, annots?: Array<string>}
-
-// type MichelineValue = 
-// | {int: string}
-// | {string: string}
-// | {bytes: string}
-// | {prim: string, args?: Array<MichelineValue>, annots?: Array<string>} 
-// | Array<{prim: 'Elt', args: [MichelineValue, MichelineValue]}>
-// | Array<MichelineValue>
-// | Array<MichelineInstr>
 
 type MichelineValue = Object
 
@@ -25,14 +16,7 @@ const micheline_mapping = {
   bytes: new Set(['bytes', 'key', 'signature'])
 }
 
-export function readType(t : MichelineType) : EType {
-  if (t.args instanceof Array) {
-    return [t.prim].concat(t.args.map(x => readType(x)))
-  } else {
-    return [t.prim]
-  }
-}
-export function fallbackType(t : string | EType) : MichelineType {
+export function fallbackType(t : string | VType) : MichelineType {
   if (typeof t === 'string')
     return {prim: t}
 
@@ -41,29 +25,38 @@ export function fallbackType(t : string | EType) : MichelineType {
   if (t.length > 1) {
     return {
       prim: t0,
-      args: t.slice(1).map((x : string | EType) => fallbackType(x))
+      args: t.slice(1).map((x : string | VType) => fallbackType(x))
     }
   } else {
     return {prim: t0}
   }
 }
 
-export function settingInstrID(elem : Element, prefix : string = 'G') {
-  let id = 1
-
-  const walk = (elem : Element) => {
-    if (!elem.annots.length)
-      elem.annots.push(prefix + id++)
-
-    elem.subs.forEach(item => walk(item))
+export function toVType(t : MichelineType) : VType {
+  if (t.args instanceof Array) {
+    return [t.prim].concat(t.args.map(x => toVType(x)))
+  } else {
+    return [t.prim]
   }
-  walk(elem)
-
-  return elem
 }
 
-export function createElementByType(t : MichelineType, v : MichelineValue, id : {val : number} = {val: 1}) : Element {
-  const type_t = readType(t)
+export function settingInstrID(item : StackItem, prefix : string = 'G') {
+  let id = 1
+
+  const unhandle_set = new Set(['pair', 'or'])
+  const walk = (item : StackItem) => {
+    if (!item.annots.length && !unhandle_set.has(item.t[0]))
+      item.annots.push(prefix + id++)
+
+    item.subs.forEach(item => walk(item))
+  }
+  walk(item)
+
+  return item
+}
+
+export function createStackItem(t : MichelineType, v : MichelineValue) : StackItem {
+  const type_t = toVType(t)
   const annots : Array<string> = v.annots ? v.annots : t.annots || []
 
   if (t.args) {
@@ -71,78 +64,78 @@ export function createElementByType(t : MichelineType, v : MichelineValue, id : 
     const targ1 = t.args[1]
 
     if (t.prim === 'pair') {
-      return new Element(id.val++, type_t, annots, '', null, [
-        createElementByType(targ0, v.args[0], id),
-        createElementByType(targ1, v.args[1], id)
+      return new StackItem(type_t, annots, '', null, [
+        createStackItem(targ0, v.args[0]),
+        createStackItem(targ1, v.args[1])
       ])
 
     } else if (t.prim === 'or') {
-      return new Element(id.val++, type_t, annots, v.prim, null, v.prim === 'Left' ? [
-        createElementByType(targ0, v.args[0], id)
-      ] : v.prim === 'Right' ? [createElementByType(targ1, v.args[0], id)] : [
-        createElementByType(targ0, v.args[0], id),
-        createElementByType(targ1, v.args[1], id)
+      return new StackItem(type_t, annots, v.prim, null, v.prim === 'Left' ? [
+        createStackItem(targ0, v.args[0])
+      ] : v.prim === 'Right' ? [createStackItem(targ1, v.args[0])] : [
+        createStackItem(targ0, v.args[0]),
+        createStackItem(targ1, v.args[1])
       ])
       
     } else if (t.prim === 'list' || t.prim === 'set') {
-      return new Element(id.val++, type_t, annots, '', null, 
-        v.map(item => createElementByType(targ0, item, id)))
+      return new StackItem(type_t, annots, '', null, 
+        v.map(item => createStackItem(targ0, item)))
 
     } else if (t.prim === 'map' || t.prim === 'big_map') {
-      return new Element(id.val++, type_t, annots, '', null, v.map(item => 
-        new Element(id.val++, ['elt'], item.annots || annots, '', null, [
-          createElementByType(targ0, item.args[0], id),
-          createElementByType(targ1, item.args[1], id)
+      return new StackItem(type_t, annots, '', null, v.map(item => 
+        new StackItem(['elt'], item.annots || annots, '', null, [
+          createStackItem(targ0, item.args[0]),
+          createStackItem(targ1, item.args[1])
         ])))
 
     } else if (t.prim === 'option') {
-      return new Element(id.val++, type_t, annots, v.prim, null, 
-        v.prim === 'Some' ? [createElementByType(targ0, v.args[0], id)] : [])
+      return new StackItem(type_t, annots, v.prim, null, 
+        v.prim === 'Some' ? [createStackItem(targ0, v.args[0])] : [])
 
     } else if (t.prim === 'contract') {
-      return new Element(id.val++, type_t, annots, '', v.string, [])
+      return new StackItem(type_t, annots, '', v.string, [])
       
     } else if (t.prim === 'lambda') {
       const codes = v instanceof Array ? v : v.args[2]
-      return new Element(id.val++, type_t, annots, '', codes, [])
+      return new StackItem(type_t, annots, '', codes, [])
     }
 
   } else {
     if (t.prim === 'unit' || t.prim === 'bool')
-      return new Element(id.val++, type_t, annots, '', v.prim, [])
+      return new StackItem(type_t, annots, '', v.prim, [])
     else
-      return new Element(id.val++, type_t, annots, '', Object.values(v)[0], [])
+      return new StackItem(type_t, annots, '', Object.values(v)[0], [])
   }
 
   debugger
-  throw `createElementByType / invalid t: ${t.prim} v: ${v.prim}`
+  throw `createStackItem / invalid t: ${t.prim} v: ${v.prim}`
 }
 
-export function mockValueFromType(t : MichelineType, id : {val : number} = {val: 1}) : MichelineValue {
+export function mockData(t : MichelineType) : MichelineValue {
   if (t.args) {
     const targ0 = t.args[0]
     const targ1 = t.args[1]
     if (t.prim === 'pair') {
       return {prim: 'Pair', args: [
-        mockValueFromType(targ0, id),
-        mockValueFromType(targ1, id)
+        mockData(targ0),
+        mockData(targ1)
       ]}
 
     } else if (t.prim === 'or') {
-      return {prim: 'Left|Right', args: [mockValueFromType(targ0, id), mockValueFromType(targ1, id)]}
+      return {prim: 'Left|Right', args: [mockData(targ0), mockData(targ1)]}
       
     } else if (t.prim === 'list' || t.prim === 'set') {
-      return [mockValueFromType(targ0, id)]
+      return [mockData(targ0)]
 
     } else if (t.prim === 'map' || t.prim === 'big_map') {
       const result : Array<{prim: 'Elt', args: [MichelineValue, MichelineValue]}> = [{prim: 'Elt', args: [
-        mockValueFromType(targ0, id),
-        mockValueFromType(targ1, id)
+        mockData(targ0),
+        mockData(targ1)
       ]}]
       return result
 
     } else if (t.prim === 'option') {
-      return {prim: 'Some|None', args: [mockValueFromType(t.args[0], id)]}
+      return {prim: 'Some|None', args: [mockData(t.args[0])]}
 
     } else if (t.prim === 'contract') {
       return {string: ``}
@@ -165,5 +158,5 @@ export function mockValueFromType(t : MichelineType, id : {val : number} = {val:
   }
 
   debugger
-  throw `mockValueFromType / invalid Micheline type: ${t.prim}`
+  throw `mockData / invalid Micheline type: ${t.prim}`
 }
