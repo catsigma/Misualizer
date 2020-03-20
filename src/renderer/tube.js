@@ -2,13 +2,17 @@
 
 import { Tube, Joint, Valve } from '../emu/tube/tube'
 import { throttle } from '../utils'
-import { TubeGraph, 
+import { Text,
+         TubeGraph, 
          JointGraph, 
          Graph, 
+         AutoCurve,
          Curve, 
          CustomCurve, 
          distance,
          linearGradient } from './graph'
+import { DiffValue } from '../emu/tube/diff'
+import { StackItem } from '../emu/tube/stack'
 
 function bindMouseControl(svg : Object, zoom_in : Object, zoom_out : Object) {
   const getViewBox = () => svg.getAttribute('viewBox').split(' ').map(x => parseInt(x))
@@ -67,9 +71,9 @@ export class SVGRenderer {
   graph_mem : {number: Graph}
   node_binding : {string : (Tube | Joint) => void}
 
-  constructor(node_binding : {string : (Tube | Joint) => void}) {
+  constructor(node_binding? : {string : (Tube | Joint) => void}) {
     this.graph_mem = {}
-    this.node_binding = node_binding
+    this.node_binding = node_binding || {}
   }
 
   glowGraphs(graph_id_lst: number[]) {
@@ -80,6 +84,107 @@ export class SVGRenderer {
       if (graph_set.has(id))
         this.graph_mem[id].addClass('path-selected')
     }
+  }
+
+  renderDiff(item : StackItem) {
+    const size = [-1, -1]
+    const color_mapping = {'left': 'red','right': 'green','both': '#8B7400'}
+
+    const levels = {}
+    const links = {}
+    const walk = (el : StackItem, level : number) => {
+      const content = el.value instanceof DiffValue && el.value.hasValue() ? 
+        el.value.read() : 
+        el.t[0] === 'or' ? `${el.annots[0] ? el.annots[0] + ': ' : ''}or`: el.toString()
+
+      const graph = Text([0, 0], content, 1.2)
+
+      if (el.value instanceof DiffValue)
+        graph.setStyles({
+          fill: color_mapping[el.value.direction]
+        })
+
+      if (!(level in levels)) {
+        levels[level] = []
+        links[level] = []
+      }
+
+      levels[level].push(graph)
+
+      el.subs.forEach(x => {
+        links[level].push({
+          from: graph,
+          direction: x.value instanceof DiffValue ? x.value.direction : '',
+          to: walk(x, level + 1)
+        })
+      })
+      return graph
+    }
+    walk(item, 1)
+
+    let most_left = Number.MAX_SAFE_INTEGER
+    let most_right = 0
+    const graphs_relocated = []
+    for (const level in levels) {
+      const elems = levels[level]
+      
+      const lefts = []
+      const mids = []
+      let width_sum = 0
+      elems.forEach((x, index) => {
+        const width = x.key_points[1][0] - x.key_points[3][0]
+        lefts.push(width_sum)
+        mids.push(width_sum + width / 2)
+        width_sum += width + 20
+      })
+
+      if (width_sum > size[0])
+        size[0] = width_sum
+      if (parseInt(level) * 50 > size[1])
+        size[1] = parseInt(level) * 50
+
+      let offset = 0
+      if (level === '1') {
+        offset = 0
+      } else {
+        links[parseInt(level) - 1].forEach((link, index) => {
+          const from_mid = link.from.key_points[0][0]
+          offset += mids[index] - from_mid
+        })
+        offset /= elems.length
+      }
+
+      if (lefts[0] - offset < most_left)
+        most_left = lefts[0] - offset
+
+      if (lefts[0] - offset + width_sum > most_right)
+        most_right = lefts[0] - offset + width_sum
+
+      elems.forEach((x, index) => {
+        x.relocate([lefts[index] - offset, (parseInt(level) - 1) * 50])
+        graphs_relocated.push(x)
+      })
+    }
+
+    for (const level in links) {
+      links[level].forEach(link => {
+        const curve = AutoCurve(link.from, link.to, true, '', 
+          link.direction ? {stroke: color_mapping[link.direction]} : {})
+        
+        graphs_relocated.push(curve)
+      })
+    }
+
+    return this.createSVG(
+      [0,0], 
+      new Graph(graphs_relocated).el,
+      [
+        most_left - 50, 
+        -10, 
+        most_right - most_left + 100,
+        size[1]
+      ]
+    )
   }
 
   renderValve(valve : Valve, options : {
@@ -190,7 +295,7 @@ export class SVGRenderer {
     return this.createSVG([max_width + 300, height + 32 * 2], new Graph(graphs).el)
   }
 
-  createSVG(size : [number, number], elem : Object) {
+  createSVG(size : [number, number], elem : Object, view_box? : [number, number, number, number]) {
     const wrapper = document.createElement('div')
     wrapper.className = 'svg-wrapper'
     const zoom_in = document.createElement('div')
@@ -246,8 +351,8 @@ export class SVGRenderer {
     svg.appendChild(style)
 
     // setting viewbox
-    const view_box = [-size[0] / 2, 0, size[0], size[1]]
-    svg.setAttribute('viewBox', view_box.join(' '))
+    const view = view_box || [-size[0] / 2, 0, size[0], size[1]]
+    svg.setAttribute('viewBox', view.join(' '))
     bindMouseControl(svg, zoom_in, zoom_out)
     svg.appendChild(elem)
 

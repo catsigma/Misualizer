@@ -1,19 +1,19 @@
 // @flow
 
-import { Element, diffElement } from '../emu/elem'
-// import { Contract, Stack } from '../emu/contract'
-// import { SVGRenderer } from '../renderer/svg'
-import { replaceElement, reduceElement } from '../renderer/repr'
-import { createElementByType, mockValueFromType } from '../emu/micheline'
+// import { Element, diffElement } from '../emu/elem'
+// // import { Contract, Stack } from '../emu/contract'
+// // import { SVGRenderer } from '../renderer/svg'
+// import { replaceElement, reduceElement } from '../renderer/repr'
+// import { createElementByType, mockValueFromType } from '../emu/micheline'
 
 import { createStackItem, mockData, toVType, settingInstrID } from '../emu/tube/micheline'
 import { codeConvert, Valve } from '../emu/tube/tube'
 import { Stack, StackItem } from '../emu/tube/stack'
 import { SVGRenderer } from '../renderer/tube'
-
+import { diffStackItem } from '../emu/tube/diff'
 
 const Misualizer = {
-  getGraphRenderer(node_binding : {string : (...Object) => void}) {
+  getGraphRenderer(node_binding? : {string : (...Object) => void}) {
     return new SVGRenderer(node_binding)
   },
   createStack(parameter : {t: Object, val?: Object}, storage: {t: Object, val?: Object}, env? : Object) {
@@ -34,6 +34,13 @@ const Misualizer = {
   createValve(code : Object, stack : Stack, init_id? : number) {
     const result = codeConvert(code, init_id)
     return new Valve(result.tube, result.id_mapping, stack, result.id)
+  },
+  diff(t : Object, left : Object, right : Object) {
+    const base_item = createStackItem(t, mockData(t))
+    const left_item = createStackItem(t, left)
+    const right_item = createStackItem(t, right)
+
+    return diffStackItem(base_item, left_item, right_item)
   }
   // diff(t : Object, left : Object, right : Object) {
   //   const mock_elem = createElementByType(t, mockValueFromType(t))
