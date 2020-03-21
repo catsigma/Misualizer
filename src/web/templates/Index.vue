@@ -5,7 +5,7 @@
         <a href="javascript:;" @click="state = 'diff'">Diff</a>
         <a href="https://github.com/catsigma/Misualizer" target="_blank">Github</a>
       </div>
-      <div class="logo">Misualizer</div>
+      <a class="logo" href="/index.html">Misualizer</a>
       <input class="mono" placeholder="Enter the KT1 address here" v-model="address" />
       <selector :data="nets" v-model="net_type" class="net-selector"></selector>
       <button @click="checkContract" :disabled="state === 'reloading'">
@@ -17,6 +17,7 @@
     <transition name="bounce">
       <div class="index-center" v-if="state === 'initial' || state === 'loading'">
         <div class="logo">
+          <img src="../favicon.png" />
           <span>Misualizer</span>
           <span class="version">v{{version}}</span>
         </div>
@@ -157,6 +158,7 @@ export default {
   align-items: center;
 
   .logo {
+    text-decoration: none;
     font-weight: 800;
     display: inline-block;
     margin: 0 16px;
@@ -205,8 +207,13 @@ export default {
   }
 
   .logo {
+    img {
+      width: 32px;
+      vertical-align: text-bottom;
+    }
+
     font-weight: 800;
-    color: $c15; 
+    color: $c16; 
     margin-bottom: 32px;
     
     span {
