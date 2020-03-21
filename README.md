@@ -13,9 +13,7 @@ npm run dev
 ```
 
 ### Run test
-```
-npm run test
-```
+After `npm run dev`, open test page [https://localhost:1234/plugin_tester/index.html](https://localhost:1234/plugin_tester/index.html)
 
 ### Build static page
 ```
@@ -27,11 +25,9 @@ Then the static page will be exported to the `docs` folder.
 - [x] Michelson behavior emulator
 - [x] Text renderer
 - [x] Svg rendere
-- [ ] Graph middle language (50%)
-- [ ] Web (70%)
-- [ ] Text render result optimization
-- [ ] SVG render result optimization (30%)
-- [ ] Plugin for third party websites
+- [x] Web
+- [x] SVG render result optimization
+- [x] Plugin for third party websites
 
 ## Sponsor
 [Tezos Foundation](https://tezos.foundation/)
