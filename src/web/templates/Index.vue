@@ -60,7 +60,6 @@ import TBN from 'tezbridge-network/PsBabyM1'
 import Selector from './Selector'
 import Loading from './Loading'
 
-import TextRenderer from './TextRenderer'
 import RawRenderer from './RawRenderer'
 import GraphRenderer from './GraphRenderer'
 import Diff from './Diff'
@@ -71,7 +70,6 @@ export default {
   components: {
     Loading,
     Selector,
-    TextRenderer,
     RawRenderer,
     GraphRenderer,
     Diff
@@ -81,12 +79,11 @@ export default {
       version,
       nets: {
         mainnet: 'mainnet',
-        babylonnet: 'babylonnet'
+        testnet: 'testnet'
       },
       net_type: 'mainnet',
       renderers: {
         graph: 'graph',
-        text: 'text',
         raw: 'raw'
       },
       renderer: 'graph',
@@ -99,7 +96,7 @@ export default {
     async checkContract() {
       const host = {
         mainnet: 'https://rpc.tzbeta.net',
-        babylonnet: 'https://rpctest.tzbeta.net'
+        testnet: 'https://rpctest.tzbeta.net'
       }[this.net_type]
 
       const client = new TBN({

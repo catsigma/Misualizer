@@ -71,7 +71,7 @@ function shift(point : point, direction : direction, factor : number = 50) : poi
   return [point[0] + shift_point[0], point[1] + shift_point[1]]
 }
 
-function distance(point1 : point, point2 : point, with_sqrt : boolean = true) {
+export function distance(point1 : point, point2 : point, with_sqrt : boolean = true) {
   const square_sum = Math.pow(point1[0] - point2[0], 2) + Math.pow(point1[1] - point2[1], 2)
   return with_sqrt ? Math.sqrt(square_sum) : square_sum
 }
@@ -101,13 +101,13 @@ function shortest_distance(point_lst1 : Array<point>, point_lst2 : Array<point>,
   }
 }
 
-// =============== BASIC GRAPHS COMPONENTS ===============
-export class Component {
+// =============== BASIC GRAPHS GraphS ===============
+export class Graph {
   kind : string
   key_points : Array<point>
   el : SVGElement
 
-  constructor(init_info : string | Array<Component>) {
+  constructor(init_info : string | Array<Graph>) {
     if (init_info instanceof Array) {
       this.kind = 'g'
       this.el = document.createElementNS('http://www.w3.org/2000/svg', 'g')
@@ -134,6 +134,13 @@ export class Component {
     return this.el.getAttribute(name)
   }
 
+  width() {
+    return this.key_points[1][0] - this.key_points[3][0]
+  }
+  height() {
+    return this.key_points[2][1] - this.key_points[0][1]
+  }
+
   relocate(pos : point) {
     const prev_x = this.key_points[3][0]
     const prev_y = this.key_points[0][1]
@@ -152,14 +159,31 @@ export class Component {
     this.el.appendChild(el)
   }
 
-  on(event : string, fn : Function) {
-    if (!this.el.getAttribute('class'))
-      this.el.setAttribute('class', 'with-event')
+  modClass(classname : string, t : 'add' | 'remove') {
+    const class_str = this.el.getAttribute('class') || ''
+    const class_set = new Set(class_str.split(/\s+/g))
+    if (t === 'add')
+      class_set.add(classname)
+    else
+      class_set.delete(classname)
+  
+    this.el.setAttribute('class', Array.from(class_set).join(' '))
+  }
 
+  addClass(classname : string) {
+    this.modClass(classname, 'add')
+  }
+  removeClass(classname : string) {
+    this.modClass(classname, 'remove')
+  }
+
+  on(event : string, fn : Function) {
+    this.addClass('cursor-pointer')
     this.el.addEventListener(event, fn)
   }
 
   off(event : string, fn : Function) {
+    this.removeClass('cursor-pointer')
     this.el.removeEventListener(event, fn)
   }
 
@@ -180,30 +204,89 @@ export class Component {
   }
 }
 
-export const Rect = (start : point, width: number, height: number) => {
-  const rect = new Component('rect')
-  rect.setAttrs({
+export const linearGradient = (stops : Object[], attrs : Object) => {
+  const g = new Graph('linearGradient')
+  g.setAttrs(attrs)
+  stops.forEach(x => {
+    const stop = new Graph('stop')
+    stop.setAttrs(x)
+    g.el.appendChild(stop.el)
+  })
+  return g
+}
+
+export const TubeGraph = (id? : string) => {
+  const height = 10
+  const [x, y] = [0, 0]
+
+  const start_line = Rect([x, y], 16, 8)
+  const end_line = Rect([x, y + height], 16, 8)
+
+  const graph = new Graph([start_line, end_line].concat(id ? Text([16, 0], id, 0.8) : []))
+  graph.key_points = [
+    [8, 0],
+    [16, height / 2],
+    [8, height],
+    [0, height / 2]
+  ]
+  
+  graph.addClass('tube')
+  return {
+    graph,
+    end_offset: [0, height + 8]
+  }
+}
+
+export const JointGraph = (count : number, id? : string) => {
+  const [x, y] = [0, 0]
+
+  const width = count * 8 + (count - 1) * 2
+  const start_rect = Rect([x, y], width, 8)
+  const end_points = [...Array(count)].map<[number, number]>((_, i) => [x + i * 10, y + 10])
+  const end_rects = end_points.map(p => Rect(p, 8, 8))
+
+  const graph = new Graph(end_rects.concat(start_rect, id ? Text([width, 0], id, 0.8) : []))
+  graph.key_points = [
+    [width / 2, 0],
+    [width, 9],
+    [width / 2, 18],
+    [0, 9]
+  ]
+
+  graph.addClass('joint')
+  return {
+    graph,
+    end_offsets: end_points.map<[number, number]>(p => [p[0] - x - width / 2 + 4, p[1] - y + 8])
+  }
+}
+
+export const Line = (p1 : point, p2 : point) => {
+  const line = new Graph('line')
+  line.setAttrs({
+    x1: p1[0],
+    y1: p1[1],
+    x2: p2[0],
+    y2: p2[1],
+    stroke: 'black'
+  })
+  return line
+}
+
+export const Rect = (start : point, width: number, height: number, attrs? : Object) => {
+  const rect = new Graph('rect')
+  rect.setAttrs(Object.assign({
     x: start[0],
     y: start[1],
     width,
-    height,
-    stroke: 'black',
-    fill: 'transparent',
-    rx: '5'
-  })
-  const horiz_mid = start[0] + width / 2
-  const vert_mid = start[1] + height / 2
-  rect.key_points = [
-    [horiz_mid, start[1]],
-    [start[0] + width, vert_mid],
-    [horiz_mid, start[1] + height],
-    [start[0], vert_mid]
-  ]
+    height
+  }, attrs))
+  rect.addClass('rect')
+
   return rect
 }
 
 export const Arrow = (start : point, direction : direction, factor : number = 4, narrow_factor : number = 0.6) => {
-  const arrow = new Component('path')
+  const arrow = new Graph('path')
 
   const narrowed_factor = factor * narrow_factor
 
@@ -244,7 +327,7 @@ export const Curve = (start : point,
                       end_direction : direction,
                       factor : number,
                       attrs : Object = {}) => {
-  const curve = new Component('path')
+  const curve = new Graph('path')
   const [start_str, end_str] = [pp(start), pp(end)]
   const [c_start_str, c_end_str] = [pp(shift(start, start_direction, factor)), pp(shift(end, end_direction, factor))]
 
@@ -253,23 +336,66 @@ export const Curve = (start : point,
       M ${start_str}
       C ${c_start_str}, ${c_end_str}, ${end_str}
     `,
-    stroke: '#aaa',
+    stroke: 'black',
     fill: 'transparent'
   }, attrs))
 
+  curve.addClass('curve')
   return curve
 }
 
-export const AutoCurve = (component1 : Component, 
-                          component2 : Component, 
+export const Polyline = (points : point[], attrs : Object = {}) => {
+  const polyline = new Graph('polyline')
+  polyline.setAttrs(Object.assign({
+    fill: 'transparent',
+    points: points.map(x => pp(x)).join(', ')
+  }, attrs))
+  return polyline
+}
+
+export const CustomCurve = (start : point,
+                            end : point,
+                            x : number,
+                            attrs : Object = {}) => {
+  const curve = new Graph('path')
+  const points = [
+    start,
+    [start[0], start[1] + 10],
+    [(x + start[0]) / 2, start[1] + 10],
+    // [x, start[1] + 10],
+    [x, (start[1] + end[1]) / 2],
+    [x, end[1] - 10],
+    [(x + end[0]) / 2, end[1] - 10],
+    // [end[0], end[1] - 10],
+    end
+  ].map(x => pp(x))
+
+  curve.setAttrs(Object.assign({
+    d: `
+      M ${points[0]}
+      Q ${points[1]}, ${points[2]}
+      T ${points[3]}
+      Q ${points[4]}, ${points[5]}
+      T ${points[6]}
+    `,
+    stroke: 'black',
+    fill: 'transparent'
+  }, attrs))
+
+  curve.addClass('custom-curve')
+  return curve
+}
+
+export const AutoCurve = (Graph1 : Graph, 
+                          Graph2 : Graph, 
                           with_arrow : boolean = false,
                           desc? : string,
                           attrs? : Object) => {
-  const shortest = shortest_distance(component1.key_points, component2.key_points, new Set([0, 2]))
+  const shortest = shortest_distance(Graph1.key_points, Graph2.key_points, new Set([0, 2]))
   const direction = ['up', 'right', 'down', 'left']
   
-  const start_point = component1.key_points[shortest.index1]
-  const end_point = component2.key_points[shortest.index2]
+  const start_point = Graph1.key_points[shortest.index1]
+  const end_point = Graph2.key_points[shortest.index2]
   const start_direction = direction[shortest.index1]
   const end_direction = direction[shortest.index2]
 
@@ -286,19 +412,19 @@ export const AutoCurve = (component1 : Component,
       transform: `rotate(${k}, ${text.getAttr('x')}, ${text.getAttr('y')})`
     })
 
-    curve = new Component([curve, text])
+    curve = new Graph([curve, text])
   }
 
   if (!with_arrow)
     return curve
   else {
     const arrow = Arrow(end_point, end_direction)
-    return new Component([curve, arrow])
+    return new Graph([curve, arrow])
   }
 }
 
 export const Text = (point : point, content : string, size : number = 1) => {
-  const text = new Component('text')
+  const text = new Graph('text')
   text.setAttrs({
     x: point[0],
     y: point[1]
@@ -317,7 +443,7 @@ export const TextBlock = (point : point, contents : Array<string>, font_size : n
     return Text([point[0], point[1] + index * font_size * 10], content, font_size)
   })
 
-  const text_block = new Component(text_lst)
+  const text_block = new Graph(text_lst)
 
   text_block.key_points = getKeyPoints(text_block.el)
 
@@ -329,7 +455,7 @@ export const TextBlock = (point : point, contents : Array<string>, font_size : n
 
     const padding = 10
     const rect = Rect([left - padding, top - padding], width + 2 * padding, height + 2 * padding)
-    const combined = new Component([text_block, rect])
+    const combined = new Graph([text_block, rect])
     combined.key_points = rect.key_points
     return combined
   } else 

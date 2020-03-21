@@ -1,6 +1,6 @@
 {
   "name": "misualizer",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "The Michelson visualizer",
   "main": "dist/index.js",
   "scripts": {
@@ -21,19 +21,19 @@
   "homepage": "https://github.com/catsigma/Misualizer#readme",
   "dependencies": {
     "chevrotain": "^6.5.0",
-    "tezbridge-network": "^1.0.40",
-    "vue": "^2.6.10",
+    "tezbridge-network": "^1.0.46",
+    "vue": "^2.6.11",
     "vue-hot-reload-api": "^2.3.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.0",
-    "@babel/plugin-transform-flow-strip-types": "^7.4.4",
-    "@babel/plugin-transform-runtime": "^7.6.0",
-    "@vue/component-compiler-utils": "^3.0.2",
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-transform-flow-strip-types": "^7.9.0",
+    "@babel/plugin-transform-runtime": "^7.9.0",
+    "@vue/component-compiler-utils": "^3.1.1",
     "cssnano": "^4.1.10",
     "flow-bin": "^0.107.0",
-    "sass": "^1.23.7",
-    "vue-template-compiler": "^2.6.10"
+    "sass": "^1.26.3",
+    "vue-template-compiler": "^2.6.11"
   },
   "babel": {
     "plugins": [
