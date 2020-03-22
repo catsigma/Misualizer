@@ -27,7 +27,7 @@
       <div class="desk-left">
         <h2>
           <span>Contract graph</span>
-          <a href="javascript:;" class="explain">(Explain)</a>
+          <a target="_blank" href="https://github.com/catsigma/Misualizer/wiki/Analyzing-contract#explanation" class="explain">(Explain)</a>
         </h2>
         <div ref="contract_graph"></div>
       </div>
