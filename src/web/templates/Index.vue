@@ -93,6 +93,12 @@ export default {
       contract_raw: null
     }
   },
+  watch: {
+    state(v) {
+      if (v === 'diff')
+        location.hash = ''
+    }
+  },
   methods: {
     async checkContract() {
       const host = {
