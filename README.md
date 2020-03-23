@@ -21,6 +21,9 @@ npm run build
 ```
 Then the static page will be exported to the `docs` folder.
 
+### Documentation
+[https://github.com/catsigma/Misualizer/wiki](https://github.com/catsigma/Misualizer/wiki)
+
 ## Components
 - [x] Michelson behavior emulator
 - [x] Text renderer
