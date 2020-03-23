@@ -102,6 +102,8 @@ export default {
         }
       },
       main_valve: null,
+      valves: new Set(),
+      selected_valve: null,
       renderer: null,
       inspect_result: null,
       path_lst: [],
@@ -145,11 +147,12 @@ export default {
       this.custom.storage = JSON.stringify(this.contract.script.storage, null, 2)
       this.custom.args.self = this.address
     },
-    setSVG(ref_name, svg) {
+    setSVG(ref_name, svg, remove_children = true) {
       const el = this.$refs[ref_name]
-      while (el.firstChild) {
-        el.removeChild(el.firstChild)
-      }
+      if (remove_children)
+        while (el.firstChild) {
+          el.removeChild(el.firstChild)
+        }
 
       el.appendChild(svg)
     },
@@ -173,7 +176,7 @@ export default {
     },
     flowByPath(path) {
       this.selected_path = path
-      this.inspect_result = this.main_valve.flowByPath(path)
+      this.inspect_result = (this.selected_valve || this.main_valve).flowByPath(path)
     },
     renderGraph() {
       if (!this.contract) return;
@@ -188,11 +191,17 @@ export default {
 
       this.renderer = Misualizer.getGraphRenderer({
         click: (node) => {
-          this.path_lst = this.main_valve.getPaths(node).sort((a,b) => a.length - b.length)
-          this.glowPath(this.path_lst[0])
-          this.flowByPath(this.path_lst[0])
-          this.hover_node = node
-          this.code_block = node.t || JSON.stringify(node.code, null, 2)
+          this.valves.forEach(valve => {
+            if (!(node.id in valve.id_mapping))
+              return;
+
+            this.selected_valve = valve
+            this.path_lst = valve.getPaths(node).sort((a,b) => a.length - b.length)
+            this.glowPath(this.path_lst[0])
+            this.flowByPath(this.path_lst[0])
+            this.hover_node = node
+            this.code_block = node.t || JSON.stringify(node.code, null, 2)
+          })
         },
         mouseenter: (node) => {
           if (this.inspect_result && node.id in this.inspect_result) {
@@ -210,11 +219,15 @@ export default {
         val: custom_storage
       }, this.options.use_custom_param ? this.custom.args : undefined)
       stack.attached.renderValve = (valve) => {
-        console.log('render sub valve')
+        if (this.valves.has(valve))
+          return;
+
+        this.valves.add(valve)
+        this.setSVG('contract_graph',  this.renderer.renderValve(valve, this.options), false)
       }
 
       this.main_valve = Misualizer.createValve(script_code[2].args, stack)
-
+      this.valves.add(this.main_valve)
       this.setSVG('contract_graph',  this.renderer.renderValve(this.main_valve, this.options))
     }
   }
