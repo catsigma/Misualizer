@@ -6,7 +6,7 @@
         <a href="https://github.com/catsigma/Misualizer" target="_blank">Github</a>
       </div>
       <a class="logo" href="/index.html">Misualizer</a>
-      <input class="mono" placeholder="Enter the KT1 address here" v-model="address" />
+      <input class="mono address-input" placeholder="Enter the KT1 address or contract code JSON" v-model="address" />
       <selector :data="nets" v-model="net_type" class="net-selector"></selector>
       <button @click="checkContract" :disabled="state === 'reloading'">
         <span v-if="state !== 'reloading'">Check</span>
@@ -21,7 +21,7 @@
           <span>Misualizer</span>
           <span class="version">v{{version}}</span>
         </div>
-        <input class="mono" placeholder="Enter the KT1 address here" v-model="address" />
+        <input class="mono address-input" placeholder="Enter the KT1 address or contract code JSON" v-model="address" />
         <selector :data="nets" v-model="net_type" class="net-selector"></selector>
         <button @click="checkContract" :disabled="state === 'loading'">
           <span v-if="state !== 'loading'">Check contract</span>
@@ -101,25 +101,43 @@ export default {
   },
   methods: {
     async checkContract() {
-      const host = {
-        mainnet: 'https://rpc.tzbeta.net',
-        testnet: 'https://rpctest.tzbeta.net'
-      }[this.net_type]
+      if (this.address.trim().slice(0, 3) === 'KT1') {
+        const host = {
+          mainnet: 'https://rpc.tzbeta.net',
+          testnet: 'https://rpctest.tzbeta.net'
+        }[this.net_type]
 
-      const client = new TBN({
-        host
-      })
+        const client = new TBN({
+          host
+        })
 
-      const prev_state = this.state
-      try {
-        this.state = this.state === 'initial' ? 'loading' : 'reloading'
-        this.contract_raw = await client.fetch.contract(this.address)
-        this.state = 'loaded'
-        location.hash = `contract=${this.address}&net_type=${this.net_type}`
-      } catch (e){
-        this.state = prev_state
+        const prev_state = this.state
+        try {
+          this.state = this.state === 'initial' ? 'loading' : 'reloading'
+          this.contract_raw = await client.fetch.contract(this.address)
+          this.state = 'loaded'
+          location.hash = `contract=${this.address}&net_type=${this.net_type}`
+        } catch (e){
+          this.state = prev_state
+        }
+      } else {
+        try {
+          const content = JSON.parse(this.address)
+          if (content instanceof Array) {
+            this.contract_raw = {
+              script: {
+                storage: undefined,
+                code: content
+              }
+            }
+            this.address = 'CUSTOM'
+            this.state = 'loaded'
+            location.hash = ''
+          }
+        } catch (e) {
+          window.alert('Invalid address or contract code JSON')
+        }
       }
-
     }
   },
   async mounted() {
@@ -156,6 +174,7 @@ export default {
   background: lighten($c6, 10%);
 }
 
+.address-input { font-size: 1.2rem; }
 .header {
   display: flex;
   height: 48px;
