@@ -328,24 +328,28 @@ export const instr_mapping = {
   },
   APPLY(stack : Stack, instr : Object) {
     const [param, lambda] = stack.drop(2)
-
+    
     if (!(lambda.value instanceof Valve))
       throw `APPLY / invalid lambda value: ${lambda.value}`
 
-    const nodes = lambda.value.cursors[0].node instanceof Tube ?
-      [lambda.value.cursors[0].node] :
-      lambda.value.cursors[0].node.nexts
+    if (!lambda.value.applied_parts.has(instr)) {
+      lambda.value.applied_parts.add(instr)
 
-    nodes.forEach(node => {
-      node.code.unshift({prim: 'PAIR'})
-      node.code.unshift({
-        prim: 'PUSH',
-        args: [
-          fallbackType(param.t),
-          param
-        ]
+      const nodes = lambda.value.cursors[0].node instanceof Tube ?
+        [lambda.value.cursors[0].node] :
+        lambda.value.cursors[0].node.nexts
+  
+      nodes.forEach(node => {
+        node.code.unshift({prim: 'PAIR'})
+        node.code.unshift({
+          prim: 'PUSH',
+          args: [
+            fallbackType(param.t),
+            param
+          ]
+        })
       })
-    })
+    }
     
     stack.insert(lambda)
   },

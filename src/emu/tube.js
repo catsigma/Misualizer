@@ -16,12 +16,14 @@ export class Valve {
   cursors : NodeWithStack[]
   id_mapping: {number: (Tube | Joint)}
   max_id : number
+  applied_parts : Set<Object>
 
   constructor(node : Tube | Joint, id_mapping : {number: (Tube | Joint)}, stack : Stack, max_id : number) {
     this.start = {stack, node}
     this.cursors = [{stack, node}]
     this.id_mapping = id_mapping
     this.max_id = max_id
+    this.applied_parts = new Set()
   }
 
   setStack(stack : Stack) {
