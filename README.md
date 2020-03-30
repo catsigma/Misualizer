@@ -6,10 +6,21 @@ A tool to visualize all possible behaviors and trace all internal transactions t
 
 **This project is currently in early stage.**
 
-## Usage
+## Dev and build
+### Requirements
+* Parcel
+```
+npm install -g parcel-bundler
+```
+
 ### Run local development
 ```
 npm run dev
+```
+
+### Build static site
+```
+npm run build
 ```
 
 ### Run test
