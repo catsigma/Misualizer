@@ -7,9 +7,15 @@ import { Tube, Valve, codeConvert } from './tube'
 export const get_t = (t : Object) => t instanceof Array ? t : [t]
 
 export const instr_mapping = {
+  // custom instrs
   DEBUGGER(stack : Stack, instr : Object) {
     debugger
   },
+  CURSOR(stack : Stack, instr : Object) {
+    stack.cursor += parseInt(instr.args[0].int)
+  },
+  
+  // official instrs
   DUP(stack : Stack, instr : Object) {
     stack.insert(stack.top().clone())
   },
@@ -30,9 +36,6 @@ export const instr_mapping = {
         return item.subs[1]
       }
     })
-  },
-  CURSOR(stack : Stack, instr : Object) {
-    stack.cursor += parseInt(instr.args[0].int)
   },
   ITER(stack : Stack) {
     const [lst] = stack.drop(1)
@@ -141,11 +144,6 @@ export const instr_mapping = {
   },
   IMPLICIT_ACCOUNT(stack : Stack, instr : Object) {
     stack.insert(new StackItem(['contract', 'unit'], instr.annots, instr.prim, null, stack.drop(1)))
-  },
-  ADDRESS(stack : Stack, instr : Object) {
-    stack.replace(x => new StackItem(
-      ['address'], instr.annots, instr.prim, null, [x]
-    ))
   },
   SENDER(stack : Stack, instr : Object) {
     stack.insert(new StackItem(
@@ -257,7 +255,7 @@ export const instr_mapping = {
 
     stack.insert(new StackItem(get_t(iter_item.t), instr.annots, instr.prim, null, [iter_item]))
   },
-  DIP(stack : Stack, instr : Object) {
+  DIG(stack : Stack, instr : Object) {
     const nth = parseInt(instr.args[0].int)
     stack.insert(stack.dropAt(nth))
   },
