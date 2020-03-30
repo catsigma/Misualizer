@@ -257,7 +257,11 @@ export function codeConvert(code : Object[], init_id? : number) {
   let id = init_id || 1
   const id_mapping = {}
 
-  code = makePlainCode(code)
+  try {
+    code = makePlainCode(JSON.parse(JSON.stringify(code)))
+  } catch (e) {
+    throw `Invalid code body`
+  }
 
   const walk = (code : Object[], last? : Tube | Joint) : Tube => {
     const passing_code = []
