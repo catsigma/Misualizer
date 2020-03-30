@@ -8,6 +8,7 @@ A tool to visualize all possible behaviors and trace all internal transactions t
 
 ## Dev and build
 ### Requirements
+* Node.js > 12
 * Parcel
 ```
 npm install -g parcel-bundler
