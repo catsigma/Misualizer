@@ -14,6 +14,12 @@ A tool to visualize all possible behaviors and trace all internal transactions t
 npm install -g parcel-bundler
 ```
 
+Do not forget to install the all dependencies!
+```
+npm install
+```
+
+
 ### Run local development
 ```
 npm run dev
