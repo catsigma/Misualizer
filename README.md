@@ -24,11 +24,13 @@ npm install
 ```
 npm run dev
 ```
+Then access `https://127.0.0.1:1234/index.html` to render the local version.
 
 ### Build static site
 ```
 npm run build
 ```
+Due to the limitation of github page, the build output directory is `docs/`.
 
 ### Run test
 After `npm run dev`, open test page [https://localhost:1234/plugin_tester/index.html](https://localhost:1234/plugin_tester/index.html)
