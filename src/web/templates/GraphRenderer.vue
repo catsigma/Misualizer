@@ -8,7 +8,7 @@
       <div class="stack mono" 
            :key="i" 
            v-for="(stack, i) in inspect_result[hover_node.id] instanceof Array ? inspect_result[hover_node.id] : [inspect_result[hover_node.id]]">
-        <b>Stack:</b> 
+        <b>{{hover_node.t && inspect_result[hover_node.id].length > 1 ? (i ? 'Right' : 'Left') : 'Stack'}}:</b> 
         <span :key="i" v-for="(item, i) in stack.toStringLst()" v-html="stackRepr(item)"></span>
       </div>
     </div>
