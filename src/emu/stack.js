@@ -188,10 +188,14 @@ export class StackItem {
     const cloned = this.clone(true)
     const mapping = {
       'IF_LEFT.LEFT'(item : StackItem) {
-        return item.getSub({index: 0, instr: 'Left|Right'}, {index: 0}) || item
+        return item.getSub({index: 0, instr: 'Left'}, {index: 0}) 
+            || item.getSub({index: 0, instr: 'Left|Right'}, {index: 0}) 
+            || item
       },
       'IF_LEFT.RIGHT'(item : StackItem) {
-        return item.getSub({index: 0, instr: 'Left|Right'}, {index: 1}) || item
+        return item.getSub({index: 0, instr: 'Right'}, {index: 0}) 
+            || item.getSub({index: 0, instr: 'Left|Right'}, {index: 1}) 
+            || item
       },
       CAR(item : StackItem) {
         return item.getSub({index: 0, t: 'pair', instr: ''}, {index: 0, count: 2}) || item
@@ -200,7 +204,9 @@ export class StackItem {
         return item.getSub({index: 0, t: 'pair', instr: ''}, {index: 1, count: 2}) || item
       },
       'IF_NONE.SOME'(item : StackItem) {
-        return item.getSub({index: 0, instr: 'SOME', t: 'option'}, {index: 0}) || item
+        return item.getSub({index: 0, instr: 'Some', t: 'option'}, {index: 0}) 
+            || item.getSub({index: 0, instr: 'SOME', t: 'option'}, {index: 0}) 
+            || item
       }
     }
 

@@ -208,8 +208,17 @@ For example:
       this.renderGraph()
       
       if (this.custom.param) {
-        const result = this.main_valve.flow()
-        console.log(result)
+        const {steps} = this.main_valve.flow()
+        const path = []
+        const inspect_result = {}
+        steps.forEach(step => {
+          const node_id = Object.keys(step)[0]
+          path.push(node_id)
+          inspect_result[node_id] = step[node_id].filter(stack => !stack.is_dead)
+        }) 
+        this.inspect_result = inspect_result
+        this.renderer.glowGraphs(path)
+        this.path_lst = []
       }
     },
     renderGraph() {
