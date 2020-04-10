@@ -57,6 +57,9 @@ export const instr_mapping = {
     stack.insert(new StackItem(get_t(cond.t[1]), [], 'LOOP_LEFT.LEFT', null, [cond]))
     stack2.insert(new StackItem(get_t(cond.t[2]), [], 'LOOP_LEFT.RIGHT', null, [cond]))
 
+    stack.setDeadFlag('LOOP_LEFT.0', cond)
+    stack2.setDeadFlag('LOOP_LEFT.1', cond)
+    
     return [stack, stack2]
   },
   IF_NONE(stack : Stack) {
@@ -64,6 +67,9 @@ export const instr_mapping = {
     const stack2 = stack.clone()
 
     stack2.insert(new StackItem(get_t(cond.t[1]), [], 'IF_NONE.SOME', null, [cond]))
+
+    stack.setDeadFlag('IF_NONE.0', cond)
+    stack2.setDeadFlag('IF_NONE.1', cond)
 
     return [stack, stack2]
   },
@@ -74,6 +80,9 @@ export const instr_mapping = {
     stack.insert(new StackItem(cond.t, [], 'IF_CONS.REST', null, [cond]))
     stack.insert(new StackItem(get_t(cond.t[1]), [], 'IF_CONS.HEAD', null, [cond]))
 
+    stack.setDeadFlag('IF_CONS.0', cond)
+    stack2.setDeadFlag('IF_CONS.1', cond)
+
     return [stack, stack2]
   },
   IF_LEFT(stack : Stack) {
@@ -83,11 +92,17 @@ export const instr_mapping = {
     stack.insert(new StackItem(get_t(cond.t[1]), [], 'IF_LEFT.LEFT', null, [cond]))
     stack2.insert(new StackItem(get_t(cond.t[2]), [], 'IF_LEFT.RIGHT', null, [cond]))
 
+    stack.setDeadFlag('IF_LEFT.0', cond)
+    stack2.setDeadFlag('IF_LEFT.1', cond)
+
     return [stack, stack2]
   },
   IF(stack : Stack) {
     const [cond] = stack.drop(1)
     const stack2 = stack.clone()
+
+    stack.setDeadFlag('IF.0', cond)
+    stack2.setDeadFlag('IF.1', cond)
 
     return [stack, stack2]
   },

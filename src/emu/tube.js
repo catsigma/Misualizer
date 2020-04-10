@@ -85,6 +85,9 @@ export class Valve {
         steps.push(stack_mem)
         
       cursors = next_cursors.filter(({node, stack}) => {
+        if (stack.is_dead)
+          return false
+
         if (node instanceof Joint &&
             loop_set.has(node.t) &&
             stack.path.reduce((acc, x) => (node && x === node.id) ? acc + 1 : acc, 0) > 1)
@@ -120,7 +123,7 @@ export class Valve {
       )
       
       const result_lst = (result instanceof Array ? result : [result]).filter(x => {
-        if (x.stack.is_failed()) {
+        if (x.stack.isFailed()) {
           fail_stacks.push(x.stack)
           return false
         } if (!x.node || x.node.id === 0) {

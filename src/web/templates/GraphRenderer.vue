@@ -44,29 +44,29 @@
           <h2>Options</h2>
           <ul class="check-list">
             <li>
-              <input type="checkbox" v-model="options.show_id" /><label>Show nodes' ID</label>
+              <label><input type="checkbox" v-model="options.show_id" />Show nodes' ID</label>
             </li>
             <li>
-              <input type="checkbox" v-model="options.show_code_block" /><label>Show nodes' code block</label>
+              <label><input type="checkbox" v-model="options.show_code_block" />Show nodes' code block</label>
             </li>
             <li>
-              <input type="checkbox" v-model="options.show_annots" /><label>Show annots</label>
+              <label><input type="checkbox" v-model="options.show_annots" />Show annots</label>
             </li>
             <li>
-              <input type="checkbox" v-model="options.use_custom_param" /><label>Using custom parameters</label>
+              <label><input type="checkbox" v-model="options.use_custom_param" />Call with custom parameters</label>
               <div class="custom" v-if="options.use_custom_param">
-                <button class="sm" @click="renderGraph()">Confirm</button>
+                <button class="sm" @click="confirmCustom()">Confirm</button>
                 <div>
-                  <h2>Custom parameter</h2>
-                  <textarea placeholder="custom parameter value in JSON" class="mono" v-model="custom.param"></textarea>
+                  <h2>Custom call parameter</h2>
+                  <textarea :placeholder="placeholder.parameter" class="mono" v-model="custom.param"></textarea>
                 </div>
                 <div>
                   <h2>Custom storage</h2>
-                  <textarea placeholder="custom storage value in JSON" class="mono" v-model="custom.storage"></textarea>
+                  <textarea :placeholder="placeholder.storage" class="mono" v-model="custom.storage"></textarea>
                 </div>
                 <div>
                   <h2>Custom environment arguments</h2>
-                  <textarea placeholder="custom arguments in JSON" class="mono custom-arguments" @input="argsChange" :value="JSON.stringify(custom.args, null, 2)"></textarea>
+                  <textarea :placeholder="placeholder.env_args" class="mono custom-arguments" @input="argsChange" :value="JSON.stringify(custom.args, null, 2)"></textarea>
                 </div>
               </div>
             </li>
@@ -78,10 +78,26 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import { local } from '../../utils'
+
 export default {
   props: ['contract', 'address'],
   data() {
     return {
+      placeholder: {
+        parameter: `custom parameter you'd like to call with
+
+For example:
+{
+  "prim": "Left",
+  "args": [{
+    "int": "123"
+  }]
+}`,
+      storage: `custom storage when being called`,
+      env_args: `custom environment arguments when being called`
+      },
       options: {
         show_id: true,
         show_code_block: true,
@@ -122,9 +138,19 @@ export default {
     },
     'options.show_annots'() {
       this.renderGraph()
+    },
+    'custom.param'(v) {
+      local('call_parameter', v)
     }
   },
   mounted() {
+    const call_parameter = local('call_parameter')
+    if (call_parameter) {
+      Vue.nextTick(() => {
+        this.custom.param = call_parameter
+      })
+    }
+
     this.initCustom()
     this.renderGraph()
   },
@@ -177,6 +203,14 @@ export default {
     flowByPath(path) {
       this.selected_path = path
       this.inspect_result = (this.selected_valve || this.main_valve).flowByPath(path)
+    },
+    confirmCustom() {
+      this.renderGraph()
+      
+      if (this.custom.param) {
+        const result = this.main_valve.flow()
+        console.log(result)
+      }
     },
     renderGraph() {
       if (!this.contract) return;

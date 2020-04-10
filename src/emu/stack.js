@@ -21,6 +21,7 @@ export class Stack {
   path : number[]
   env : Env
   attached : Object
+  is_dead : boolean
 
   constructor(cursor : number = 0, items : StackItem[] = [], path : number[] = [], env : Env = {
     self: 'SELF',
@@ -36,6 +37,7 @@ export class Stack {
     this.path = path
     this.env = env
     this.attached = attached
+    this.is_dead = false
   }
 
   toStringLst() {
@@ -75,7 +77,7 @@ export class Stack {
     this.items = []
   }
 
-  is_failed() {
+  isFailed() {
     if (this.items[0] && this.items[0].t[0] === 'fail')
       return true
     else
@@ -84,6 +86,57 @@ export class Stack {
 
   clone() {
     return new Stack(this.cursor, this.items.map(x => x.clone()), this.path.slice(), this.env, this.attached)
+  }
+
+  static checkCondBool(cond : StackItem) {
+    return true
+  }
+
+  setDeadFlag(instr : string, cond : StackItem) {
+    const top = this.top()
+
+    const check_mapping = {
+      'IF_LEFT.0'() {
+        if (cond.instr === 'Right') return true
+      },
+      'IF_LEFT.1'() {
+        if (cond.instr === 'Left') return true
+      },
+      'LOOP_LEFT.0'() {
+        if (cond.instr === 'Right') return true
+      },
+      'LOOP_LEFT.1'() {
+        if (cond.instr === 'Left') return true
+      },
+      'IF_NONE.0'() {
+        if (cond.instr === 'Some') return true
+      },
+      'IF_NONE.1'() {
+        if (cond.instr === 'None') return true
+      },
+      'IF.0'() {
+        if (!Stack.checkCondBool(cond)) return true
+      },
+      'IF.1'() {
+        if (Stack.checkCondBool(cond)) return true
+      },
+      'IF_CONS.0'() {
+        if (!cond.instr && !cond.subs.length) return true
+      },
+      'IF_CONS.1'() {
+        if (!cond.instr && cond.subs.length) return true
+      }
+    }
+
+    if (!top)
+      throw `empty stack top`
+
+    if (!(instr in check_mapping))
+      throw `unhandled checking instr: ${instr}`
+
+    const result = check_mapping[instr].call(this)
+    if (result)
+      this.is_dead = true
   }
 }
 

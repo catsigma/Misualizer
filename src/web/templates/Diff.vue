@@ -26,13 +26,8 @@
 
 <script>
 
-function local(key, v) {
-  if (v === undefined) {
-    return JSON.parse(localStorage.getItem(key))
-  } else {
-    return localStorage.setItem(key, JSON.stringify(v))
-  }
-}
+import { local } from '../../utils'
+
 function setDiff(key, v) {
   const diff_setting = local('diff') || {}
   diff_setting[key] = v

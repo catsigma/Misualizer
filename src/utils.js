@@ -1,5 +1,14 @@
 // @flow
 
+
+export function local(key : string, v : Object) {
+  if (v === undefined) {
+    return JSON.parse(window.localStorage.getItem(key))
+  } else {
+    return window.localStorage.setItem(key, JSON.stringify(v))
+  }
+}
+
 export function throttle(fn : Function) {
   let last_trigger = +new Date
   return function(){
