@@ -183,7 +183,11 @@ For example:
       el.appendChild(svg)
     },
     argsChange(e) {
-      this.custom.args = JSON.parse(e.target.value)
+      try {
+        this.custom.args = JSON.parse(e.target.value)
+      } catch (e) {
+        alert('Environment arguments should be in JSON')
+      }
     },
     inspectOne() {
 
@@ -205,20 +209,39 @@ For example:
       this.inspect_result = (this.selected_valve || this.main_valve).flowByPath(path)
     },
     confirmCustom() {
-      this.renderGraph()
+      let json_err_title = ''
+      try {
+        json_err_title = 'Call parameter'
+        JSON.parse(this.custom.param)
+        json_err_title = 'Storage'
+        JSON.parse(this.custom.storage)
+      } catch (e) {
+        alert(`${json_err_title} should be in JSON format`)
+        return;
+      }
+
+      try {
+        this.renderGraph()
+      } catch (e) {
+        alert('The custom parameters cause graph rendering error\nplease recheck your custom parameters')
+      }
       
       if (this.custom.param) {
-        const {steps} = this.main_valve.flow()
-        const path = []
-        const inspect_result = {}
-        steps.forEach(step => {
-          const node_id = Object.keys(step)[0]
-          path.push(node_id)
-          inspect_result[node_id] = step[node_id].filter(stack => !stack.is_dead)
-        }) 
-        this.inspect_result = inspect_result
-        this.renderer.glowGraphs(path)
-        this.path_lst = []
+        try {
+          const {steps} = this.main_valve.flow()
+          const path = []
+          const inspect_result = {}
+          steps.forEach(step => {
+            const node_id = Object.keys(step)[0]
+            path.push(node_id)
+            inspect_result[node_id] = step[node_id].filter(stack => !stack.is_dead)
+          }) 
+          this.inspect_result = inspect_result
+          this.renderer.glowGraphs(path)
+          this.path_lst = []
+        } catch (e) {
+          alert('The custom parameters cause vm simulating error\nplease recheck your custom parameters')
+        }
       }
     },
     renderGraph() {
