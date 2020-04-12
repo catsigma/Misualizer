@@ -12,8 +12,9 @@ const getBox = (() => {
   shadow_svg.style.border = '0'
   shadow_svg.style.padding = '0'
 
-  if (document.body)
-    document.body.appendChild(shadow_svg)
+  window.addEventListener('DOMContentLoaded', (event) => {
+    document.body && document.body.appendChild(shadow_svg)
+  })
 
   return (svg_el : Object) => {
     shadow_svg.appendChild(svg_el)
